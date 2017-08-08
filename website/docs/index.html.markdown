@@ -32,5 +32,5 @@ resource "ns1_zone" "foobar" {
 The following arguments are supported:
 
 * `apikey` - (Required) NS1 API token. It must be provided, but it can also
-  be sourced from the `NS1_API_KEY` environment variable.
+  be sourced from the `NS1_APIKEY` environment variable.
 
