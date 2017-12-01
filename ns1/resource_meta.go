@@ -39,12 +39,25 @@ type MetaResource struct {
 	RecordType string
 }
 
+func metaDataValidate(i interface{}, s string) ([]string, []error) {
+
+}
+
 func metaResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"data": {
 				Type:     schema.TypeMap,
 				Required: true,
+				// BIGGER TODO(cmc) - I do not yet understand why ValidateFunc is unsupported for
+				// non-primitive types, but I intend to find out.
+				
+				//ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+				//	// TODO(cmc) - write validate function that addresses type limitations of specific keywords
+				//	// TODO(cmc) - it does not need to be as complex as the original reflection code and should be
+				//	// TODO(cmc) - easy enough to do with a type switch and a map of id's to behaviors
+				//	return nil, nil
+				//},
 			},
 			"meta_type": {
 				Type:     schema.TypeString,
