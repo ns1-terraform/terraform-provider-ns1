@@ -51,7 +51,7 @@ func metaResource() *schema.Resource {
 				Required: true,
 				// BIGGER TODO(cmc) - I do not yet understand why ValidateFunc is unsupported for
 				// non-primitive types, but I intend to find out.
-				
+
 				//ValidateFunc: func(i interface{}, s string) ([]string, []error) {
 				//	// TODO(cmc) - write validate function that addresses type limitations of specific keywords
 				//	// TODO(cmc) - it does not need to be as complex as the original reflection code and should be
@@ -67,10 +67,17 @@ func metaResource() *schema.Resource {
 			// These three should always be associated with a prior resource, as meta has a record
 			// dependency.
 
-			// In .tf that should look like:
+			// In .tf that should look something like:
 
+			//  resource "ns1_zone" "example" {
+			//   zone = "terraform.example.io"
+			//   ttl  = 600
+		    // }
 			// resource "ns1_record" "my_record" {
-			//   ...
+			//   zone   = "${ns1_zone.tld.zone}"
+			//   domain = "www.${ns1_zone.tld.zone}"
+			//   type   = "CNAME"
+			//   ttl    = 60
 			// }
 			//
 			// resource "ns1_meta" "my_record_answer_meta" {
