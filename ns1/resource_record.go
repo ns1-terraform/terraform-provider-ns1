@@ -38,49 +38,49 @@ func recordResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			// Required
-			"zone": &schema.Schema{
+			"zone": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"domain": &schema.Schema{
+			"domain": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: recordTypeStringEnum.ValidateFunc,
 			},
 			// Optional
-			"ttl": &schema.Schema{
+			"ttl": {
 				Type:     schema.TypeInt,
 				Optional: true,
 				Computed: true,
 			},
 			// "meta": metaSchema,
-			"link": &schema.Schema{
+			"link": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"use_client_subnet": &schema.Schema{
+			"use_client_subnet": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
-			"answers": &schema.Schema{
+			"answers": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"answer": &schema.Schema{
+						"answer": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"region": &schema.Schema{
+						"region": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
@@ -89,12 +89,12 @@ func recordResource() *schema.Resource {
 				},
 				Set: genericHasher,
 			},
-			"regions": &schema.Schema{
+			"regions": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
+						"name": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
@@ -103,20 +103,20 @@ func recordResource() *schema.Resource {
 				},
 				Set: genericHasher,
 			},
-			"filters": &schema.Schema{
+			"filters": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"filter": &schema.Schema{
+						"filter": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"disabled": &schema.Schema{
+						"disabled": {
 							Type:     schema.TypeBool,
 							Optional: true,
 						},
-						"config": &schema.Schema{
+						"config": {
 							Type:     schema.TypeMap,
 							Optional: true,
 						},
@@ -124,7 +124,7 @@ func recordResource() *schema.Resource {
 				},
 			},
 			// Computed
-			"id": &schema.Schema{
+			"id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -193,7 +193,7 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	}
 	if len(r.Regions) > 0 {
 		regions := make([]map[string]interface{}, 0, len(r.Regions))
-		for regionName, _ := range r.Regions {
+		for regionName := range r.Regions {
 			newRegion := make(map[string]interface{})
 			newRegion["name"] = regionName
 			// newRegion["meta"] = metaStructToDynamic(&region.Meta)
@@ -218,13 +218,6 @@ func answerToMap(a dns.Answer) map[string]interface{} {
 	// 	m["meta"] = metaStructToDynamic(a.Meta)
 	// }
 	return m
-}
-
-func btoi(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
 }
 
 func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
@@ -252,7 +245,7 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		}
 		r.Answers = al
 		if _, ok := d.GetOk("link"); ok {
-			return errors.New("Cannot have both link and answers in a record")
+			return errors.New("cannot have both link and answers in a record")
 		}
 	}
 	if v, ok := d.GetOk("ttl"); ok {
@@ -268,29 +261,29 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 	r.UseClientSubnet = &useClientSubnet
 
 	if rawFilters := d.Get("filters").([]interface{}); len(rawFilters) > 0 {
-		f := make([]*filter.Filter, len(rawFilters))
+		filters := make([]*filter.Filter, len(rawFilters))
 		for i, filterRaw := range rawFilters {
 			fi := filterRaw.(map[string]interface{})
 			config := make(map[string]interface{})
-			filter := filter.Filter{
+			f := filter.Filter{
 				Type:   fi["filter"].(string),
 				Config: config,
 			}
 			if disabled, ok := fi["disabled"]; ok {
-				filter.Disabled = disabled.(bool)
+				f.Disabled = disabled.(bool)
 			}
 			if rawConfig, ok := fi["config"]; ok {
 				for k, v := range rawConfig.(map[string]interface{}) {
 					if i, err := strconv.Atoi(v.(string)); err == nil {
-						filter.Config[k] = i
+						f.Config[k] = i
 					} else {
-						filter.Config[k] = v
+						f.Config[k] = v
 					}
 				}
 			}
-			f[i] = &filter
+			filters[i] = &f
 		}
-		r.Filters = f
+		r.Filters = filters
 	}
 	if regions := d.Get("regions").(*schema.Set); regions.Len() > 0 {
 		for _, regionRaw := range regions.List() {
