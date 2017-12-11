@@ -1,6 +1,9 @@
 package ns1
 
 import (
+	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
+
+
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -39,16 +42,17 @@ type MetaResource struct {
 	RecordType string
 }
 
-func metaDataValidate(i interface{}, s string) ([]string, []error) {
-
+func metaDataTypeValidate(i interface{}, s string) ([]string, []error) {
+	return nil, nil
 }
 
 func metaResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"data": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeSet,
 				Required: true,
+
 				// BIGGER TODO(cmc) - I do not yet understand why ValidateFunc is unsupported for
 				// non-primitive types, but I intend to find out.
 
@@ -115,25 +119,29 @@ func metaResource() *schema.Resource {
 
 // MetaCreate updates the associated record with new metadata
 func MetaCreate(d *schema.ResourceData, tfMeta interface{}) error {
-
-	// just call record.Update here and insert metadata wherever it's supposed to be
-
-	return nil
+	return RecordUpdate(d, tfMeta)
 }
 
 // MetaRead finds the appropriate metadata for this record and associated terraform resource
 func MetaRead(d *schema.ResourceData, tfMeta interface{}) error {
-
-	// get the record and parse it for the correct meta type, and then set that data accurately
-	// in the tf representation
-
-	return nil
+	return RecordRead(d, tfMeta)
 }
 
 // MetaDelete removes the specified metadata from the ns1 record
 func MetaDelete(d *schema.ResourceData, tfMeta interface{}) error {
 
-	// upload empty meta for the record?
+	client := tfMeta.(*ns1.Client)
 
+	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	if err != nil {
+		return err
+	}
+
+	if r.Meta != nil && MetaType(d.Get("meta_type").(string)) == MetaTypeRecord {
+		r.Meta = nil
+		_, err = client.Records.Update(r)
+		return err
+
+	}
 	return nil
 }

@@ -7,7 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/mitchellh/mapstructure"
 
 	"github.com/mitchellh/hashstructure"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -60,7 +62,10 @@ func recordResource() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
-			// "meta": metaSchema,
+			"meta": {
+				Type: schema.TypeMap,
+				Optional: true,
+			},
 			"link": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -84,7 +89,10 @@ func recordResource() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						// "meta": metaSchema,
+						 "meta": {
+						 	Type: schema.TypeMap,
+						 	Optional: true,
+						 },
 					},
 				},
 				Set: genericHasher,
@@ -98,7 +106,10 @@ func recordResource() *schema.Resource {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						// "meta": metaSchema,
+						"meta": {
+							Type: schema.TypeMap,
+							Optional: true,
+						},
 					},
 				},
 				Set: genericHasher,
@@ -154,11 +165,9 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	if r.Link != "" {
 		d.Set("link", r.Link)
 	}
-	// if r.Meta != nil {
-	// 	d.State()
-	// 	t := metaStructToDynamic(r.Meta)
-	// 	d.Set("meta", t)
-	// }
+	if r.Meta != nil {
+		d.Set("meta", structs.Map(r.Meta))
+	}
 	if r.UseClientSubnet != nil {
 		d.Set("use_client_subnet", *r.UseClientSubnet)
 	}
@@ -193,10 +202,10 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	}
 	if len(r.Regions) > 0 {
 		regions := make([]map[string]interface{}, 0, len(r.Regions))
-		for regionName := range r.Regions {
+		for regionName, region := range r.Regions {
 			newRegion := make(map[string]interface{})
 			newRegion["name"] = regionName
-			// newRegion["meta"] = metaStructToDynamic(&region.Meta)
+			newRegion["meta"] = structs.Map(&region.Meta)
 			regions = append(regions, newRegion)
 		}
 		log.Printf("Setting regions %+v", regions)
@@ -214,9 +223,9 @@ func answerToMap(a dns.Answer) map[string]interface{} {
 	if a.RegionName != "" {
 		m["region"] = a.RegionName
 	}
-	// if a.Meta != nil {
-	// 	m["meta"] = metaStructToDynamic(a.Meta)
-	// }
+	 if a.Meta != nil {
+	 	m["meta"] = structs.Map(a.Meta)
+	}
 	return m
 }
 
@@ -238,9 +247,9 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 				a.RegionName = v.(string)
 			}
 
-			// if v, ok := answer["meta"]; ok {
-			// 	metaDynamicToStruct(a.Meta, v)
-			// }
+			if v, ok := answer["meta"]; ok {
+				mapstructure.Decode(a.Meta, v)
+			}
 			al[i] = a
 		}
 		r.Answers = al
@@ -254,9 +263,10 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 	if v, ok := d.GetOk("link"); ok {
 		r.LinkTo(v.(string))
 	}
-	// if v, ok := d.GetOk("meta"); ok {
-	// 	metaDynamicToStruct(r.Meta, v)
-	// }
+
+	if v, ok := d.GetOk("meta"); ok {
+		mapstructure.Decode(r.Meta, v)
+	}
 	useClientSubnet := d.Get("use_client_subnet").(bool)
 	r.UseClientSubnet = &useClientSubnet
 
@@ -291,10 +301,10 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			ns1R := data.Region{
 				Meta: data.Meta{},
 			}
-			// if v, ok := region["meta"]; ok {
-			// 	metaDynamicToStruct(&ns1R.Meta, v)
-			// }
 
+			if v, ok := region["meta"]; ok {
+				mapstructure.Decode(&ns1R.Meta, v)
+			}
 			r.Regions[region["name"].(string)] = ns1R
 		}
 	}
