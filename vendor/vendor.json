@@ -558,12 +558,6 @@
 			"revisionTime": "2016-10-03T17:45:16Z"
 		},
 		{
-			"checksumSHA1": "mlfHwNjrZvbhwbhevw7ynk8NXuU=",
-			"path": "github.com/ns1/ns1-go",
-			"revision": "02d94f46d36ca4221370ba4f42651db4b3d51cfe",
-			"revisionTime": "2017-12-12T22:39:56Z"
-		},
-		{
 			"checksumSHA1": "u5s2PZ7fzCOqQX7bVPf9IJ+qNLQ=",
 			"path": "github.com/rancher/go-rancher",
 			"revision": "ec24b7f12fca9f78fbfcd62a0ea8bce14ade8792",
