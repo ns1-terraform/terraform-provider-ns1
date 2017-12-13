@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -14,7 +15,7 @@ func Provider() terraform.ResourceProvider {
 		Schema: map[string]*schema.Schema{
 			"apikey": {
 				Type:        schema.TypeString,
-				Optional: true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NS1_APIKEY", nil),
 				Description: descriptions["api_key"],
 			},
@@ -79,4 +80,6 @@ func init() {
 	descriptions = map[string]string{
 		"api_key": "The ns1 API key, this is required",
 	}
+
+	structs.DefaultTagName = "json"
 }

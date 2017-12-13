@@ -3,12 +3,10 @@ package ns1
 import (
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 
-
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
 type MetaType string
-
 
 const (
 	// MetaTypeRecord means that this metadata should be attached at the "record" level
@@ -50,7 +48,7 @@ func metaResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"data": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeMap,
 				Required: true,
 
 				// BIGGER TODO(cmc) - I do not yet understand why ValidateFunc is unsupported for
@@ -76,7 +74,7 @@ func metaResource() *schema.Resource {
 			//  resource "ns1_zone" "example" {
 			//   zone = "terraform.example.io"
 			//   ttl  = 600
-		    // }
+			// }
 			// resource "ns1_record" "my_record" {
 			//   zone   = "${ns1_zone.tld.zone}"
 			//   domain = "www.${ns1_zone.tld.zone}"
@@ -98,15 +96,15 @@ func metaResource() *schema.Resource {
 			//
 
 			"zone": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
 				Required: true,
 			},
 			"domain": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
 				Required: true,
 			},
 			"record_type": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
 				Required: true,
 			},
 		},

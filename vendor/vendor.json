@@ -552,6 +552,12 @@
 			"revisionTime": "2016-10-03T17:45:16Z"
 		},
 		{
+			"checksumSHA1": "mlfHwNjrZvbhwbhevw7ynk8NXuU=",
+			"path": "github.com/ns1/ns1-go",
+			"revision": "02d94f46d36ca4221370ba4f42651db4b3d51cfe",
+			"revisionTime": "2017-12-12T22:39:56Z"
+		},
+		{
 			"checksumSHA1": "u5s2PZ7fzCOqQX7bVPf9IJ+qNLQ=",
 			"path": "github.com/rancher/go-rancher",
 			"revision": "ec24b7f12fca9f78fbfcd62a0ea8bce14ade8792",
@@ -654,40 +660,46 @@
 			"revisionTime": "2017-08-04T00:04:37Z"
 		},
 		{
-			"checksumSHA1": "e7eKqt/2RnmGPYJtcJd4IY2M/DU=",
+			"checksumSHA1": "iH61/MVcO7A5w/CMGn7LCAFmcUA=",
+			"path": "gopkg.in/ns1/ns1-go.v2",
+			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
+			"revisionTime": "2017-12-13T21:08:34Z"
+		},
+		{
+			"checksumSHA1": "uOY+V62vyPFerpl1oYb9iwHZIl0=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest",
-			"revision": "5bff869d22e76e3699281eaa61d9d285216f321a",
-			"revisionTime": "2017-03-21T12:56:04Z"
+			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
+			"revisionTime": "2017-12-13T21:08:34Z"
 		},
 		{
 			"checksumSHA1": "tdMxXKsUHn3yZpur14ZNLMVyQJM=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/account",
-			"revision": "5bff869d22e76e3699281eaa61d9d285216f321a",
-			"revisionTime": "2017-03-21T12:56:04Z"
+			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
+			"revisionTime": "2017-12-13T21:08:34Z"
 		},
 		{
-			"checksumSHA1": "gBVND8veklEQV0gxF3lERV6mSZk=",
+			"checksumSHA1": "DPFtHQBruZggWj2uDow7RKU+ZPk=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/data",
-			"revision": "5bff869d22e76e3699281eaa61d9d285216f321a",
-			"revisionTime": "2017-03-21T12:56:04Z"
+			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
+			"revisionTime": "2017-12-13T21:08:34Z"
 		},
 		{
 			"checksumSHA1": "GbL7ThrBZfKs1lhzguxzscIynac=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/dns",
-			"revision": "5bff869d22e76e3699281eaa61d9d285216f321a",
-			"revisionTime": "2017-03-21T12:56:04Z"
+			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
+			"revisionTime": "2017-12-13T21:08:34Z"
 		},
 		{
 			"checksumSHA1": "CuurmNep8iMdYFodxRxAeewowsQ=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/filter",
-			"revision": "5bff869d22e76e3699281eaa61d9d285216f321a",
-			"revisionTime": "2017-03-21T12:56:04Z"
+			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
+			"revisionTime": "2017-12-13T21:08:34Z"
 		},
 		{
 			"checksumSHA1": "B0C8F5th11AHl1fo8k0I8+DvrjE=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/monitor",
-			"revision": "5bff869d22e76e3699281eaa61d9d285216f321a",
-			"revisionTime": "2017-03-21T12:56:04Z"
+			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
+			"revisionTime": "2017-12-13T21:08:34Z"
 		},
 		{
 			"checksumSHA1": "wICWAGQfZcHD2y0dHesz9R2YSiw=",

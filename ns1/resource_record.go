@@ -9,7 +9,6 @@ import (
 
 	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/mitchellh/mapstructure"
 
 	"github.com/mitchellh/hashstructure"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -63,7 +62,7 @@ func recordResource() *schema.Resource {
 				Computed: true,
 			},
 			"meta": {
-				Type: schema.TypeMap,
+				Type:     schema.TypeMap,
 				Optional: true,
 			},
 			"link": {
@@ -77,7 +76,7 @@ func recordResource() *schema.Resource {
 				Default:  true,
 			},
 			"answers": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -89,16 +88,15 @@ func recordResource() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						 "meta": {
-						 	Type: schema.TypeMap,
-						 	Optional: true,
-						 },
+						"meta": {
+							Type:     schema.TypeMap,
+							Optional: true,
+						},
 					},
 				},
-				Set: genericHasher,
 			},
 			"regions": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -107,12 +105,11 @@ func recordResource() *schema.Resource {
 							Required: true,
 						},
 						"meta": {
-							Type: schema.TypeMap,
+							Type:     schema.TypeMap,
 							Optional: true,
 						},
 					},
 				},
-				Set: genericHasher,
 			},
 			"filters": {
 				Type:     schema.TypeList,
@@ -165,6 +162,8 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	if r.Link != "" {
 		d.Set("link", r.Link)
 	}
+
+	// top level meta works but nested meta doesn't
 	if r.Meta != nil {
 		d.Set("meta", structs.Map(r.Meta))
 	}
@@ -187,12 +186,10 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		d.Set("filters", filters)
 	}
 	if len(r.Answers) > 0 {
-		ans := &schema.Set{
-			F: genericHasher,
-		}
+		ans := make([]map[string]interface{}, 0)
 		log.Printf("Got back from ns1 answers: %+v", r.Answers)
 		for _, answer := range r.Answers {
-			ans.Add(answerToMap(*answer))
+			ans = append(ans, answerToMap(*answer))
 		}
 		log.Printf("Setting answers %+v", ans)
 		err := d.Set("answers", ans)
@@ -205,7 +202,7 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		for regionName, region := range r.Regions {
 			newRegion := make(map[string]interface{})
 			newRegion["name"] = regionName
-			newRegion["meta"] = structs.Map(&region.Meta)
+			newRegion["meta"] = region.Meta.StringMap()
 			regions = append(regions, newRegion)
 		}
 		log.Printf("Setting regions %+v", regions)
@@ -223,17 +220,25 @@ func answerToMap(a dns.Answer) map[string]interface{} {
 	if a.RegionName != "" {
 		m["region"] = a.RegionName
 	}
-	 if a.Meta != nil {
-	 	m["meta"] = structs.Map(a.Meta)
+	if a.Meta != nil {
+		log.Println("got meta: ", a.Meta)
+		m["meta"] = a.Meta.StringMap()
+		log.Println(m["meta"])
+		for k, v := range m["meta"].(map[string]interface{}) {
+			log.Printf("%s, %+v, %T", k, v, v)
+		}
 	}
 	return m
 }
 
 func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 	r.ID = d.Id()
-	if answers := d.Get("answers").(*schema.Set); answers.Len() > 0 {
-		al := make([]*dns.Answer, answers.Len())
-		for i, answerRaw := range answers.List() {
+	log.Printf("answers from template: %+v, %T\n", d.Get("answers"), d.Get("answers"))
+
+	if answers := d.Get("answers").([]interface{}); len(answers) > 0 {
+		al := make([]*dns.Answer, len(answers))
+		log.Println("number of answers found:", len(answers))
+		for i, answerRaw := range answers {
 			answer := answerRaw.(map[string]interface{})
 			var a *dns.Answer
 			v := answer["answer"].(string)
@@ -248,7 +253,9 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			}
 
 			if v, ok := answer["meta"]; ok {
-				mapstructure.Decode(a.Meta, v)
+				log.Println("answer meta", v)
+				a.Meta = data.MetaFromMap(v.(map[string]interface{}))
+				log.Println(a.Meta)
 			}
 			al[i] = a
 		}
@@ -265,7 +272,9 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 	}
 
 	if v, ok := d.GetOk("meta"); ok {
-		mapstructure.Decode(r.Meta, v)
+		log.Println("record meta", v)
+		r.Meta = data.MetaFromMap(v.(map[string]interface{}))
+		log.Println(r.Meta)
 	}
 	useClientSubnet := d.Get("use_client_subnet").(bool)
 	r.UseClientSubnet = &useClientSubnet
@@ -295,15 +304,19 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		}
 		r.Filters = filters
 	}
-	if regions := d.Get("regions").(*schema.Set); regions.Len() > 0 {
-		for _, regionRaw := range regions.List() {
+	if regions := d.Get("regions").([]interface{}); len(regions) > 0 {
+		for _, regionRaw := range regions {
 			region := regionRaw.(map[string]interface{})
 			ns1R := data.Region{
 				Meta: data.Meta{},
 			}
 
 			if v, ok := region["meta"]; ok {
-				mapstructure.Decode(&ns1R.Meta, v)
+				log.Println("region meta", v)
+				meta := data.MetaFromMap(v.(map[string]interface{}))
+				log.Println("region meta object", meta)
+				ns1R.Meta = *meta
+				log.Println(ns1R.Meta)
 			}
 			r.Regions[region["name"].(string)] = ns1R
 		}
@@ -336,7 +349,7 @@ func RecordRead(d *schema.ResourceData, meta interface{}) error {
 	return recordToResourceData(d, r)
 }
 
-// RecordDelete deltes the DNS record from ns1
+// RecordDelete deletes the DNS record from ns1
 func RecordDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	_, err := client.Records.Delete(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
