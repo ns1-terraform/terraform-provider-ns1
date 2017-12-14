@@ -654,40 +654,40 @@
 			"revisionTime": "2017-08-04T00:04:37Z"
 		},
 		{
-			"checksumSHA1": "e7eKqt/2RnmGPYJtcJd4IY2M/DU=",
+			"checksumSHA1": "uOY+V62vyPFerpl1oYb9iwHZIl0=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest",
-			"revision": "5bff869d22e76e3699281eaa61d9d285216f321a",
-			"revisionTime": "2017-03-21T12:56:04Z"
+			"revision": "a602ff24bf5ec60e02462e503f02ddba81b68615",
+			"revisionTime": "2017-12-14T19:58:07Z"
 		},
 		{
 			"checksumSHA1": "tdMxXKsUHn3yZpur14ZNLMVyQJM=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/account",
-			"revision": "5bff869d22e76e3699281eaa61d9d285216f321a",
-			"revisionTime": "2017-03-21T12:56:04Z"
+			"revision": "a602ff24bf5ec60e02462e503f02ddba81b68615",
+			"revisionTime": "2017-12-14T19:58:07Z"
 		},
 		{
-			"checksumSHA1": "gBVND8veklEQV0gxF3lERV6mSZk=",
+			"checksumSHA1": "DPFtHQBruZggWj2uDow7RKU+ZPk=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/data",
-			"revision": "5bff869d22e76e3699281eaa61d9d285216f321a",
-			"revisionTime": "2017-03-21T12:56:04Z"
+			"revision": "a602ff24bf5ec60e02462e503f02ddba81b68615",
+			"revisionTime": "2017-12-14T19:58:07Z"
 		},
 		{
-			"checksumSHA1": "GbL7ThrBZfKs1lhzguxzscIynac=",
+			"checksumSHA1": "tYroX+z6XmQblwi7gj7i8g9BM54=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/dns",
-			"revision": "5bff869d22e76e3699281eaa61d9d285216f321a",
-			"revisionTime": "2017-03-21T12:56:04Z"
+			"revision": "a602ff24bf5ec60e02462e503f02ddba81b68615",
+			"revisionTime": "2017-12-14T19:58:07Z"
 		},
 		{
 			"checksumSHA1": "CuurmNep8iMdYFodxRxAeewowsQ=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/filter",
-			"revision": "5bff869d22e76e3699281eaa61d9d285216f321a",
-			"revisionTime": "2017-03-21T12:56:04Z"
+			"revision": "a602ff24bf5ec60e02462e503f02ddba81b68615",
+			"revisionTime": "2017-12-14T19:58:07Z"
 		},
 		{
 			"checksumSHA1": "B0C8F5th11AHl1fo8k0I8+DvrjE=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/monitor",
-			"revision": "5bff869d22e76e3699281eaa61d9d285216f321a",
-			"revisionTime": "2017-03-21T12:56:04Z"
+			"revision": "a602ff24bf5ec60e02462e503f02ddba81b68615",
+			"revisionTime": "2017-12-14T19:58:07Z"
 		},
 		{
 			"checksumSHA1": "wICWAGQfZcHD2y0dHesz9R2YSiw=",
