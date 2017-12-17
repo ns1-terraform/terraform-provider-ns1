@@ -662,44 +662,44 @@
 		{
 			"checksumSHA1": "iH61/MVcO7A5w/CMGn7LCAFmcUA=",
 			"path": "gopkg.in/ns1/ns1-go.v2",
-			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
-			"revisionTime": "2017-12-13T21:08:34Z"
+			"revision": "3c1c487855f28eb70a438d6600d0ddf248785f4b",
+			"revisionTime": "2017-12-16T22:31:35Z"
 		},
 		{
 			"checksumSHA1": "uOY+V62vyPFerpl1oYb9iwHZIl0=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest",
-			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
-			"revisionTime": "2017-12-13T21:08:34Z"
+			"revision": "3c1c487855f28eb70a438d6600d0ddf248785f4b",
+			"revisionTime": "2017-12-16T22:31:35Z"
 		},
 		{
 			"checksumSHA1": "tdMxXKsUHn3yZpur14ZNLMVyQJM=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/account",
-			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
-			"revisionTime": "2017-12-13T21:08:34Z"
+			"revision": "3c1c487855f28eb70a438d6600d0ddf248785f4b",
+			"revisionTime": "2017-12-16T22:31:35Z"
 		},
 		{
-			"checksumSHA1": "DPFtHQBruZggWj2uDow7RKU+ZPk=",
+			"checksumSHA1": "Q0JnGcTELCfvBU8iThrODnyBsas=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/data",
-			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
-			"revisionTime": "2017-12-13T21:08:34Z"
+			"revision": "3c1c487855f28eb70a438d6600d0ddf248785f4b",
+			"revisionTime": "2017-12-16T22:31:35Z"
 		},
 		{
-			"checksumSHA1": "GbL7ThrBZfKs1lhzguxzscIynac=",
+			"checksumSHA1": "tYroX+z6XmQblwi7gj7i8g9BM54=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/dns",
-			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
-			"revisionTime": "2017-12-13T21:08:34Z"
+			"revision": "3c1c487855f28eb70a438d6600d0ddf248785f4b",
+			"revisionTime": "2017-12-16T22:31:35Z"
 		},
 		{
 			"checksumSHA1": "CuurmNep8iMdYFodxRxAeewowsQ=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/filter",
-			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
-			"revisionTime": "2017-12-13T21:08:34Z"
+			"revision": "3c1c487855f28eb70a438d6600d0ddf248785f4b",
+			"revisionTime": "2017-12-16T22:31:35Z"
 		},
 		{
 			"checksumSHA1": "B0C8F5th11AHl1fo8k0I8+DvrjE=",
 			"path": "gopkg.in/ns1/ns1-go.v2/rest/model/monitor",
-			"revision": "489bd22be283c25f6750732f7e8092a5615ebd45",
-			"revisionTime": "2017-12-13T21:08:34Z"
+			"revision": "3c1c487855f28eb70a438d6600d0ddf248785f4b",
+			"revisionTime": "2017-12-16T22:31:35Z"
 		},
 		{
 			"checksumSHA1": "wICWAGQfZcHD2y0dHesz9R2YSiw=",

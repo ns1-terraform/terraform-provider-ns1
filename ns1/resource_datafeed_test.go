@@ -21,7 +21,7 @@ func TestAccDataFeed_basic(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDataFeedBasic,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDataFeedExists("ns1_datafeed.foobar", "ns1_datasource.api", &dataFeed),
+					testAccCheckDataFeedExists("ns1_datafeed.foobar", "ns1_datasource.api", &dataFeed, t),
 					testAccCheckDataFeedName(&dataFeed, "terraform test"),
 					testAccCheckDataFeedConfig(&dataFeed, "label", "exampledc2"),
 				),
@@ -40,7 +40,7 @@ func TestAccDataFeed_updated(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDataFeedBasic,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDataFeedExists("ns1_datafeed.foobar", "ns1_datasource.api", &dataFeed),
+					testAccCheckDataFeedExists("ns1_datafeed.foobar", "ns1_datasource.api", &dataFeed, t),
 					testAccCheckDataFeedName(&dataFeed, "terraform test"),
 					testAccCheckDataFeedConfig(&dataFeed, "label", "exampledc2"),
 				),
@@ -48,7 +48,7 @@ func TestAccDataFeed_updated(t *testing.T) {
 			resource.TestStep{
 				Config: testAccDataFeedUpdated,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckDataFeedExists("ns1_datafeed.foobar", "ns1_datasource.api", &dataFeed),
+					testAccCheckDataFeedExists("ns1_datafeed.foobar", "ns1_datasource.api", &dataFeed, t),
 					testAccCheckDataFeedName(&dataFeed, "terraform test"),
 					testAccCheckDataFeedConfig(&dataFeed, "label", "exampledc3"),
 				),
@@ -57,7 +57,7 @@ func TestAccDataFeed_updated(t *testing.T) {
 	})
 }
 
-func testAccCheckDataFeedExists(n string, dsrc string, dataFeed *data.Feed) resource.TestCheckFunc {
+func testAccCheckDataFeedExists(n string, dsrc string, dataFeed *data.Feed, t *testing.T) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		ds, ok := s.RootModule().Resources[dsrc]
@@ -81,6 +81,7 @@ func testAccCheckDataFeedExists(n string, dsrc string, dataFeed *data.Feed) reso
 		p := rs.Primary
 
 		if err != nil {
+			t.Log(err)
 			return err
 		}
 
@@ -112,7 +113,6 @@ func testAccCheckDataFeedDestroy(s *terraform.State) error {
 	}
 
 	df, _, _ := client.DataFeeds.Get(dataSourceID, dataFeedID)
-
 	if df != nil {
 		return fmt.Errorf("DataFeed still exists: %#v", df)
 	}

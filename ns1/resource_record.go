@@ -10,7 +10,6 @@ import (
 	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
 
-	"github.com/mitchellh/hashstructure"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/data"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -145,12 +144,34 @@ func recordResource() *schema.Resource {
 	}
 }
 
-func genericHasher(v interface{}) int {
-	hash, err := hashstructure.Hash(v, nil)
-	if err != nil {
-		panic(fmt.Sprintf("error computing hash code for %#v: %s", v, err.Error()))
+// errJoin joins errors into a single error
+func errJoin(errs []error, sep string) error {
+	switch len(errs) {
+	case 0:
+		return nil
+	case 1:
+		return errs[0]
+	case 2:
+		// Special case for common small values.
+		// Remove if golang.org/issue/6714 is fixed
+		return errors.New(errs[0].Error() + sep + errs[1].Error())
+	case 3:
+		// Same special case
+		return errors.New(errs[0].Error() + sep + errs[1].Error() + sep + errs[2].Error())
 	}
-	return int(hash)
+
+	n := len(sep) * (len(errs) - 1)
+	for i := 0; i < len(errs); i++ {
+		n += len(errs[i].Error())
+	}
+
+	b := make([]byte, n)
+	bp := copy(b, errs[0].Error())
+	for _, err := range errs[1:] {
+		bp += copy(b[bp:], sep)
+		bp += copy(b[bp:], err.Error())
+	}
+	return errors.New(string(b))
 }
 
 func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
@@ -256,6 +277,10 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 				log.Println("answer meta", v)
 				a.Meta = data.MetaFromMap(v.(map[string]interface{}))
 				log.Println(a.Meta)
+				errs := a.Meta.Validate()
+				if len(errs) > 0 {
+					return errJoin(append([]error{errors.New("found error/s in answer metadata")}, errs...), ",")
+				}
 			}
 			al[i] = a
 		}
@@ -275,6 +300,10 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		log.Println("record meta", v)
 		r.Meta = data.MetaFromMap(v.(map[string]interface{}))
 		log.Println(r.Meta)
+		errs := r.Meta.Validate()
+		if len(errs) > 0 {
+			return errJoin(append([]error{errors.New("found error/s in record metadata")}, errs...), ",")
+		}
 	}
 	useClientSubnet := d.Get("use_client_subnet").(bool)
 	r.UseClientSubnet = &useClientSubnet
@@ -317,6 +346,10 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 				log.Println("region meta object", meta)
 				ns1R.Meta = *meta
 				log.Println(ns1R.Meta)
+				errs := ns1R.Meta.Validate()
+				if len(errs) > 0 {
+					return errJoin(append([]error{errors.New("found error/s in region/group metadata")}, errs...), ",")
+				}
 			}
 			r.Regions[region["name"].(string)] = ns1R
 		}
