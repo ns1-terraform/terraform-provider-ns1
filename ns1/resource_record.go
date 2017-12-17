@@ -245,9 +245,6 @@ func answerToMap(a dns.Answer) map[string]interface{} {
 		log.Println("got meta: ", a.Meta)
 		m["meta"] = a.Meta.StringMap()
 		log.Println(m["meta"])
-		for k, v := range m["meta"].(map[string]interface{}) {
-			log.Printf("%s, %+v, %T", k, v, v)
-		}
 	}
 	return m
 }
