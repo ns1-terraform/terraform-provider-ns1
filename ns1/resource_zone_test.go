@@ -18,7 +18,7 @@ func TestAccZone_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckZoneDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccZoneBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
@@ -41,7 +41,7 @@ func TestAccZone_updated(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckZoneDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccZoneBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
@@ -53,7 +53,7 @@ func TestAccZone_updated(t *testing.T) {
 					testAccCheckZoneNxTTL(&zone, 3600),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccZoneUpdated,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),

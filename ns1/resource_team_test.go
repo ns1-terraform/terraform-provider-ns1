@@ -20,7 +20,7 @@ func TestAccTeam_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckTeamDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccTeamBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTeamExists("ns1_team.foobar", &team),
@@ -44,14 +44,14 @@ func TestAccTeam_updated(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckTeamDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccTeamBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTeamExists("ns1_team.foobar", &team),
 					testAccCheckTeamName(&team, "terraform test"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccTeamUpdated,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTeamExists("ns1_team.foobar", &team),
