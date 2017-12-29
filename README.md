@@ -41,7 +41,7 @@ $ make build
 Using The Provider
 ----------------------
 
-###NS1 Resources List and examples
+### NS1 Resources List and examples
 
 1. [ApiKey](#ApiKey)
 2. [Datafeed](#Datafeed)
@@ -53,11 +53,11 @@ Using The Provider
 8. [User](#User)
 9. [Zone](#Zone)
 
-###Addendum
+### Addendum
 
 1. [Permissions](#Permissions)
 
-###ApiKey
+### ApiKey
 
 [ApiKeys Api Doc]([NS1 Api Doc](https://ns1.com/api#api-key))
 
@@ -78,7 +78,7 @@ resource "ns1_apikey" "apikey" {
 }
 ```
 
-###Datafeed
+### Datafeed
 
 [Datafeed Api Doc](https://ns1.com/api#data-feeds)
 
@@ -97,7 +97,7 @@ resource "ns1_datafeed" "datafeed" {
 }
 ```
 
-###Datasource
+### Datasource
 
 [Datasource Api Doc](https://ns1.com/api#data-sources)
 
@@ -113,7 +113,7 @@ resource "ns1_datasource" "datasource" {
 }
 ```
 
-###MonitoringJob
+### MonitoringJob
 
 [MonitoringJob Api Doc](https://ns1.com/api#monitoring-jobs)
 
@@ -153,7 +153,7 @@ resource "ns1_monitoringjob" "it" {
 }
 ```
 
-###NotifyList
+### NotifyList
 
 [NotifyList Api Doc](https://ns1.com/api#notification-lists)
 
@@ -173,7 +173,7 @@ resource "ns1_notifylist" "test" {
 }
 ```
 
-###Record
+### Record
 
 [Record Api Doc](https://ns1.com/api#records)
 
@@ -248,7 +248,7 @@ resource "ns1_record" "it" {
 }
 ```
 
-###Team
+### Team
 
 [Team Api Docs](https://ns1.com/api#team)
 
@@ -270,7 +270,7 @@ resource "ns1_team" "foobar" {
 }
 ```
 
-###User
+### User
 
 [User Api Docs](https://ns1.com/api#user)
 
@@ -293,7 +293,7 @@ resource "ns1_user" "u" {
 }
 ```
 
-###Zone
+### Zone
 
 [Zone Api Docs](https://ns1.com/api#zones)
 
@@ -309,7 +309,7 @@ resource "ns1_zone" "it" {
 }
 ```
 
-###Permissions
+### Permissions
 
 There are three resources that support permissions:
 
@@ -338,11 +338,6 @@ For each of those resources, these parameters are available at the top level of 
 * monitoring_manage_lists: boolean - allows the requestor to manage monitoring lists
 * monitoring_manage_jobs: boolean - allows the requestor to manage monitoring jobs
 * monitoring_view_jobs: boolean - allows the requestor to view monitoring jobs
-
-
-
-
-
 
 Developing The Provider
 ---------------------------
