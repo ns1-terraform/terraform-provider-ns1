@@ -43,26 +43,26 @@ Using The Provider
 
 ### NS1 Resources List and examples
 
-1. [ApiKey](#ApiKey)
-2. [Datafeed](#Datafeed)
-3. [Datasource](#Datasource)
-4. [MonitoringJob](#MonitoringJob)
-5. [NotifyList](#NotifyList)
-6. [Record](#Record)
-7. [Team](#Team)
-8. [User](#User)
-9. [Zone](#Zone)
+1. [ApiKey](#apikey)
+2. [Datafeed](#datafeed)
+3. [Datasource](#datasource)
+4. [MonitoringJob](#monitoringjob)
+5. [NotifyList](#notifylist)
+6. [Record](#record)
+7. [Team](#team)
+8. [User](#user)
+9. [Zone](#zone)
 
 ### Addendum
 
-1. [Permissions](#Permissions)
+1. [Permissions](#permissions)
 
 ### ApiKey
 
 [ApiKeys Api Doc]([NS1 Api Doc](https://ns1.com/api#api-key))
 
 ApiKeys are one of the data types that supports permissions at the top level of its Terraform resource
-in addition to its regular parameters. See [Permissions](#Permissions) for the parameters that are available.
+in addition to its regular parameters. See [Permissions](#permissions) for the parameters that are available.
 
 _Example_
 
@@ -82,7 +82,7 @@ resource "ns1_apikey" "apikey" {
 
 [Datafeed Api Doc](https://ns1.com/api#data-feeds)
 
-A Datafeed _requires_ a [Datasource](#Datasource)
+A Datafeed _requires_ a [Datasource](#datasource)
 
 _Example_
 ```hcl
@@ -187,7 +187,7 @@ Due to some limitations in Terraform's support of nested maplike objects,
 there are some irregularities in supporting metadata, however metadata is
 now supported at every level.
 
-A record _requires_ a [Zone](#Zone)
+A record _requires_ a [Zone](#zone)
 
 _Example_
 ```hcl
@@ -253,7 +253,7 @@ resource "ns1_record" "it" {
 [Team Api Docs](https://ns1.com/api#team)
 
 Team is one of the data types that supports permissions at the top level of its Terraform resource
-in addition to its regular parameters. See [Permissions](#Permissions) for the parameters that are available.
+in addition to its regular parameters. See [Permissions](#permissions) for the parameters that are available.
 
 
 _Example_
@@ -275,7 +275,7 @@ resource "ns1_team" "foobar" {
 [User Api Docs](https://ns1.com/api#user)
 
 User is one of the data types that supports permissions at the top level of its Terraform resource
-in addition to its regular parameters. See [Permissions](#Permissions) for the parameters that are available.
+in addition to its regular parameters. See [Permissions](#permissions) for the parameters that are available.
 
 _Example_
 ```hcl
