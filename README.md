@@ -59,7 +59,7 @@ Using The Provider
 
 ### ApiKey
 
-[ApiKeys Api Doc]([NS1 Api Doc](https://ns1.com/api#api-key))
+[ApiKeys Api Doc](https://ns1.com/api#api-key)
 
 ApiKeys are one of the data types that supports permissions at the top level of its Terraform resource
 in addition to its regular parameters. See [Permissions](#permissions) for the parameters that are available.
