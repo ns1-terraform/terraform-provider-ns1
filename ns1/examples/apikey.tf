@@ -4,4 +4,6 @@ resource "ns1_apikey" "apikey" {
 
   #optional
   teams = ["myteam"]
+
+  #permissions are available at the top level
 }

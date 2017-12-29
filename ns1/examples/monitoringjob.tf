@@ -24,9 +24,9 @@ resource "ns1_monitoringjob" "it" {
   notify_regional = true
 
 
-  rules = { // looks like this is supposed to be a list?
+  rules = [{
     value = "200 OK"
     comparison = "contains"
     key = "output"
-  }
+  }]
 }
