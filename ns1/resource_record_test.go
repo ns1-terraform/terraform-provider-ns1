@@ -20,7 +20,7 @@ func TestAccRecord_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRecordDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccRecordBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
@@ -43,7 +43,7 @@ func TestAccRecord_updated(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRecordDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccRecordBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
@@ -55,7 +55,7 @@ func TestAccRecord_updated(t *testing.T) {
 					testAccCheckRecordAnswerRdata(&record, 0, "test1.terraform-record-test.io"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccRecordUpdated,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
@@ -78,7 +78,7 @@ func TestAccRecord_SPF(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRecordDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccRecordSPF,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.spf", &record),
@@ -99,7 +99,7 @@ func TestAccRecord_SRV(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRecordDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccRecordSRV,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.srv", &record),

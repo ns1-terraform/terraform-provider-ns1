@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
 
-	"github.com/mitchellh/hashstructure"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/data"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -38,85 +38,92 @@ func recordResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			// Required
-			"zone": &schema.Schema{
+			"zone": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"domain": &schema.Schema{
+			"domain": {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
 				ValidateFunc: recordTypeStringEnum.ValidateFunc,
 			},
 			// Optional
-			"ttl": &schema.Schema{
+			"ttl": {
 				Type:     schema.TypeInt,
 				Optional: true,
 				Computed: true,
 			},
-			// "meta": metaSchema,
-			"link": &schema.Schema{
+			"meta": {
+				Type:     schema.TypeMap,
+				Optional: true,
+			},
+			"link": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
 			},
-			"use_client_subnet": &schema.Schema{
+			"use_client_subnet": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
-			"answers": &schema.Schema{
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"answer": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"region": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						// "meta": metaSchema,
-					},
-				},
-				Set: genericHasher,
-			},
-			"regions": &schema.Schema{
-				Type:     schema.TypeSet,
-				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						// "meta": metaSchema,
-					},
-				},
-				Set: genericHasher,
-			},
-			"filters": &schema.Schema{
+			"answers": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"filter": &schema.Schema{
+						"answer": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"region": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"meta": {
+							Type:     schema.TypeMap,
+							Optional: true,
+						},
+					},
+				},
+			},
+			"regions": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
-						"disabled": &schema.Schema{
+						"meta": {
+							Type:     schema.TypeMap,
+							Optional: true,
+						},
+					},
+				},
+			},
+			"filters": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"filter": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"disabled": {
 							Type:     schema.TypeBool,
 							Optional: true,
 						},
-						"config": &schema.Schema{
+						"config": {
 							Type:     schema.TypeMap,
 							Optional: true,
 						},
@@ -124,7 +131,7 @@ func recordResource() *schema.Resource {
 				},
 			},
 			// Computed
-			"id": &schema.Schema{
+			"id": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -137,12 +144,34 @@ func recordResource() *schema.Resource {
 	}
 }
 
-func genericHasher(v interface{}) int {
-	hash, err := hashstructure.Hash(v, nil)
-	if err != nil {
-		panic(fmt.Sprintf("error computing hash code for %#v: %s", v, err.Error()))
+// errJoin joins errors into a single error
+func errJoin(errs []error, sep string) error {
+	switch len(errs) {
+	case 0:
+		return nil
+	case 1:
+		return errs[0]
+	case 2:
+		// Special case for common small values.
+		// Remove if golang.org/issue/6714 is fixed
+		return errors.New(errs[0].Error() + sep + errs[1].Error())
+	case 3:
+		// Same special case
+		return errors.New(errs[0].Error() + sep + errs[1].Error() + sep + errs[2].Error())
 	}
-	return int(hash)
+
+	n := len(sep) * (len(errs) - 1)
+	for i := 0; i < len(errs); i++ {
+		n += len(errs[i].Error())
+	}
+
+	b := make([]byte, n)
+	bp := copy(b, errs[0].Error())
+	for _, err := range errs[1:] {
+		bp += copy(b[bp:], sep)
+		bp += copy(b[bp:], err.Error())
+	}
+	return errors.New(string(b))
 }
 
 func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
@@ -154,11 +183,11 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	if r.Link != "" {
 		d.Set("link", r.Link)
 	}
-	// if r.Meta != nil {
-	// 	d.State()
-	// 	t := metaStructToDynamic(r.Meta)
-	// 	d.Set("meta", t)
-	// }
+
+	// top level meta works but nested meta doesn't
+	if r.Meta != nil {
+		d.Set("meta", structs.Map(r.Meta))
+	}
 	if r.UseClientSubnet != nil {
 		d.Set("use_client_subnet", *r.UseClientSubnet)
 	}
@@ -178,12 +207,10 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		d.Set("filters", filters)
 	}
 	if len(r.Answers) > 0 {
-		ans := &schema.Set{
-			F: genericHasher,
-		}
+		ans := make([]map[string]interface{}, 0)
 		log.Printf("Got back from ns1 answers: %+v", r.Answers)
 		for _, answer := range r.Answers {
-			ans.Add(answerToMap(*answer))
+			ans = append(ans, answerToMap(*answer))
 		}
 		log.Printf("Setting answers %+v", ans)
 		err := d.Set("answers", ans)
@@ -193,10 +220,10 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	}
 	if len(r.Regions) > 0 {
 		regions := make([]map[string]interface{}, 0, len(r.Regions))
-		for regionName, _ := range r.Regions {
+		for regionName, region := range r.Regions {
 			newRegion := make(map[string]interface{})
 			newRegion["name"] = regionName
-			// newRegion["meta"] = metaStructToDynamic(&region.Meta)
+			newRegion["meta"] = region.Meta.StringMap()
 			regions = append(regions, newRegion)
 		}
 		log.Printf("Setting regions %+v", regions)
@@ -214,24 +241,22 @@ func answerToMap(a dns.Answer) map[string]interface{} {
 	if a.RegionName != "" {
 		m["region"] = a.RegionName
 	}
-	// if a.Meta != nil {
-	// 	m["meta"] = metaStructToDynamic(a.Meta)
-	// }
-	return m
-}
-
-func btoi(b bool) int {
-	if b {
-		return 1
+	if a.Meta != nil {
+		log.Println("got meta: ", a.Meta)
+		m["meta"] = a.Meta.StringMap()
+		log.Println(m["meta"])
 	}
-	return 0
+	return m
 }
 
 func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 	r.ID = d.Id()
-	if answers := d.Get("answers").(*schema.Set); answers.Len() > 0 {
-		al := make([]*dns.Answer, answers.Len())
-		for i, answerRaw := range answers.List() {
+	log.Printf("answers from template: %+v, %T\n", d.Get("answers"), d.Get("answers"))
+
+	if answers := d.Get("answers").([]interface{}); len(answers) > 0 {
+		al := make([]*dns.Answer, len(answers))
+		log.Println("number of answers found:", len(answers))
+		for i, answerRaw := range answers {
 			answer := answerRaw.(map[string]interface{})
 			var a *dns.Answer
 			v := answer["answer"].(string)
@@ -245,14 +270,20 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 				a.RegionName = v.(string)
 			}
 
-			// if v, ok := answer["meta"]; ok {
-			// 	metaDynamicToStruct(a.Meta, v)
-			// }
+			if v, ok := answer["meta"]; ok {
+				log.Println("answer meta", v)
+				a.Meta = data.MetaFromMap(v.(map[string]interface{}))
+				log.Println(a.Meta)
+				errs := a.Meta.Validate()
+				if len(errs) > 0 {
+					return errJoin(append([]error{errors.New("found error/s in answer metadata")}, errs...), ",")
+				}
+			}
 			al[i] = a
 		}
 		r.Answers = al
 		if _, ok := d.GetOk("link"); ok {
-			return errors.New("Cannot have both link and answers in a record")
+			return errors.New("cannot have both link and answers in a record")
 		}
 	}
 	if v, ok := d.GetOk("ttl"); ok {
@@ -261,47 +292,62 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 	if v, ok := d.GetOk("link"); ok {
 		r.LinkTo(v.(string))
 	}
-	// if v, ok := d.GetOk("meta"); ok {
-	// 	metaDynamicToStruct(r.Meta, v)
-	// }
+
+	if v, ok := d.GetOk("meta"); ok {
+		log.Println("record meta", v)
+		r.Meta = data.MetaFromMap(v.(map[string]interface{}))
+		log.Println(r.Meta)
+		errs := r.Meta.Validate()
+		if len(errs) > 0 {
+			return errJoin(append([]error{errors.New("found error/s in record metadata")}, errs...), ",")
+		}
+	}
 	useClientSubnet := d.Get("use_client_subnet").(bool)
 	r.UseClientSubnet = &useClientSubnet
 
 	if rawFilters := d.Get("filters").([]interface{}); len(rawFilters) > 0 {
-		f := make([]*filter.Filter, len(rawFilters))
+		filters := make([]*filter.Filter, len(rawFilters))
 		for i, filterRaw := range rawFilters {
 			fi := filterRaw.(map[string]interface{})
 			config := make(map[string]interface{})
-			filter := filter.Filter{
+			f := filter.Filter{
 				Type:   fi["filter"].(string),
 				Config: config,
 			}
 			if disabled, ok := fi["disabled"]; ok {
-				filter.Disabled = disabled.(bool)
+				f.Disabled = disabled.(bool)
 			}
 			if rawConfig, ok := fi["config"]; ok {
 				for k, v := range rawConfig.(map[string]interface{}) {
 					if i, err := strconv.Atoi(v.(string)); err == nil {
-						filter.Config[k] = i
+						f.Config[k] = i
 					} else {
-						filter.Config[k] = v
+						f.Config[k] = v
 					}
 				}
 			}
-			f[i] = &filter
+			filters[i] = &f
 		}
-		r.Filters = f
+		r.Filters = filters
 	}
-	if regions := d.Get("regions").(*schema.Set); regions.Len() > 0 {
-		for _, regionRaw := range regions.List() {
+	if regions := d.Get("regions").([]interface{}); len(regions) > 0 {
+		for _, regionRaw := range regions {
 			region := regionRaw.(map[string]interface{})
 			ns1R := data.Region{
 				Meta: data.Meta{},
 			}
-			// if v, ok := region["meta"]; ok {
-			// 	metaDynamicToStruct(&ns1R.Meta, v)
-			// }
 
+			if v, ok := region["meta"]; ok {
+				log.Println("region meta", v)
+				meta := data.MetaFromMap(v.(map[string]interface{}))
+				log.Println("region meta object", meta)
+				ns1R.Meta = *meta
+				log.Println(ns1R.Meta)
+				errs := ns1R.Meta.Validate()
+				if len(errs) > 0 {
+					return errJoin(append([]error{errors.New("found error/s in region/group metadata")}, errs...), ",")
+				}
+			}
 			r.Regions[region["name"].(string)] = ns1R
 		}
 	}
@@ -333,7 +379,7 @@ func RecordRead(d *schema.ResourceData, meta interface{}) error {
 	return recordToResourceData(d, r)
 }
 
-// RecordDelete deltes the DNS record from ns1
+// RecordDelete deletes the DNS record from ns1
 func RecordDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	_, err := client.Records.Delete(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))

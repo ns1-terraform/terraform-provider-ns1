@@ -18,7 +18,7 @@ func TestAccNotifyList_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNotifyListDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccNotifyListBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNotifyListExists("ns1_notifylist.test", &nl),
@@ -36,14 +36,14 @@ func TestAccNotifyList_updated(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckNotifyListDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccNotifyListBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNotifyListExists("ns1_notifylist.test", &nl),
 					testAccCheckNotifyListName(&nl, "terraform test"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccNotifyListUpdated,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNotifyListExists("ns1_notifylist.test", &nl),

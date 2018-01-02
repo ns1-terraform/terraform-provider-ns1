@@ -1,6 +1,10 @@
 package ns1
 
 import (
+	"errors"
+	"os"
+
+	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 )
@@ -9,19 +13,19 @@ import (
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"apikey": &schema.Schema{
+			"apikey": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NS1_APIKEY", nil),
 				Description: descriptions["api_key"],
 			},
-			"endpoint": &schema.Schema{
+			"endpoint": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NS1_ENDPOINT", nil),
 				Description: descriptions["endpoint"],
 			},
-			"ignore_ssl": &schema.Schema{
+			"ignore_ssl": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NS1_IGNORE_SSL", nil),
@@ -43,10 +47,22 @@ func Provider() terraform.ResourceProvider {
 	}
 }
 
+var ErrNoAPIKey = errors.New("ns1: could not find api key")
+
 func ns1Configure(d *schema.ResourceData) (interface{}, error) {
-	config := Config{
-		Key: d.Get("apikey").(string),
+	config := Config{}
+	key := ""
+	if k, ok := d.GetOk("apikey"); ok {
+		key = k.(string)
+	} else {
+		key = os.Getenv("NS1_APIKEY")
 	}
+
+	if key == "" {
+		return nil, ErrNoAPIKey
+	}
+
+	config.Key = key
 
 	if v, ok := d.GetOk("endpoint"); ok {
 		config.Endpoint = v.(string)
@@ -64,4 +80,6 @@ func init() {
 	descriptions = map[string]string{
 		"api_key": "The ns1 API key, this is required",
 	}
+
+	structs.DefaultTagName = "json"
 }

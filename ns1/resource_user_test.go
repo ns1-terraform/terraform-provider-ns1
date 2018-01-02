@@ -23,7 +23,7 @@ func TestAccUser_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckUserDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccUserBasic(rString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckUserExists("ns1_user.u", &user),

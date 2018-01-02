@@ -21,7 +21,7 @@ func (c *Config) Client() (*ns1.Client, error) {
 	decos := []func(*ns1.Client){}
 
 	if c.Key == "" {
-		return nil, errors.New(`No valid credential sources found for NS1 Provider.
+		return nil, errors.New(`no valid credential sources found for NS1 Provider.
   Please see https://terraform.io/docs/providers/ns1/index.html for more information on
   providing credentials for the NS1 Provider`)
 	}
