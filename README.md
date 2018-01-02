@@ -10,10 +10,10 @@ NS1 Terraform Provider
 
 Contents
 ------
-1. [Requirements](#Requirements) - lists the requirements for building the provider
-2. [Building The Provider](#Building The Provider) - lists the steps for building the provider
-3. [Using The Provider](#Using The Provider) - details how to use the provider
-4. [Developing The Provider](#Developing The Provider) - steps for contributing back to the provider
+1. [Requirements](#requirements) - lists the requirements for building the provider
+2. [Building The Provider](#building-the-provider) - lists the steps for building the provider
+3. [Using The Provider](#using-the-provider) - details how to use the provider
+4. [Developing The Provider](#developing-the-provider) - steps for contributing back to the provider
 
 Requirements
 ------------
