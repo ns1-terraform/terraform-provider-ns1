@@ -1,4 +1,4 @@
-## 0.1.1 (December 31, 2017)
+## 1.0.0 (Unreleased)
 
 * Metadata support implemented for records, answers, and regions
 * Small bugfixes
