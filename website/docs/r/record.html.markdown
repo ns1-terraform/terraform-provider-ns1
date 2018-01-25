@@ -29,7 +29,7 @@ resource "ns1_record" "www" {
 
   answers = {
     answer = "sub2.${ns1_zone.tld.zone}"
-  }
+  } 
 
   filters = {
     filter = "select_first_n"
