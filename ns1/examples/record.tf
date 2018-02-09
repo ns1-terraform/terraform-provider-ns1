@@ -18,7 +18,8 @@ resource "ns1_record" "it" {
 
   answers = [
     {
-      answer = "10.0.0.1"
+      answer = "a.example.com."
+      region = "ExampleRegionA"
 
       meta = {
         up          = true
@@ -27,17 +28,31 @@ resource "ns1_record" "it" {
         georegion   = "US-EAST"
       }
     },
+    {
+         answer = "b.example.com."
+         region = "ExampleRegionB"
+    }
   ]
 
   regions = [
     {
-      name = "cal"
+      name = "ExampleRegionA"
 
       meta = {
         up          = true
         connections = 3
+        country= "A3,PM"
+        us_state= "AK,AP,AR,AZ,CA,CO,HI,ID,KS,MT,ND,NE,NV,OR,SD,U1,UM,UT,WA,WY"
+        ca_province= "AB,BC,NT,SK,U2,YT"
       }
     },
+    {
+         name = "ExampleRegionB"
+         meta = {
+              country = "AS,AU,CC,CK,CX,FJ,FM,GU,HM,KI,MH,MP,NC,NF,NR,NU,NZ,PF,PG,PN,PW,SB,TK,TO,TV,U9,VU,WF,WS"
+              up      = false
+         }
+    }
   ]
 
   filters {
