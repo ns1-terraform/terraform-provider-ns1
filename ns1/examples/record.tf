@@ -29,8 +29,8 @@ resource "ns1_record" "it" {
       }
     },
     {
-         answer = "b.example.com."
-         region = "ExampleRegionB"
+      answer = "b.example.com."
+      region = "ExampleRegionB"
     }
   ]
 
@@ -41,9 +41,9 @@ resource "ns1_record" "it" {
       meta = {
         up          = true
         connections = 3
-        country= "A3,PM"
-        us_state= "AK,AP,AR,AZ,CA,CO,HI,ID,KS,MT,ND,NE,NV,OR,SD,U1,UM,UT,WA,WY"
-        ca_province= "AB,BC,NT,SK,U2,YT"
+        country     = "A3,PM"
+        us_state    = "AK,AP,AR,AZ,CA,CO,HI,ID,KS,MT,ND,NE,NV,OR,SD,U1,UM,UT,WA,WY"
+        ca_province = "AB,BC,NT,SK,U2,YT"
       }
     },
     {
