@@ -10,6 +10,8 @@ import (
 	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
 
+	"sort"
+
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/data"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -191,6 +193,7 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	if r.UseClientSubnet != nil {
 		d.Set("use_client_subnet", *r.UseClientSubnet)
 	}
+
 	if len(r.Filters) > 0 {
 		filters := make([]map[string]interface{}, len(r.Filters))
 		for i, f := range r.Filters {
@@ -219,13 +222,21 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		}
 	}
 	if len(r.Regions) > 0 {
+		keys := make([]string, 0, len(r.Regions))
+		for regionName, _ := range r.Regions {
+			keys = append(keys, regionName)
+		}
+		sort.Strings(keys)
 		regions := make([]map[string]interface{}, 0, len(r.Regions))
-		for regionName, region := range r.Regions {
+
+		for _, k := range keys {
 			newRegion := make(map[string]interface{})
-			newRegion["name"] = regionName
+			region := r.Regions[k]
+			newRegion["name"] = k
 			newRegion["meta"] = region.Meta.StringMap()
 			regions = append(regions, newRegion)
 		}
+
 		log.Printf("Setting regions %+v", regions)
 		err := d.Set("regions", regions)
 		if err != nil {
@@ -330,8 +341,17 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		}
 		r.Filters = filters
 	}
+
 	if regions := d.Get("regions").([]interface{}); len(regions) > 0 {
+
+		keys := make([]string, 0, len(regions))
 		for _, regionRaw := range regions {
+			region := regionRaw.(map[string]interface{})
+			keys = append(keys, region["name"].(string))
+		}
+
+		for _, regionRaw := range regions {
+
 			region := regionRaw.(map[string]interface{})
 			ns1R := data.Region{
 				Meta: data.Meta{},
