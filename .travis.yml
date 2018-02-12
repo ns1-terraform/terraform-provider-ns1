@@ -10,7 +10,7 @@ install:
 # packages that live there.
 # See: https://github.com/golang/go/issues/12933
 - bash scripts/gogetcookie.sh
-- go get github.com/kardianos/govendor
+- go get github.com/golang/dep/cmd/dep
 
 script:
 - make test
