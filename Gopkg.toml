@@ -1,0 +1,20 @@
+ignored = [
+  "github.com/hashicorp/terraform/backend*",
+  "github.com/hashicorp/nomad*"
+]
+
+[[constraint]]
+  name = "github.com/hashicorp/terraform"
+  version = "0.10.0"
+
+[[constraint]]
+  name = "gopkg.in/ns1/ns1-go.v2"
+  revision = "1f132c4ac59d2c7022353a8824002a15deb66f1e"
+
+[[constraint]]
+  name = "github.com/fatih/structs"
+  version = "v1.0.0"
+
+[prune]
+  go-tests = true
+  unused-packages = true
