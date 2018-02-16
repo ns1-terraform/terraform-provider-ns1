@@ -30,12 +30,10 @@ func NewStringEnum(values []string) *StringEnum {
 }
 
 func (se *StringEnum) Check(v string) (int, error) {
-	i, present := se.ValueMap[v]
-	if present {
+	if i, present := se.ValueMap[v]; present {
 		return i, nil
-	} else {
-		return -1, fmt.Errorf("expecting one of %s; got %q", se.Expecting, v)
 	}
+	return -1, fmt.Errorf("expecting one of %s; got %q", se.Expecting, v)
 }
 
 func (se *StringEnum) ValidateFunc(v interface{}, k string) (ws []string, es []error) {

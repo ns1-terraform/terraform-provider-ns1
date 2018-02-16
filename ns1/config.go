@@ -18,7 +18,7 @@ type Config struct {
 // Client() returns a new NS1 client.
 func (c *Config) Client() (*ns1.Client, error) {
 	httpClient := &http.Client{}
-	decos := []func(*ns1.Client){}
+	var decos []func(*ns1.Client)
 
 	if c.Key == "" {
 		return nil, errors.New(`no valid credential sources found for NS1 Provider.

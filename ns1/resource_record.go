@@ -18,7 +18,7 @@ import (
 	"gopkg.in/ns1/ns1-go.v2/rest/model/filter"
 )
 
-var recordTypeStringEnum *StringEnum = NewStringEnum([]string{
+var recordTypeStringEnum = NewStringEnum([]string{
 	"A",
 	"AAAA",
 	"ALIAS",
