@@ -71,6 +71,11 @@ func zoneResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"networks": &schema.Schema{
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeInt},
+			},
 		},
 		Create:   ZoneCreate,
 		Read:     ZoneRead,
@@ -88,6 +93,7 @@ func zoneToResourceData(d *schema.ResourceData, z *dns.Zone) {
 	d.Set("refresh", z.Refresh)
 	d.Set("retry", z.Retry)
 	d.Set("expiry", z.Expiry)
+	d.Set("networks", z.NetworkIDs)
 	d.Set("dns_servers", strings.Join(z.DNSServers[:], ","))
 	if z.Secondary != nil && z.Secondary.Enabled {
 		d.Set("primary", z.Secondary.PrimaryIP)
@@ -122,6 +128,14 @@ func resourceToZoneData(z *dns.Zone, d *schema.ResourceData) {
 	}
 	if v, ok := d.GetOk("link"); ok {
 		z.LinkTo(v.(string))
+	}
+	if v, ok := d.GetOk("networks"); ok {
+		networkIDSet := v.(*schema.Set)
+		networkIDs := make([]int, networkIDSet.Len())
+		for i, networkID := range networkIDSet.List() {
+			networkIDs[i] = networkID.(int)
+		}
+		z.NetworkIDs = networkIDs
 	}
 }
 
