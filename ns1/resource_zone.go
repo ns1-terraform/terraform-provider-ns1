@@ -74,7 +74,7 @@ func zoneResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"networks": &schema.Schema{
+			"networks": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
@@ -96,7 +96,15 @@ func zoneToResourceData(d *schema.ResourceData, z *dns.Zone) {
 	d.Set("refresh", z.Refresh)
 	d.Set("retry", z.Retry)
 	d.Set("expiry", z.Expiry)
-	d.Set("networks", z.NetworkIDs)
+	if z.NetworkIDs != nil {
+		if len(z.NetworkIDs) == 1 {
+			if z.NetworkIDs[0] != 0 {
+				d.Set("networks", z.NetworkIDs)
+			}
+		} else {
+			d.Set("networks", z.NetworkIDs)
+		}
+	}
 	d.Set("dns_servers", strings.Join(z.DNSServers[:], ","))
 	if z.Secondary != nil && z.Secondary.Enabled {
 		d.Set("primary", z.Secondary.PrimaryIP)

@@ -187,6 +187,10 @@ Due to some limitations in Terraform's support of nested maplike objects,
 there are some irregularities in supporting metadata, however metadata is
 now supported at every level.
 
+A noted caveat is that any comma separated list or list given in metadata must be entered alphabetically.
+This is because support for nested data structures is not supported natively in Terraform, and we do not control the way
+that TF compares a plan vs existing infrastructure.
+
 A record _requires_ a [Zone](#zone)
 
 _Example_

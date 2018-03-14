@@ -330,7 +330,8 @@ resource "ns1_record" "it" {
   regions = [{
     name = "ny"
 	meta {
-		country = "US,CA,MX"
+	// these must be alphabetical
+		country = "CA,MX,US"
 	}
 	},
 	{
