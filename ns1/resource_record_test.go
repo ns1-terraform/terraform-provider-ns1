@@ -13,6 +13,8 @@ import (
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 )
 
+var expectedRecordSuffix = fmt.Sprintf(".terraform-record-test-%s.io", globalTestUUID)
+
 func TestAccRecord_basic(t *testing.T) {
 	var record dns.Record
 	resource.Test(t, resource.TestCase{
@@ -24,12 +26,12 @@ func TestAccRecord_basic(t *testing.T) {
 				Config: testAccRecordBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
-					testAccCheckRecordDomain(&record, "test.terraform-record-test.io"),
+					testAccCheckRecordDomain(&record, "test"+expectedRecordSuffix),
 					testAccCheckRecordTTL(&record, 60),
 					testAccCheckRecordUseClientSubnet(&record, true),
 					testAccCheckRecordRegionName(&record, []string{"cal"}),
 					// testAccCheckRecordAnswerMetaWeight(&record, 10),
-					testAccCheckRecordAnswerRdata(&record, 0, "test1.terraform-record-test.io"),
+					testAccCheckRecordAnswerRdata(&record, 0, 0, "test1"+expectedRecordSuffix),
 				),
 			},
 		},
@@ -47,24 +49,25 @@ func TestAccRecord_updated(t *testing.T) {
 				Config: testAccRecordBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
-					testAccCheckRecordDomain(&record, "test.terraform-record-test.io"),
+					testAccCheckRecordDomain(&record, "test"+expectedRecordSuffix),
 					testAccCheckRecordTTL(&record, 60),
 					testAccCheckRecordUseClientSubnet(&record, true),
 					testAccCheckRecordRegionName(&record, []string{"cal"}),
 					// testAccCheckRecordAnswerMetaWeight(&record, 10),
-					testAccCheckRecordAnswerRdata(&record, 0, "test1.terraform-record-test.io"),
+					testAccCheckRecordAnswerRdata(&record, 0, 0, "test1"+expectedRecordSuffix),
 				),
 			},
 			{
 				Config: testAccRecordUpdated,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
-					testAccCheckRecordDomain(&record, "test.terraform-record-test.io"),
+					testAccCheckRecordDomain(&record, "test"+expectedRecordSuffix),
 					testAccCheckRecordTTL(&record, 120),
 					testAccCheckRecordUseClientSubnet(&record, false),
 					testAccCheckRecordRegionName(&record, []string{"ny", "wa"}),
 					// testAccCheckRecordAnswerMetaWeight(&record, 5),
-					testAccCheckRecordAnswerRdata(&record, 0, "test2.terraform-record-test.io"),
+					testAccCheckRecordAnswerRdata(&record, 0, 0, "test2"+expectedRecordSuffix),
+					testAccCheckRecordAnswerRdata(&record, 1, 0, "test3"+expectedRecordSuffix),
 				),
 			},
 		},
@@ -82,10 +85,10 @@ func TestAccRecord_SPF(t *testing.T) {
 				Config: testAccRecordSPF,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.spf", &record),
-					testAccCheckRecordDomain(&record, "terraform-record-test.io"),
+					testAccCheckRecordDomain(&record, fmt.Sprintf("terraform-record-test-%s.io", globalTestUUID)),
 					testAccCheckRecordTTL(&record, 86400),
 					testAccCheckRecordUseClientSubnet(&record, true),
-					testAccCheckRecordAnswerRdata(&record, 0, "v=DKIM1; k=rsa; p=XXXXXXXX"),
+					testAccCheckRecordAnswerRdata(&record, 0, 0, "v=DKIM1; k=rsa; p=XXXXXXXX"),
 				),
 			},
 		},
@@ -103,13 +106,13 @@ func TestAccRecord_SRV(t *testing.T) {
 				Config: testAccRecordSRV,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.srv", &record),
-					testAccCheckRecordDomain(&record, "_some-server._tcp.terraform-record-test.io"),
+					testAccCheckRecordDomain(&record, fmt.Sprintf("_some-server._tcp.terraform-record-test-%s.io", globalTestUUID)),
 					testAccCheckRecordTTL(&record, 86400),
 					testAccCheckRecordUseClientSubnet(&record, true),
-					testAccCheckRecordAnswerRdata(&record, 0, "10"),
-					testAccCheckRecordAnswerRdata(&record, 1, "0"),
-					testAccCheckRecordAnswerRdata(&record, 2, "2380"),
-					testAccCheckRecordAnswerRdata(&record, 3, "node-1.terraform-record-test.io"),
+					testAccCheckRecordAnswerRdata(&record, 0, 0, "10"),
+					testAccCheckRecordAnswerRdata(&record, 0, 1, "0"),
+					testAccCheckRecordAnswerRdata(&record, 0, 2, "2380"),
+					testAccCheckRecordAnswerRdata(&record, 0, 3, fmt.Sprintf("node-1.terraform-record-test-%s.io", globalTestUUID)),
 				),
 			},
 		},
@@ -230,38 +233,38 @@ func testAccCheckRecordAnswerMetaWeight(r *dns.Record, expected float64) resourc
 	}
 }
 
-func testAccCheckRecordAnswerRdata(r *dns.Record, idx int, expected string) resource.TestCheckFunc {
+func testAccCheckRecordAnswerRdata(r *dns.Record, ridx int, rdidx int, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		recordAnswer := r.Answers[0]
-		recordAnswerString := recordAnswer.Rdata[idx]
+		recordAnswer := r.Answers[ridx]
+		recordAnswerString := recordAnswer.Rdata[rdidx]
 		if recordAnswerString != expected {
-			return fmt.Errorf("Answers[0].Rdata[%d]: got: %#v want: %#v", idx, recordAnswerString, expected)
+			return fmt.Errorf("Answers[0].Rdata[%d]: got: %#v want: %#v", rdidx, recordAnswerString, expected)
 		}
 		return nil
 	}
 }
 
-const testAccRecordBasic = `
+var testAccRecordBasic = fmt.Sprintf(`
 resource "ns1_record" "it" {
   zone              = "${ns1_zone.test.zone}"
   domain            = "test.${ns1_zone.test.zone}"
   type              = "CNAME"
   ttl               = 60
 
-  // meta {
-  //   weight = 5
-  //   connections = 3
-  //   // up = false // Ignored by d.GetOk("meta.0.up") due to known issue
-  // }
+   meta = {
+     weight = 5
+     connections = 3
+     // up = false // Ignored by d.GetOk("meta.0.up") due to known issue
+   }
 
   answers {
-    answer = "test1.terraform-record-test.io"
+    answer = "test1.terraform-record-test-%s.io"
     region = "cal"
 
-    // meta {
-    //   weight = 10
-    //   up = true
-    // }
+     meta = {
+       weight = 10
+       up = true
+     }
   }
 
   regions {
@@ -287,11 +290,11 @@ resource "ns1_record" "it" {
 }
 
 resource "ns1_zone" "test" {
-  zone = "terraform-record-test.io"
+  zone = "terraform-record-test-%s.io"
 }
-`
+`, globalTestUUID, globalTestUUID)
 
-const testAccRecordUpdated = `
+var testAccRecordUpdated = fmt.Sprintf(`
 resource "ns1_record" "it" {
   zone              = "${ns1_zone.test.zone}"
   domain            = "test.${ns1_zone.test.zone}"
@@ -305,29 +308,38 @@ resource "ns1_record" "it" {
   //   // up = false // Ignored by d.GetOk("meta.0.up") due to known issue
   // }
 
-  answers {
-    answer = "test2.terraform-record-test.io"
+  answers = [{
+    answer = "test2.terraform-record-test-%s.io"
     region = "ny"
 
-    // meta {
-    //   weight = 5
-    //   up = true
-    // }
-  }
+     meta {
+       weight = 5
+       up = true
+     }
+	},
+	{
+		answer = "test3.terraform-record-test-%s.io"
+		region = "ny"
+		meta {
+			weight = 4
+			up = true
+		}
+	}
+  ]
 
-  regions {
-    name = "wa"
-    // meta {
-    //   us_state = ["WA"]
-    // }
-  }
-
-  regions {
+  regions = [{
     name = "ny"
-    // meta {
-    //   us_state = ["NY"]
-    // }
-  }
+	meta {
+		country = "US,CA,MX"
+	}
+	},
+	{
+		name = "wa"
+		meta {
+			country = "MX"
+		}
+	}
+]
 
   filters {
     filter = "up"
@@ -339,11 +351,11 @@ resource "ns1_record" "it" {
 }
 
 resource "ns1_zone" "test" {
-  zone = "terraform-record-test.io"
+  zone = "terraform-record-test-%s.io"
 }
-`
+`, globalTestUUID, globalTestUUID, globalTestUUID)
 
-const testAccRecordSPF = `
+var testAccRecordSPF = fmt.Sprintf(`
 resource "ns1_record" "spf" {
   zone              = "${ns1_zone.test.zone}"
   domain            = "${ns1_zone.test.zone}"
@@ -356,11 +368,11 @@ resource "ns1_record" "spf" {
 }
 
 resource "ns1_zone" "test" {
-  zone = "terraform-record-test.io"
+  zone = "terraform-record-test-%s.io"
 }
-`
+`, globalTestUUID)
 
-const testAccRecordSRV = `
+var testAccRecordSRV = fmt.Sprintf(`
 resource "ns1_record" "srv" {
   zone              = "${ns1_zone.test.zone}"
   domain            = "_some-server._tcp.${ns1_zone.test.zone}"
@@ -373,6 +385,6 @@ resource "ns1_record" "srv" {
 }
 
 resource "ns1_zone" "test" {
-  zone = "terraform-record-test.io"
+  zone = "terraform-record-test-%s.io"
 }
-`
+`, globalTestUUID)

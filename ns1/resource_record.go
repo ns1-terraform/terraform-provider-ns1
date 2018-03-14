@@ -10,6 +10,8 @@ import (
 	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
 
+	"sort"
+
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/data"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -95,7 +97,7 @@ func recordResource() *schema.Resource {
 				},
 			},
 			"regions": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -219,10 +221,18 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		}
 	}
 	if len(r.Regions) > 0 {
+		keys := make([]string, 0, len(r.Regions))
+
+		for k := range r.Regions {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
 		regions := make([]map[string]interface{}, 0, len(r.Regions))
-		for regionName, region := range r.Regions {
+
+		for _, k := range keys {
+			region := r.Regions[k]
 			newRegion := make(map[string]interface{})
-			newRegion["name"] = regionName
+			newRegion["name"] = k
 			newRegion["meta"] = region.Meta.StringMap()
 			regions = append(regions, newRegion)
 		}
@@ -330,8 +340,9 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		}
 		r.Filters = filters
 	}
-	if regions := d.Get("regions").([]interface{}); len(regions) > 0 {
-		for _, regionRaw := range regions {
+	if regionSet := d.Get("regions").(*schema.Set); regionSet.Len() > 0 {
+
+		for _, regionRaw := range regionSet.List() {
 			region := regionRaw.(map[string]interface{})
 			ns1R := data.Region{
 				Meta: data.Meta{},

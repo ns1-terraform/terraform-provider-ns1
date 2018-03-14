@@ -11,6 +11,8 @@ import (
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 )
 
+var expectedZoneName = fmt.Sprintf("terraform-test-zone-%s.io", globalTestUUID)
+
 func TestAccZone_basic(t *testing.T) {
 	var zone dns.Zone
 	resource.Test(t, resource.TestCase{
@@ -22,7 +24,7 @@ func TestAccZone_basic(t *testing.T) {
 				Config: testAccZoneBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
-					testAccCheckZoneName(&zone, "terraform-test-zone.io"),
+					testAccCheckZoneName(&zone, expectedZoneName),
 					testAccCheckZoneTTL(&zone, 3600),
 					testAccCheckZoneRefresh(&zone, 43200),
 					testAccCheckZoneRetry(&zone, 7200),
@@ -45,7 +47,7 @@ func TestAccZone_updated(t *testing.T) {
 				Config: testAccZoneBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
-					testAccCheckZoneName(&zone, "terraform-test-zone.io"),
+					testAccCheckZoneName(&zone, expectedZoneName),
 					testAccCheckZoneTTL(&zone, 3600),
 					testAccCheckZoneRefresh(&zone, 43200),
 					testAccCheckZoneRetry(&zone, 7200),
@@ -57,7 +59,7 @@ func TestAccZone_updated(t *testing.T) {
 				Config: testAccZoneUpdated,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
-					testAccCheckZoneName(&zone, "terraform-test-zone.io"),
+					testAccCheckZoneName(&zone, expectedZoneName),
 					testAccCheckZoneTTL(&zone, 10800),
 					testAccCheckZoneRefresh(&zone, 3600),
 					testAccCheckZoneRetry(&zone, 300),
@@ -169,15 +171,15 @@ func testAccCheckZoneNxTTL(zone *dns.Zone, expected int) resource.TestCheckFunc 
 	}
 }
 
-const testAccZoneBasic = `
+var testAccZoneBasic = fmt.Sprintf(`
 resource "ns1_zone" "it" {
-  zone = "terraform-test-zone.io"
+  zone = "terraform-test-zone-%s.io"
 }
-`
+`, globalTestUUID)
 
-const testAccZoneUpdated = `
+var testAccZoneUpdated = fmt.Sprintf(`
 resource "ns1_zone" "it" {
-  zone    = "terraform-test-zone.io"
+  zone    = "terraform-test-zone-%s.io"
   ttl     = 10800
   refresh = 3600
   retry   = 300
@@ -186,4 +188,4 @@ resource "ns1_zone" "it" {
   # link    = "1.2.3.4.in-addr.arpa" # TODO
   # primary = "1.2.3.4.in-addr.arpa" # TODO
 }
-`
+`, globalTestUUID)

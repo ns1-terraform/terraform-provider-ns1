@@ -4,6 +4,9 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/ns1/ns1-go/rest"
+
+	"fmt"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -125,12 +128,24 @@ func resourceToZoneData(z *dns.Zone, d *schema.ResourceData) {
 	}
 }
 
+type s struct {
+	s string
+}
+
+func (s *s) Error() string {
+	return s.s
+}
+
 // ZoneCreate creates the given zone in ns1
 func ZoneCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	z := dns.NewZone(d.Get("zone").(string))
 	resourceToZoneData(z, d)
 	if _, err := client.Zones.Create(z); err != nil {
+		if e, ok := err.(*rest.Error); ok {
+
+			return &s{s: fmt.Sprintf(e.Message+e.Resp.Status+": %d", e.Resp.StatusCode)}
+		}
 		return err
 	}
 	zoneToResourceData(d, z)
