@@ -1,5 +1,12 @@
-## 0.1.1 (Unreleased)
+## 1.0.1 (Unreleased)
+## 1.0.0 (January 25, 2018)
+
+* Metadata support implemented for records, answers, and regions
+* Small bugfixes
+
 ## 0.1.0 (June 21, 2017)
+
+* NS1 Support for Terraform implemented
 
 NOTES:
 
