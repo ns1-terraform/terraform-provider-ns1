@@ -2,7 +2,7 @@ dist: trusty
 sudo: false
 language: go
 go:
-- 1.10
+- "1.10"
 
 install:
 # This script is used by the Travis build to install a cookie for
