@@ -33,7 +33,7 @@ errcheck:
 	@sh -c "'$(CURDIR)/scripts/errcheck.sh'"
 
 vendor-status:
-	@dep status
+	@dep status -v
 
 test-compile:
 	@if [ "$(TEST)" = "./..." ]; then \
