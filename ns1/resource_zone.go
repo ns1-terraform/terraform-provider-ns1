@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/ns1/ns1-go/rest"
 
 	"fmt"
 
@@ -164,7 +163,7 @@ func ZoneCreate(d *schema.ResourceData, meta interface{}) error {
 	z := dns.NewZone(d.Get("zone").(string))
 	resourceToZoneData(z, d)
 	if _, err := client.Zones.Create(z); err != nil {
-		if e, ok := err.(*rest.Error); ok {
+		if e, ok := err.(*ns1.Error); ok {
 
 			return &s{s: fmt.Sprintf(e.Message+e.Resp.Status+": %d", e.Resp.StatusCode)}
 		}
