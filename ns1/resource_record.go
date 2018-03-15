@@ -132,11 +132,6 @@ func recordResource() *schema.Resource {
 					},
 				},
 			},
-			// Computed
-			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 		},
 		Create:   RecordCreate,
 		Read:     RecordRead,
