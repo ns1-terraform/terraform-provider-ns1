@@ -1,4 +1,9 @@
-## 1.0.1 (Unreleased)
+## 1.0.1 (March 15, 2018)
+
+* Metadata in regions is supported with certain caveats (lists must be alphabetical)
+* Updates to Go 1.10
+* Updates dependencies
+
 ## 1.0.0 (January 25, 2018)
 
 * Metadata support implemented for records, answers, and regions
