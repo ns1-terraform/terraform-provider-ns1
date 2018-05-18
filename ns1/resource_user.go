@@ -20,6 +20,7 @@ func userResource() *schema.Resource {
 		"username": {
 			Type:     schema.TypeString,
 			Required: true,
+			ForceNew: true,
 		},
 		"email": {
 			Type:     schema.TypeString,
