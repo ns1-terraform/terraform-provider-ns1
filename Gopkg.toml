@@ -9,7 +9,7 @@ ignored = [
 
 [[constraint]]
   name = "gopkg.in/ns1/ns1-go.v2"
-  revision = "1f132c4ac59d2c7022353a8824002a15deb66f1e"
+  revision = "03b09e404c10ef6d966b038f97364710db4f972f"
 
 [[constraint]]
   name = "github.com/fatih/structs"
