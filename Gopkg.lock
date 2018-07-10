@@ -240,11 +240,11 @@
     "rest/model/filter",
     "rest/model/monitor"
   ]
-  revision = "03b09e404c10ef6d966b038f97364710db4f972f"
+  revision = "85a531ec65f1335ab7b2239bbfc8cb4a3bace9c5"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "07a8f73de1443b31ae8fdebfcf3190457476523c5763eb139cba249e39eed339"
+  inputs-digest = "b8b263180c07fc5b52dca947c80b32ea7a9aa7a6a22f0b9367b8f79279a975a4"
   solver-name = "gps-cdcl"
   solver-version = 1
