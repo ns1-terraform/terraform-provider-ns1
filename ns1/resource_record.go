@@ -21,6 +21,7 @@ import (
 var recordTypeStringEnum *StringEnum = NewStringEnum([]string{
 	"A",
 	"AAAA",
+	"CAA",
 	"ALIAS",
 	"AFSDB",
 	"CNAME",
@@ -89,10 +90,6 @@ func recordResource() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"meta": {
-							Type:     schema.TypeMap,
-							Optional: true,
-						},
 					},
 				},
 			},
@@ -104,10 +101,6 @@ func recordResource() *schema.Resource {
 						"name": {
 							Type:     schema.TypeString,
 							Required: true,
-						},
-						"meta": {
-							Type:     schema.TypeMap,
-							Optional: true,
 						},
 					},
 				},
@@ -225,11 +218,9 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		regions := make([]map[string]interface{}, 0, len(r.Regions))
 
 		for _, k := range keys {
-			region := r.Regions[k]
-			newRegion := make(map[string]interface{})
-			newRegion["name"] = k
-			newRegion["meta"] = region.Meta.StringMap()
-			regions = append(regions, newRegion)
+			region := make(map[string]interface{})
+			region["name"] = k
+			regions = append(regions, region)
 		}
 		log.Printf("Setting regions %+v", regions)
 		err := d.Set("regions", regions)
@@ -245,11 +236,6 @@ func answerToMap(a dns.Answer) map[string]interface{} {
 	m["answer"] = strings.Join(a.Rdata, " ")
 	if a.RegionName != "" {
 		m["region"] = a.RegionName
-	}
-	if a.Meta != nil {
-		log.Println("got meta: ", a.Meta)
-		m["meta"] = a.Meta.StringMap()
-		log.Println(m["meta"])
 	}
 	return m
 }
@@ -274,16 +260,7 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			if v, ok := answer["region"]; ok {
 				a.RegionName = v.(string)
 			}
-
-			if v, ok := answer["meta"]; ok {
-				log.Println("answer meta", v)
-				a.Meta = data.MetaFromMap(v.(map[string]interface{}))
-				log.Println(a.Meta)
-				errs := a.Meta.Validate()
-				if len(errs) > 0 {
-					return errJoin(append([]error{errors.New("found error/s in answer metadata")}, errs...), ",")
-				}
-			}
+			// ignore metadata in answers now
 			al[i] = a
 		}
 		r.Answers = al
@@ -340,19 +317,8 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		for _, regionRaw := range regionSet.List() {
 			region := regionRaw.(map[string]interface{})
 			ns1R := data.Region{
+				// may need to make meta a pointer, i'm not sure if omitempty checks for a zero value or not
 				Meta: data.Meta{},
-			}
-
-			if v, ok := region["meta"]; ok {
-				log.Println("region meta", v)
-				meta := data.MetaFromMap(v.(map[string]interface{}))
-				log.Println("region meta object", meta)
-				ns1R.Meta = *meta
-				log.Println(ns1R.Meta)
-				errs := ns1R.Meta.Validate()
-				if len(errs) > 0 {
-					return errJoin(append([]error{errors.New("found error/s in region/group metadata")}, errs...), ",")
-				}
 			}
 			r.Regions[region["name"].(string)] = ns1R
 		}
