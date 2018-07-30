@@ -456,7 +456,7 @@
     "rest/model/filter",
     "rest/model/monitor"
   ]
-  revision = "1f132c4ac59d2c7022353a8824002a15deb66f1e"
+  revision = "038131c6a15b11c1254981a454f0b9db2cfc0797"
 
 [solve-meta]
   analyzer-name = "dep"

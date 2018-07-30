@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
-	"github.com/ns1/ns1-go/rest/model/data"
+	"gopkg.in/ns1/ns1-go.v2/rest/model/data"
 )
 
 func recordMeta() *schema.Resource {
@@ -86,7 +86,7 @@ func regionMeta() *schema.Resource {
 	}
 }
 
-func metaToResourceData(d *schema.ResourceData, meta *data.Meta) {
+func metaToResourceData(d *schema.ResourceData, meta *data.Meta) error {
 	d.Set("up", meta.Up)
 	d.Set("connections", meta.Connections)
 	d.Set("requests", meta.Requests)
@@ -105,46 +105,81 @@ func metaToResourceData(d *schema.ResourceData, meta *data.Meta) {
 	d.Set("note", meta.Note)
 	d.Set("usstate", meta.USState)
 	d.Set("weight", meta.Weight)
+	return nil
 }
 
-func resourceDataToMeta() {
-
+func resourceDataToMeta(d *schema.ResourceData) *data.Meta {
+	m := &data.Meta{}
+	if v, ok := d.GetOk("meta"); ok {
+		m = data.MetaFromMap(v.(map[string]interface{}))
+	}
+	return m
 }
 
 func RecordMetaCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r := dns.NewRecord(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
-	if err := resourceDataToRecord(r, d); err != nil {
+	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	if err != nil {
 		return err
 	}
-	if _, err := client.Records.Create(r); err != nil {
+
+	r.Meta = resourceDataToMeta(d)
+	if _, err := client.Records.Update(r); err != nil {
 		return err
 	}
 	return recordToResourceData(d, r)
 }
 
 func RecordMetaUpdate(d *schema.ResourceData, meta interface{}) error {
-	return nil
+	return RecordMetaCreate(d, meta)
 }
 
 func RecordMetaRead(d *schema.ResourceData, meta interface{}) error {
-	return nil
+	client := meta.(*ns1.Client)
+	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	if err != nil {
+		return err
+	}
+	return metaToResourceData(d, r.Meta)
 }
 
 func RecordMetaDelete(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ns1.Client)
+	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	if err != nil {
+		return err
+	}
+
+	r.Meta = &data.Meta{}
+
+	if  _, err := client.Records.Update(r); err != nil {
+		return err
+	}
+
+	d.SetId("")
 	return nil
 }
 
 func AnswerMetaCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r := dns.NewRecord(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
-	if err := resourceDataToRecord(r, d); err != nil {
+	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	if err != nil {
 		return err
 	}
-	if _, err := client.Records.Create(r); err != nil {
+
+	var m *data.Meta
+	a := d.Get("answer").(string)
+	for _, an := range r.Answers {
+		if an.String() == a {
+			m = data.MetaFromMap(d.Get("meta").(map[string]interface{}))
+			an.Meta = m
+		}
+	}
+
+	if _, err := client.Records.Update(r); err != nil {
 		return err
 	}
-	return recordToResourceData(d, r)
+	return metaToResourceData(d, m)
 }
 
 func AnswerMetaUpdate(d *schema.ResourceData, meta interface{}) error {
