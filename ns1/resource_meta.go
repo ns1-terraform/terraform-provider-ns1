@@ -34,16 +34,20 @@ func recordMeta() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"meta": {
-				Type: schema.TypeMap,
+				Type:     schema.TypeMap,
+				Required: true,
 			},
 			"zone": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"domain": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"type": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 		},
 
@@ -54,7 +58,6 @@ func recordMeta() *schema.Resource {
 		Importer: &schema.ResourceImporter{State: RecordStateFunc},
 	}
 }
-
 
 // recordMeta represents metadata at the answer level - in NS1's data model, this is metadata at the root level of the answer object
 // {
@@ -81,22 +84,27 @@ func recordMeta() *schema.Resource {
 //        ]
 //  }, ...
 func answerMeta() *schema.Resource {
-	return &schema.Resource {
+	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"meta": {
-				Type: schema.TypeMap,
+				Type:     schema.TypeMap,
+				Required: true,
 			},
 			"zone": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"domain": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"type": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"answer_id": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 		},
 		Create:   AnswerMetaCreate,
@@ -140,22 +148,27 @@ func answerMeta() *schema.Resource {
 //      }
 //    }, ...
 func regionMeta() *schema.Resource {
-	return &schema.Resource {
+	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"meta": {
-				Type: schema.TypeMap,
+				Type:     schema.TypeMap,
+				Required: true,
 			},
 			"zone": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"domain": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"type": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 			"region": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
+				Required: true,
 			},
 		},
 		Create:   RegionMetaCreate,
@@ -201,7 +214,7 @@ func resourceDataToMeta(d *schema.ResourceData) *data.Meta {
 // RecordMetaCreate creates a meta object at the top level of an NS1 record
 func RecordMetaCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
 	if err != nil {
 		return err
 	}
@@ -210,6 +223,7 @@ func RecordMetaCreate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := client.Records.Update(r); err != nil {
 		return err
 	}
+	d.SetId(r.String() + " meta")
 	return recordToResourceData(d, r)
 }
 
@@ -221,7 +235,7 @@ func RecordMetaUpdate(d *schema.ResourceData, meta interface{}) error {
 // RecordMetaRead reads metadata at the top level of an NS1 record
 func RecordMetaRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
 	if err != nil {
 		return err
 	}
@@ -231,14 +245,14 @@ func RecordMetaRead(d *schema.ResourceData, meta interface{}) error {
 // RecordMetaDelete deletes metadata at the top level of an NS1 record
 func RecordMetaDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
 	if err != nil {
 		return err
 	}
 
 	r.Meta = &data.Meta{}
 
-	if  _, err := client.Records.Update(r); err != nil {
+	if _, err := client.Records.Update(r); err != nil {
 		return err
 	}
 
@@ -249,7 +263,7 @@ func RecordMetaDelete(d *schema.ResourceData, meta interface{}) error {
 // AnswerMetaCreate creates metadata at the top level of an NS1 answer
 func AnswerMetaCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
 	if err != nil {
 		return err
 	}
@@ -279,7 +293,7 @@ func AnswerMetaUpdate(d *schema.ResourceData, meta interface{}) error {
 // AnswerMetaRead reads metadata at the top level of an NS1 answer
 func AnswerMetaRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
 	if err != nil {
 		return err
 	}
@@ -300,7 +314,7 @@ func AnswerMetaRead(d *schema.ResourceData, meta interface{}) error {
 // AnswerMetaDelete deletes metadata at the top level of an NS1 answer
 func AnswerMetaDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
 	if err != nil {
 		return err
 	}
@@ -322,7 +336,7 @@ func AnswerMetaDelete(d *schema.ResourceData, meta interface{}) error {
 // RegionMetaCreate creates metadata at the top level of an NS1 region
 func RegionMetaCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
 	if err != nil {
 		return err
 	}
@@ -352,7 +366,7 @@ func RegionMetaUpdate(d *schema.ResourceData, meta interface{}) error {
 // RegionMetaRead reads metadata at the top level of an NS1 region
 func RegionMetaRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
 	if err != nil {
 		return err
 	}
@@ -374,7 +388,7 @@ func RegionMetaRead(d *schema.ResourceData, meta interface{}) error {
 // RegionMetaDelete deletes metadata at the top level of an NS1 region
 func RegionMetaDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
 	if err != nil {
 		return err
 	}
