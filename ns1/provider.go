@@ -46,6 +46,9 @@ func Provider() terraform.ResourceProvider {
 			"ns1_user":          userResource(),
 			"ns1_apikey":        apikeyResource(),
 			"ns1_team":          teamResource(),
+			"ns1_record_meta": recordMeta(),
+			"ns1_answer_meta": answerMeta(),
+			"ns1_region_meta": regionMeta(),
 		},
 		ConfigureFunc: ns1Configure,
 	}
