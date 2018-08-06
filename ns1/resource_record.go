@@ -237,6 +237,7 @@ func answerToMap(a dns.Answer) map[string]interface{} {
 	if a.RegionName != "" {
 		m["region"] = a.RegionName
 	}
+	m["id"] = a.ID
 	return m
 }
 

@@ -3,10 +3,33 @@ package ns1
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
-	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/data"
 )
 
+// recordMeta represents metadata at the record level - in NS1's data model, this is metadata at the root level of the record object
+// {
+//   "_id" : "random_hash_here",
+//   "domain" : "example.domain.com",
+//   "use_client_subnet" : true,
+//   "answers" : [
+//     {
+//       "answer" : [
+//         "example.domain.com"
+//      ],
+//       "region" : "ec2-ap-south-1",
+//       "meta" : {
+//         "up" : {
+//           "feed" : "feed_id"
+//        }
+//      },
+//       "_id" : "answer_id"
+//    }
+//  ],
+//   "meta" : { # <---- this is the meta we're talking about
+//         "country" : [
+//           "GB"
+//        ]
+//  }, ...
 func recordMeta() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
@@ -32,6 +55,31 @@ func recordMeta() *schema.Resource {
 	}
 }
 
+
+// recordMeta represents metadata at the answer level - in NS1's data model, this is metadata at the root level of the answer object
+// {
+//   "_id" : "random_hash_here",
+//   "domain" : "example.domain.com",
+//   "use_client_subnet" : true,
+//   "answers" : [
+//     {
+//       "answer" : [
+//         "example.domain.com"
+//      ],
+//       "region" : "ec2-ap-south-1",
+//       "meta" : { # <--- this is the meta we're talking about
+//         "up" : {
+//           "feed" : "feed_id"
+//        }
+//      },
+//       "_id" : "answer_id"
+//    }
+//  ],
+//   "meta" : {
+//         "country" : [
+//           "GB"
+//        ]
+//  }, ...
 func answerMeta() *schema.Resource {
 	return &schema.Resource {
 		Schema: map[string]*schema.Schema{
@@ -47,7 +95,7 @@ func answerMeta() *schema.Resource {
 			"type": {
 				Type: schema.TypeString,
 			},
-			"answer": {
+			"answer_id": {
 				Type: schema.TypeString,
 			},
 		},
@@ -59,6 +107,38 @@ func answerMeta() *schema.Resource {
 	}
 }
 
+// regionMeta represents metadata at the region level - in NS1's data model, this is metadata at the root level of the region object
+// {
+//   "_id" : "random_hash_here",
+//   "domain" : "example.domain.com",
+//   "use_client_subnet" : true,
+//   "answers" : [
+//     {
+//       "answer" : [
+//         "example.domain.com"
+//      ],
+//       "region" : "ec2-ap-south-1",
+//       "meta" : {
+//         "up" : {
+//           "feed" : "feed_id"
+//        }
+//      },
+//       "_id" : "answer_id"
+//    }
+//  ],
+//   "meta" : { # <---- this is the meta we're talking about
+//         "country" : [
+//           "GB"
+//        ]
+//  },
+//  "regions" : {
+//     "ec2-ap-northeast-1" : {
+//       "meta" : { # <--- this is the meta we're talking about
+//         "country" : [
+//           "JP"
+//        ]
+//      }
+//    }, ...
 func regionMeta() *schema.Resource {
 	return &schema.Resource {
 		Schema: map[string]*schema.Schema{
@@ -86,6 +166,7 @@ func regionMeta() *schema.Resource {
 	}
 }
 
+// metaToResourceData converts a meta object to TF resource. This function omits the SetId call, so that call should be made in another function before this one
 func metaToResourceData(d *schema.ResourceData, meta *data.Meta) error {
 	d.Set("up", meta.Up)
 	d.Set("connections", meta.Connections)
@@ -108,6 +189,7 @@ func metaToResourceData(d *schema.ResourceData, meta *data.Meta) error {
 	return nil
 }
 
+// resourceDataToMeta converts resource data to metadata
 func resourceDataToMeta(d *schema.ResourceData) *data.Meta {
 	m := &data.Meta{}
 	if v, ok := d.GetOk("meta"); ok {
@@ -116,6 +198,7 @@ func resourceDataToMeta(d *schema.ResourceData) *data.Meta {
 	return m
 }
 
+// RecordMetaCreate creates a meta object at the top level of an NS1 record
 func RecordMetaCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
@@ -130,10 +213,12 @@ func RecordMetaCreate(d *schema.ResourceData, meta interface{}) error {
 	return recordToResourceData(d, r)
 }
 
+// RecordMetaUpdate updates metadata at the top level of an NS1 record
 func RecordMetaUpdate(d *schema.ResourceData, meta interface{}) error {
 	return RecordMetaCreate(d, meta)
 }
 
+// RecordMetaRead reads metadata at the top level of an NS1 record
 func RecordMetaRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
@@ -143,6 +228,7 @@ func RecordMetaRead(d *schema.ResourceData, meta interface{}) error {
 	return metaToResourceData(d, r.Meta)
 }
 
+// RecordMetaDelete deletes metadata at the top level of an NS1 record
 func RecordMetaDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
@@ -160,6 +246,7 @@ func RecordMetaDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
+// AnswerMetaCreate creates metadata at the top level of an NS1 answer
 func AnswerMetaCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
@@ -168,85 +255,140 @@ func AnswerMetaCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	var m *data.Meta
+	var id string
 	a := d.Get("answer").(string)
 	for _, an := range r.Answers {
 		if an.String() == a {
 			m = data.MetaFromMap(d.Get("meta").(map[string]interface{}))
 			an.Meta = m
+			id = an.ID
+		}
+	}
+	if _, err := client.Records.Update(r); err != nil {
+		return err
+	}
+	d.SetId(id)
+	return metaToResourceData(d, m)
+}
+
+// AnswerMetaUpdate updates metadata at the top level of an NS1 answer
+func AnswerMetaUpdate(d *schema.ResourceData, meta interface{}) error {
+	return AnswerMetaCreate(d, meta)
+}
+
+// AnswerMetaRead reads metadata at the top level of an NS1 answer
+func AnswerMetaRead(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ns1.Client)
+	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	if err != nil {
+		return err
+	}
+
+	var m *data.Meta
+	var id string
+	a := d.Get("answer").(string)
+	for _, an := range r.Answers {
+		if an.String() == a {
+			id = an.ID
+			m = an.Meta
+		}
+	}
+	d.SetId(id)
+	return metaToResourceData(d, m)
+}
+
+// AnswerMetaDelete deletes metadata at the top level of an NS1 answer
+func AnswerMetaDelete(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ns1.Client)
+	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	if err != nil {
+		return err
+	}
+
+	a := d.Get("answer").(string)
+	for _, an := range r.Answers {
+		if an.String() == a {
+			an.Meta = nil
 		}
 	}
 
 	if _, err := client.Records.Update(r); err != nil {
 		return err
 	}
+	d.SetId("")
+	return nil
+}
+
+// RegionMetaCreate creates metadata at the top level of an NS1 region
+func RegionMetaCreate(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ns1.Client)
+	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	if err != nil {
+		return err
+	}
+
+	var m *data.Meta
+	var id string
+	tfRegion := d.Get("region").(string)
+	for regionName, region := range r.Regions {
+		if regionName == tfRegion {
+			m = data.MetaFromMap(d.Get("meta").(map[string]interface{}))
+			region.Meta = *m
+			id = regionName
+		}
+	}
+	if _, err := client.Records.Update(r); err != nil {
+		return err
+	}
+	d.SetId(id)
 	return metaToResourceData(d, m)
 }
 
-func AnswerMetaUpdate(d *schema.ResourceData, meta interface{}) error {
-	return nil
-}
-
-func AnswerMetaRead(d *schema.ResourceData, meta interface{}) error {
-	return nil
-}
-
-func AnswerMetaDelete(d *schema.ResourceData, meta interface{}) error {
-	return nil
-}
-
-func RegionMetaCreate(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ns1.Client)
-	r := dns.NewRecord(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
-	if err := resourceDataToRecord(r, d); err != nil {
-		return err
-	}
-	if _, err := client.Records.Create(r); err != nil {
-		return err
-	}
-	return recordToResourceData(d, r)
-}
-
+// RegionMetaUpdate updates metadata at the top level of an NS1 region
 func RegionMetaUpdate(d *schema.ResourceData, meta interface{}) error {
-	return nil
+	return RegionMetaCreate(d, meta)
 }
 
+// RegionMetaRead reads metadata at the top level of an NS1 region
 func RegionMetaRead(d *schema.ResourceData, meta interface{}) error {
-	return nil
+	client := meta.(*ns1.Client)
+	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	if err != nil {
+		return err
+	}
+
+	var m *data.Meta
+	var id string
+	tfRegion := d.Get("region").(string)
+	for regionName, region := range r.Regions {
+		if regionName == tfRegion {
+			m = &region.Meta
+			id = regionName
+		}
+	}
+
+	d.SetId(id)
+	return metaToResourceData(d, m)
 }
 
+// RegionMetaDelete deletes metadata at the top level of an NS1 region
 func RegionMetaDelete(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ns1.Client)
+	r, _ , err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	if err != nil {
+		return err
+	}
+
+	var m *data.Meta
+	tfRegion := d.Get("region").(string)
+	for regionName, region := range r.Regions {
+		if regionName == tfRegion {
+			region.Meta = *m
+		}
+	}
+	if _, err := client.Records.Update(r); err != nil {
+		return err
+	}
+	d.SetId("")
 	return nil
 }
-
-// RecordRead reads the DNS record from ns1
-//func RecordRead(d *schema.ResourceData, meta interface{}) error {
-//	client := meta.(*ns1.Client)
-//
-//	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
-//	if err != nil {
-//		return err
-//	}
-//
-//	return recordToResourceData(d, r)
-//}
-//
-//// RecordDelete deletes the DNS record from ns1
-//func RecordDelete(d *schema.ResourceData, meta interface{}) error {
-//	client := meta.(*ns1.Client)
-//	_, err := client.Records.Delete(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
-//	d.SetId("")
-//	return err
-//}
-//
-//// RecordUpdate updates the given dns record in ns1
-//func RecordUpdate(d *schema.ResourceData, meta interface{}) error {
-//	client := meta.(*ns1.Client)
-//	r := dns.NewRecord(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
-//	if err := resourceDataToRecord(r, d); err != nil {
-//		return err
-//	}
-//	if _, err := client.Records.Update(r); err != nil {
-//		return err
-//	}
-//	return recordToResourceData(d, r)
-//}
