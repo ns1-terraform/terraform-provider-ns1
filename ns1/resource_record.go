@@ -275,15 +275,7 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 				a.RegionName = v.(string)
 			}
 
-			if v, ok := answer["meta"]; ok {
-				log.Println("answer meta", v)
-				a.Meta = data.MetaFromMap(v.(map[string]interface{}))
-				log.Println(a.Meta)
-				errs := a.Meta.Validate()
-				if len(errs) > 0 {
-					return errJoin(append([]error{errors.New("found error/s in answer metadata")}, errs...), ",")
-				}
-			}
+			// handle meta here once 0.12-dev can be tested
 			al[i] = a
 		}
 		r.Answers = al
@@ -341,18 +333,6 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			region := regionRaw.(map[string]interface{})
 			ns1R := data.Region{
 				Meta: data.Meta{},
-			}
-
-			if v, ok := region["meta"]; ok {
-				log.Println("region meta", v)
-				meta := data.MetaFromMap(v.(map[string]interface{}))
-				log.Println("region meta object", meta)
-				ns1R.Meta = *meta
-				log.Println(ns1R.Meta)
-				errs := ns1R.Meta.Validate()
-				if len(errs) > 0 {
-					return errJoin(append([]error{errors.New("found error/s in region/group metadata")}, errs...), ",")
-				}
 			}
 			r.Regions[region["name"].(string)] = ns1R
 		}

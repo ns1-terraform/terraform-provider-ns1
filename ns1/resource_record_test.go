@@ -312,33 +312,33 @@ resource "ns1_record" "it" {
     answer = "test2.terraform-record-test-%s.io"
     region = "ny"
 
-     meta {
-       weight = 5
-       up = true
-     }
+     //meta {
+     //  weight = 5
+     //  up = true
+     //}
 	},
 	{
 		answer = "test3.terraform-record-test-%s.io"
 		region = "ny"
-		meta {
-			weight = 4
-			up = true
-		}
+		//meta {
+		//	weight = 4
+		//	up = true
+		//}
 	}
   ]
 
   regions = [{
     name = "ny"
-	meta {
+	//meta {
 	// these must be alphabetical
-		country = "CA,MX,US"
-	}
+	//	country = "CA,MX,US"
+	//}
 	},
 	{
 		name = "wa"
-		meta {
-			country = "MX"
-		}
+		//meta {
+		//	country = "MX"
+		//}
 	}
 ]
 
