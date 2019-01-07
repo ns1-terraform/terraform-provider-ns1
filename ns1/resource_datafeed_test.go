@@ -18,7 +18,7 @@ func TestAccDataFeed_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckDataFeedDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataFeedBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataFeedExists("ns1_datafeed.foobar", "ns1_datasource.api", &dataFeed, t),
@@ -37,7 +37,7 @@ func TestAccDataFeed_updated(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckDataFeedDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataFeedBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataFeedExists("ns1_datafeed.foobar", "ns1_datasource.api", &dataFeed, t),
@@ -45,7 +45,7 @@ func TestAccDataFeed_updated(t *testing.T) {
 					testAccCheckDataFeedConfig(&dataFeed, "label", "exampledc2"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccDataFeedUpdated,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataFeedExists("ns1_datafeed.foobar", "ns1_datasource.api", &dataFeed, t),

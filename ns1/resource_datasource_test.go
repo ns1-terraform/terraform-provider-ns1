@@ -18,7 +18,7 @@ func TestAccDataSource_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckDataSourceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataSourceExists("ns1_datasource.foobar", &dataSource),
@@ -37,7 +37,7 @@ func TestAccDataSource_updated(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckDataSourceDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccDataSourceBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataSourceExists("ns1_datasource.foobar", &dataSource),
@@ -45,7 +45,7 @@ func TestAccDataSource_updated(t *testing.T) {
 					testAccCheckDataSourceType(&dataSource, "nsone_v1"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccDataSourceUpdated,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDataSourceExists("ns1_datasource.foobar", &dataSource),
