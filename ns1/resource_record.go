@@ -74,6 +74,11 @@ func recordResource() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"short_answers": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+			},
 			"answers": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -253,12 +258,22 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 	r.ID = d.Id()
 	log.Printf("answers from template: %+v, %T\n", d.Get("answers"), d.Get("answers"))
 
+	if shortAnswers := d.Get("short_answers").([]interface{}); len(shortAnswers) > 0 {
+		for _, answerRaw := range shortAnswers {
+			answer := answerRaw.(string)
+			switch d.Get("type") {
+			case "TXT", "SPF":
+				r.AddAnswer(dns.NewTXTAnswer(answer))
+			default:
+				r.AddAnswer(dns.NewAnswer(strings.Split(answer, " ")))
+			}
+		}
+	}
 	if answers := d.Get("answers").([]interface{}); len(answers) > 0 {
-		al := make([]*dns.Answer, len(answers))
-		log.Println("number of answers found:", len(answers))
-		for i, answerRaw := range answers {
+		for _, answerRaw := range answers {
 			answer := answerRaw.(map[string]interface{})
 			var a *dns.Answer
+
 			v := answer["answer"].(string)
 			switch d.Get("type") {
 			case "TXT", "SPF":
@@ -266,6 +281,7 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			default:
 				a = dns.NewAnswer(strings.Split(v, " "))
 			}
+
 			if v, ok := answer["region"]; ok {
 				a.RegionName = v.(string)
 			}
@@ -279,17 +295,19 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 					return errJoin(append([]error{errors.New("found error/s in answer metadata")}, errs...), ",")
 				}
 			}
-			al[i] = a
-		}
-		r.Answers = al
-		if _, ok := d.GetOk("link"); ok {
-			return errors.New("cannot have both link and answers in a record")
+
+			r.AddAnswer(a)
 		}
 	}
+	log.Println("number of answers found:", len(r.Answers))
+
 	if v, ok := d.GetOk("ttl"); ok {
 		r.TTL = v.(int)
 	}
 	if v, ok := d.GetOk("link"); ok {
+		if len(r.Answers) > 0 {
+			return errors.New("cannot have both link and answers in a record")
+		}
 		r.LinkTo(v.(string))
 	}
 
