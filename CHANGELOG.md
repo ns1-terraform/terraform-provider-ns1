@@ -1,4 +1,7 @@
-## 1.0.1 (Unreleased)
+## 1.0.1 (January 8, 2019)
+
+* Add support for short_answers in record resources
+
 ## 1.0.0 (January 25, 2018)
 
 * Metadata support implemented for records, answers, and regions
