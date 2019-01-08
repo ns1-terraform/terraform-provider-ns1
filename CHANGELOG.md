@@ -1,4 +1,4 @@
-## 1.0.1 (January 8, 2019)
+## 1.1.0 (Unreleased)
 
 * Add support for short_answers in record resources
 
