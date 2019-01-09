@@ -19,7 +19,7 @@ func TestAccMonitoringJob_basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMonitoringJobDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccMonitoringJobBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),
@@ -49,7 +49,7 @@ func TestAccMonitoringJob_updated(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckMonitoringJobDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccMonitoringJobBasic,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),
@@ -68,7 +68,7 @@ func TestAccMonitoringJob_updated(t *testing.T) {
 					testAccCheckMonitoringJobRuleKey(&mj, "output"),
 				),
 			},
-			resource.TestStep{
+			{
 				Config: testAccMonitoringJobUpdated,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),

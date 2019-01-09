@@ -71,7 +71,7 @@ func zoneResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"networks": &schema.Schema{
+			"networks": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
