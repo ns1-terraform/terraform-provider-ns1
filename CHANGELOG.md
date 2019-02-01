@@ -1,4 +1,9 @@
-## 1.2.0 (Unreleased)
+## 1.1.1 (Unreleased)
+
+BUG FIXES:
+
+* resource/zone: Make `networks` field computed
+
 ## 1.1.0 (January 08, 2019)
 
 * Add support for short_answers in record resources
