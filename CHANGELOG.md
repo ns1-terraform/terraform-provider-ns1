@@ -1,4 +1,9 @@
 ## 1.1.2 (Unreleased)
+
+BUG FIXES:
+
+* resource/record: Don't try to convert config values to ints
+
 ## 1.1.1 (February 01, 2019)
 
 BUG FIXES:
