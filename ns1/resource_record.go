@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/fatih/structs"
@@ -336,13 +335,7 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 				f.Disabled = disabled.(bool)
 			}
 			if rawConfig, ok := fi["config"]; ok {
-				for k, v := range rawConfig.(map[string]interface{}) {
-					if i, err := strconv.Atoi(v.(string)); err == nil {
-						f.Config[k] = i
-					} else {
-						f.Config[k] = v
-					}
-				}
+				f.Config = rawConfig.(map[string]interface{})
 			}
 			filters[i] = &f
 		}
