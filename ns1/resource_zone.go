@@ -9,7 +9,7 @@ import (
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 )
 
-func zoneResource() *schema.Resource {
+func resourceZone() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			// Required
@@ -78,15 +78,15 @@ func zoneResource() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 			},
 		},
-		Create:   ZoneCreate,
-		Read:     ZoneRead,
-		Update:   ZoneUpdate,
-		Delete:   ZoneDelete,
-		Importer: &schema.ResourceImporter{State: ZoneStateFunc},
+		Create:   resourceZoneCreate,
+		Read:     resourceZoneRead,
+		Update:   resourceZoneUpdate,
+		Delete:   resourceZoneDelete,
+		Importer: &schema.ResourceImporter{State: resourceZoneStateFunc},
 	}
 }
 
-func zoneToResourceData(d *schema.ResourceData, z *dns.Zone) {
+func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) {
 	d.SetId(z.ID)
 	d.Set("hostmaster", z.Hostmaster)
 	d.Set("ttl", z.TTL)
@@ -140,50 +140,50 @@ func resourceToZoneData(z *dns.Zone, d *schema.ResourceData) {
 	}
 }
 
-// ZoneCreate creates the given zone in ns1
-func ZoneCreate(d *schema.ResourceData, meta interface{}) error {
+// resourceZoneCreate creates the given zone in ns1
+func resourceZoneCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	z := dns.NewZone(d.Get("zone").(string))
 	resourceToZoneData(z, d)
 	if _, err := client.Zones.Create(z); err != nil {
 		return err
 	}
-	zoneToResourceData(d, z)
+	resourceZoneToResourceData(d, z)
 	return nil
 }
 
-// ZoneRead reads the given zone data from ns1
-func ZoneRead(d *schema.ResourceData, meta interface{}) error {
+// resourceZoneRead reads the given zone data from ns1
+func resourceZoneRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	z, _, err := client.Zones.Get(d.Get("zone").(string))
 	if err != nil {
 		return err
 	}
-	zoneToResourceData(d, z)
+	resourceZoneToResourceData(d, z)
 	return nil
 }
 
-// ZoneDelete deteles the given zone from ns1
-func ZoneDelete(d *schema.ResourceData, meta interface{}) error {
+// resourceZoneDelete deteles the given zone from ns1
+func resourceZoneDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	_, err := client.Zones.Delete(d.Get("zone").(string))
 	d.SetId("")
 	return err
 }
 
-// ZoneUpdate updates the zone with given params in ns1
-func ZoneUpdate(d *schema.ResourceData, meta interface{}) error {
+// resourceZoneUpdate updates the zone with given params in ns1
+func resourceZoneUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	z := dns.NewZone(d.Get("zone").(string))
 	resourceToZoneData(z, d)
 	if _, err := client.Zones.Update(z); err != nil {
 		return err
 	}
-	zoneToResourceData(d, z)
+	resourceZoneToResourceData(d, z)
 	return nil
 }
 
-func ZoneStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceZoneStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	d.Set("zone", d.Id())
 	return []*schema.ResourceData{d}, nil
 }
