@@ -72,11 +72,9 @@ func dataSourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) {
 	d.Set("expiry", z.Expiry)
 	d.Set("networks", z.NetworkIDs)
 	d.Set("dns_servers", strings.Join(z.DNSServers[:], ","))
+	d.Set("link", z.Link)
 	if z.Secondary != nil && z.Secondary.Enabled {
 		d.Set("primary", z.Secondary.PrimaryIP)
-	}
-	if z.Link != nil && *z.Link != "" {
-		d.Set("link", *z.Link)
 	}
 }
 
