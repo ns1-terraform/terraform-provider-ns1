@@ -1,4 +1,9 @@
 ## 1.2.0 (Unreleased)
+
+FEATURES:
+
+* **New Data Source:** `ns1_zone` [GH-47]
+
 ## 1.1.2 (February 06, 2019)
 
 BUG FIXES:
