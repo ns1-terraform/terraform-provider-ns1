@@ -32,8 +32,11 @@ func Provider() terraform.ResourceProvider {
 				Description: descriptions["ignore_ssl"],
 			},
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"ns1_zone": dataSourceZone(),
+		},
 		ResourcesMap: map[string]*schema.Resource{
-			"ns1_zone":          zoneResource(),
+			"ns1_zone":          resourceZone(),
 			"ns1_record":        recordResource(),
 			"ns1_datasource":    dataSourceResource(),
 			"ns1_datafeed":      dataFeedResource(),
