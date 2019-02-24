@@ -107,11 +107,6 @@ func monitoringJobResource() *schema.Resource {
 					},
 				},
 			},
-			// Computed
-			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 		},
 		Create: MonitoringJobCreate,
 		Read:   MonitoringJobRead,
