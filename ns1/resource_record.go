@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 
 	"github.com/fatih/structs"
@@ -223,10 +224,16 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		}
 	}
 	if len(r.Regions) > 0 {
+		keys := make([]string, 0, len(r.Regions))
+		for regionName := range r.Regions {
+			keys = append(keys, regionName)
+		}
+		sort.Strings(keys)
 		regions := make([]map[string]interface{}, 0, len(r.Regions))
-		for regionName, region := range r.Regions {
+		for _, k := range keys {
 			newRegion := make(map[string]interface{})
-			newRegion["name"] = regionName
+			region := r.Regions[k]
+			newRegion["name"] = k
 			newRegion["meta"] = region.Meta.StringMap()
 			regions = append(regions, newRegion)
 		}
@@ -342,24 +349,35 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		r.Filters = filters
 	}
 	if regions := d.Get("regions").([]interface{}); len(regions) > 0 {
+		keys := make([]string, 0, len(regions))
 		for _, regionRaw := range regions {
 			region := regionRaw.(map[string]interface{})
-			ns1R := data.Region{
-				Meta: data.Meta{},
-			}
+			keys = append(keys, region["name"].(string))
+		}
+		sort.Strings(keys)
 
-			if v, ok := region["meta"]; ok {
-				log.Println("region meta", v)
-				meta := data.MetaFromMap(v.(map[string]interface{}))
-				log.Println("region meta object", meta)
-				ns1R.Meta = *meta
-				log.Println(ns1R.Meta)
-				errs := ns1R.Meta.Validate()
-				if len(errs) > 0 {
-					return errJoin(append([]error{errors.New("found error/s in region/group metadata")}, errs...), ",")
+		for _, k := range keys {
+			for _, regionRaw := range regions {
+				region := regionRaw.(map[string]interface{})
+				if region["name"].(string) == k {
+					ns1R := data.Region{
+						Meta: data.Meta{},
+					}
+
+					if v, ok := region["meta"]; ok {
+						log.Println("region meta", v)
+						meta := data.MetaFromMap(v.(map[string]interface{}))
+						log.Println("region meta object", meta)
+						ns1R.Meta = *meta
+						log.Println(ns1R.Meta)
+						errs := ns1R.Meta.Validate()
+						if len(errs) > 0 {
+							return errJoin(append([]error{errors.New("found error/s in region/group metadata")}, errs...), ",")
+						}
+					}
+					r.Regions[region["name"].(string)] = ns1R
 				}
 			}
-			r.Regions[region["name"].(string)] = ns1R
 		}
 	}
 	return nil
