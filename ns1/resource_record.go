@@ -349,35 +349,24 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		r.Filters = filters
 	}
 	if regions := d.Get("regions").([]interface{}); len(regions) > 0 {
-		keys := make([]string, 0, len(regions))
 		for _, regionRaw := range regions {
 			region := regionRaw.(map[string]interface{})
-			keys = append(keys, region["name"].(string))
-		}
-		sort.Strings(keys)
+			ns1R := data.Region{
+				Meta: data.Meta{},
+			}
 
-		for _, k := range keys {
-			for _, regionRaw := range regions {
-				region := regionRaw.(map[string]interface{})
-				if region["name"].(string) == k {
-					ns1R := data.Region{
-						Meta: data.Meta{},
-					}
-
-					if v, ok := region["meta"]; ok {
-						log.Println("region meta", v)
-						meta := data.MetaFromMap(v.(map[string]interface{}))
-						log.Println("region meta object", meta)
-						ns1R.Meta = *meta
-						log.Println(ns1R.Meta)
-						errs := ns1R.Meta.Validate()
-						if len(errs) > 0 {
-							return errJoin(append([]error{errors.New("found error/s in region/group metadata")}, errs...), ",")
-						}
-					}
-					r.Regions[region["name"].(string)] = ns1R
+			if v, ok := region["meta"]; ok {
+				log.Println("region meta", v)
+				meta := data.MetaFromMap(v.(map[string]interface{}))
+				log.Println("region meta object", meta)
+				ns1R.Meta = *meta
+				log.Println(ns1R.Meta)
+				errs := ns1R.Meta.Validate()
+				if len(errs) > 0 {
+					return errJoin(append([]error{errors.New("found error/s in region/group metadata")}, errs...), ",")
 				}
 			}
+			r.Regions[region["name"].(string)] = ns1R
 		}
 	}
 	return nil
