@@ -10,10 +10,6 @@ import (
 func dataFeedResource() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"source_id": {
 				Type:     schema.TypeString,
 				Required: true,

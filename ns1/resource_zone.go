@@ -58,11 +58,6 @@ func resourceZone() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			// Computed
-			"id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"dns_servers": {
 				Type:     schema.TypeString,
 				Computed: true,
