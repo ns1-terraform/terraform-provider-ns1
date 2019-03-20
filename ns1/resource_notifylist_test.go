@@ -136,7 +136,7 @@ func testAccCheckNotifyListName(nl *monitor.NotifyList, expected string) resourc
 const testAccNotifyListBasic = `
 resource "ns1_notifylist" "test" {
   name = "terraform test"
-  notifications = {
+  notifications {
     type = "webhook"
     config = {
       url = "http://localhost:9090"
@@ -148,7 +148,7 @@ resource "ns1_notifylist" "test" {
 const testAccNotifyListUpdated = `
 resource "ns1_notifylist" "test" {
   name = "terraform test"
-  notifications = {
+  notifications {
     type = "webhook"
     config = {
       url = "http://localhost:9091"

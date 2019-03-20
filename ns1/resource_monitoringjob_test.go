@@ -292,7 +292,7 @@ resource "ns1_monitoringjob" "it" {
     port = 443
     host = "1.2.3.4"
   }
-  rules = {
+  rules {
     value = "200 OK"
     comparison = "contains"
     key = "output"
@@ -317,7 +317,7 @@ resource "ns1_monitoringjob" "it" {
     port = 443
     host = "1.1.1.1"
   }
-  rules = {
+  rules {
     value = 200
     comparison = "<="
     key = "connect"

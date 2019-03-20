@@ -243,7 +243,7 @@ func testAccCheckRecordAnswerRdata(r *dns.Record, idx int, expected string) reso
 
 const testAccRecordBasic = `
 resource "ns1_record" "it" {
-  zone              = "${ns1_zone.test.zone}"
+  zone              = ns1_zone.test.zone
   domain            = "test.${ns1_zone.test.zone}"
   type              = "CNAME"
   ttl               = 60
@@ -350,7 +350,7 @@ resource "ns1_record" "spf" {
   type              = "SPF"
   ttl               = 86400
   use_client_subnet = "true"
-  answers = {
+  answers {
     answer = "v=DKIM1; k=rsa; p=XXXXXXXX"
   }
 }
