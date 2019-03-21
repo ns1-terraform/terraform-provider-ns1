@@ -150,7 +150,7 @@ resource "ns1_datasource" "api" {
 resource "ns1_datafeed" "foobar" {
   name = "terraform test"
   source_id = "${ns1_datasource.api.id}"
-  config {
+  config = {
     label = "exampledc2"
   }
 }`
@@ -164,7 +164,7 @@ resource "ns1_datasource" "api" {
 resource "ns1_datafeed" "foobar" {
   name = "terraform test"
   source_id = "${ns1_datasource.api.id}"
-  config {
+  config = {
     label = "exampledc3"
   }
 }`
