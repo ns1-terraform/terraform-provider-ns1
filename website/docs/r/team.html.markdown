@@ -17,10 +17,9 @@ Provides a NS1 Team resource. This can be used to create, modify, and delete tea
 resource "ns1_team" "example" {
   name = "Example team"
 
-  permissions = {
-    dns_view_zones       = false
-    account_manage_users = false
-  }
+  # Configure permissions
+  dns_view_zones       = false
+  account_manage_users = false
 }
 ```
 
@@ -29,10 +28,6 @@ resource "ns1_team" "example" {
 The following arguments are supported:
 
 * `name` - (Required) The free form name of the team.
-* `permissions` - (Optional) The allowed permissions of the team. Permissions documented below.
-
-Permissions (`permissions`) support the following:
-
 * `dns_view_zones` - (Optional) Whether the team can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the team can modify the accounts zones.
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.

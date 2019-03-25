@@ -23,15 +23,15 @@ resource "ns1_record" "www" {
   type   = "CNAME"
   ttl    = 60
 
-  answers = {
+  answers {
     answer = "sub1.${ns1_zone.tld.zone}"
   }
 
-  answers = {
+  answers {
     answer = "sub2.${ns1_zone.tld.zone}"
   } 
 
-  filters = {
+  filters {
     filter = "select_first_n"
 
     config = {
