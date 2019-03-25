@@ -221,7 +221,7 @@ google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
 google.golang.org/grpc/transport
-# gopkg.in/ns1/ns1-go.v2 v2.0.0-20180709153726-85a531ec65f1
+# gopkg.in/ns1/ns1-go.v2 v2.0.0-20190322154155-0dafb5275fd1
 gopkg.in/ns1/ns1-go.v2/rest
 gopkg.in/ns1/ns1-go.v2/rest/model/account
 gopkg.in/ns1/ns1-go.v2/rest/model/data

@@ -276,5 +276,7 @@ google.golang.org/grpc v0.0.0-20170809211603-7657092a1303/go.mod h1:yo6s7OP7yaDg
 gopkg.in/check.v1 v1.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/ns1/ns1-go.v2 v2.0.0-20180709153726-85a531ec65f1 h1:oI06FzeavrGiypycDSGtJb1GzXQMQB6Wqk+Hnn+QiBY=
 gopkg.in/ns1/ns1-go.v2 v2.0.0-20180709153726-85a531ec65f1/go.mod h1:VV+3haRsgDiVLxyifmMBrBIuCWFBPYKbRssXB9z67Hw=
+gopkg.in/ns1/ns1-go.v2 v2.0.0-20190322154155-0dafb5275fd1 h1:+fgY/3ngqdBW9oLQCMwL5g+QRkKFPJH05fx2/pipqRQ=
+gopkg.in/ns1/ns1-go.v2 v2.0.0-20190322154155-0dafb5275fd1/go.mod h1:VV+3haRsgDiVLxyifmMBrBIuCWFBPYKbRssXB9z67Hw=
 gopkg.in/yaml.v2 v2.0.0-20170407172122-cd8b52f8269e h1:o/mfNjxpTLivuKEfxzzwrJ8PmulH2wEp7t713uMwKAA=
 gopkg.in/yaml.v2 v2.0.0-20170407172122-cd8b52f8269e/go.mod h1:JAlM8MvJe8wmxCU4Bli9HhUf9+ttbYbLASfIpnQbh74=
