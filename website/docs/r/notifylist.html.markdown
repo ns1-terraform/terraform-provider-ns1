@@ -15,14 +15,14 @@ Provides a NS1 Notify List resource. This can be used to create, modify, and del
 ```hcl
 resource "ns1_notifylist" "nl" {
   name = "my notify list"
-  notifications = {
+  notifications {
     type = "webhook"
     config = {
       url = "http://www.mywebhook.com"
     }
   }
 
-  notifications = {
+  notifications {
     type = "email"
     config = {
       email = "test@test.com"

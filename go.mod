@@ -7,5 +7,5 @@ require (
 	github.com/smartystreets/goconvey v0.0.0-20190222223459-a17d461953aa // indirect
 	golang.org/x/sys v0.0.0-20190222171317-cd391775e71e // indirect
 	golang.org/x/text v0.3.0 // indirect
-	gopkg.in/ns1/ns1-go.v2 v2.0.0-20180709153726-85a531ec65f1
+	gopkg.in/ns1/ns1-go.v2 v2.0.0-20190322154155-0dafb5275fd1
 )

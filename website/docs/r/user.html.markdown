@@ -16,10 +16,8 @@ Provides a NS1 User resource. Creating a user sends an invitation email to the u
 resource "ns1_team" "example" {
   name = "Example team"
 
-  permissions = {
-    dns_view_zones       = false
-    account_manage_users = false
-  }
+  dns_view_zones       = false
+  account_manage_users = false
 }
 
 resource "ns1_user" "example" {
@@ -39,10 +37,6 @@ The following arguments are supported:
 * `email` - (Required) The email address of the user.
 * `notify` - (Required) The Whether or not to notify the user of specified events. Only `billing` is available currently.
 * `teams` - (Required) The teams that the user belongs to.
-* `permissions` - (Optional) The allowed permissions of the user. Permissions documented below.
-
-Permissions (`permissions`) support the following:
-
 * `dns_view_zones` - (Optional) Whether the user can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the user can modify the accounts zones.
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.

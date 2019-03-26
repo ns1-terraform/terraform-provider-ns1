@@ -21,10 +21,9 @@ resource "ns1_apikey" "example" {
   name  = "Example key"
   teams = ["${ns1_team.example.id}"]
 
-  permissions = {
-    dns_view_zones       = false
-    account_manage_users = false
-  }
+  # Configure permissions 
+  dns_view_zones       = false
+  account_manage_users = false
 }
 ```
 
@@ -35,10 +34,6 @@ The following arguments are supported:
 * `name` - (Required) The free form name of the apikey.
 * `key` - (Required) The apikeys authentication token.
 * `teams` - (Required) The teams that the apikey belongs to.
-* `permissions` - (Optional) The allowed permissions of the apikey. Permissions documented below.
-
-Permissions (`permissions`) support the following:
-
 * `dns_view_zones` - (Optional) Whether the apikey can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the apikey can modify the accounts zones.
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.

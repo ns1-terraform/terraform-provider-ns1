@@ -3,7 +3,7 @@ resource "ns1_notifylist" "test" {
   name = "terraform test"
 
   #optional
-  notifications = {
+  notifications {
     type = "webhook"
     config = {
       url = "http://localhost:9090"

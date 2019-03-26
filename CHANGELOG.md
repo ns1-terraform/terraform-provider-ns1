@@ -2,7 +2,14 @@
 
 FEATURES:
 
-* **New Data Source:** `ns1_zone` [GH-47]
+* **New Data Source:** `ns1_zone` [#47](https://github.com/terraform-providers/terraform-provider-ns1/pull/47)
+
+IMPROVEMENTS:
+
+* Migrate to Go Modules [#48](https://github.com/terraform-providers/terraform-provider-ns1/pull/48))
+* Refactor acceptance test fixtures to Terraform 0.12 syntax [#50](https://github.com/terraform-providers/terraform-provider-ns1/pull/50)
+* Update website and examples to Terraform 0.12 syntax [#51](https://github.com/terraform-providers/terraform-provider-ns1/pull/51)
+* Update ns1-go module latest version [#51](https://github.com/terraform-providers/terraform-provider-ns1/pull/51)
 
 ## 1.1.2 (February 06, 2019)
 

@@ -28,7 +28,7 @@ resource "ns1_monitoringjob" "uswest_monitor" {
     host = "example-elb-uswest.aws.amazon.com"
   }
 
-  rules = {
+  rules {
     value      = "200 OK"
     comparison = "contains"
     key        = "output"
