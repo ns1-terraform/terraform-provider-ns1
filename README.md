@@ -187,6 +187,9 @@ Due to some limitations in Terraform's support of nested maplike objects,
 there are some irregularities in supporting metadata, however metadata is
 now supported at every level.
 
+Note that regions should be sorted by name in the record's regions list,
+otherwise terraform will detect changes to the record when none actually exist.
+
 A record _requires_ a [Zone](#zone)
 
 _Example_
@@ -284,7 +287,7 @@ resource "ns1_user" "u" {
   name = "terraform acc test user %s"
   username = "tf_acc_test_user_%s"
   email = "tf_acc_test_ns1@hashicorp.com"
-  
+
   #optional
   teams = ["${ns1_team.t.id}"]
   notify {

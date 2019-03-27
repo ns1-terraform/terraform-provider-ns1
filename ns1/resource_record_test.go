@@ -315,17 +315,17 @@ resource "ns1_record" "it" {
     // }
   }
 
+	regions {
+    name = "ny"
+    // meta {
+    //   us_state = ["NY"]
+    // }
+  }
+	
   regions {
     name = "wa"
     // meta {
     //   us_state = ["WA"]
-    // }
-  }
-
-  regions {
-    name = "ny"
-    // meta {
-    //   us_state = ["NY"]
     // }
   }
 
