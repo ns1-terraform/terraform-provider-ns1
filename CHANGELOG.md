@@ -1,4 +1,9 @@
-## 1.3.0 (Unreleased)
+## 1.2.1 (Unreleased)
+
+BUG FIXES:
+
+* resource/record: Sort regions inside records [#49](https://github.com/terraform-providers/terraform-provider-ns1/pull/49)
+
 ## 1.2.0 (March 26, 2019)
 
 FEATURES:
