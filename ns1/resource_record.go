@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 
 	"github.com/fatih/structs"
@@ -218,10 +219,16 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		}
 	}
 	if len(r.Regions) > 0 {
+		keys := make([]string, 0, len(r.Regions))
+		for regionName := range r.Regions {
+			keys = append(keys, regionName)
+		}
+		sort.Strings(keys)
 		regions := make([]map[string]interface{}, 0, len(r.Regions))
-		for regionName, region := range r.Regions {
+		for _, k := range keys {
 			newRegion := make(map[string]interface{})
-			newRegion["name"] = regionName
+			region := r.Regions[k]
+			newRegion["name"] = k
 			newRegion["meta"] = region.Meta.StringMap()
 			regions = append(regions, newRegion)
 		}
