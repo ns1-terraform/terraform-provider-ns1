@@ -2,7 +2,8 @@
 
 BUG FIXES:
 
-* resource/record: Sort regions inside records [#49](https://github.com/terraform-providers/terraform-provider-ns1/pull/49)
+* resource/user: Force new user on modification of username [#28](https://github.com/terraform-providers/terraform-provider-ns1/pull/28).  Thanks to @jamesgoodhouse!
+* resource/record: Sort regions inside records [#49](https://github.com/terraform-providers/terraform-provider-ns1/pull/49). Thanks to @bparli!
 
 ## 1.2.0 (March 26, 2019)
 
