@@ -1,9 +1,9 @@
-## 1.2.1 (Unreleased)
+## 1.3.0 (Unreleased)
 
 BUG FIXES:
 
 * resource/user: Force new user on modification of username [#28](https://github.com/terraform-providers/terraform-provider-ns1/pull/28).  Thanks to @jamesgoodhouse!
-* resource/record: Sort regions inside records [#49](https://github.com/terraform-providers/terraform-provider-ns1/pull/49). Thanks to @bparli!
+* resource/record: Sort regions inside records to ensure deterministic comparison between configuration and current state [#49](https://github.com/terraform-providers/terraform-provider-ns1/pull/49). Regions in a record's region list will now need to be sorted alphanumerically by name, otherwise a modification will be detected when none actually exists. Thanks to @bparli!
 
 ## 1.2.0 (March 26, 2019)
 

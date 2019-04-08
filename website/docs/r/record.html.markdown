@@ -79,7 +79,7 @@ Answers (`answers`) support the following:
         answer = "v=DKIM1; k=rsa; p=XXXXXXXX"
 
    
-* `region` - (Optional) The region(or group) name that this answer belongs to.
+* `region` - (Optional) The region (or group) name that this answer belongs to.  Regions must be sorted alphanumberically by name, otherwise Terraform will detect changes to the record when none actually exist.
 
 Filters (`filters`) support the following:
 
