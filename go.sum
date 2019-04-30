@@ -278,5 +278,7 @@ gopkg.in/ns1/ns1-go.v2 v2.0.0-20180709153726-85a531ec65f1 h1:oI06FzeavrGiypycDSG
 gopkg.in/ns1/ns1-go.v2 v2.0.0-20180709153726-85a531ec65f1/go.mod h1:VV+3haRsgDiVLxyifmMBrBIuCWFBPYKbRssXB9z67Hw=
 gopkg.in/ns1/ns1-go.v2 v2.0.0-20190322154155-0dafb5275fd1 h1:+fgY/3ngqdBW9oLQCMwL5g+QRkKFPJH05fx2/pipqRQ=
 gopkg.in/ns1/ns1-go.v2 v2.0.0-20190322154155-0dafb5275fd1/go.mod h1:VV+3haRsgDiVLxyifmMBrBIuCWFBPYKbRssXB9z67Hw=
+gopkg.in/ns1/ns1-go.v2 v2.0.0-20190430170845-6c599e5e5790 h1:uKxXHnbIJUsvNr+8rlG4kuwKkSKhWN4tiqaAljJtq84=
+gopkg.in/ns1/ns1-go.v2 v2.0.0-20190430170845-6c599e5e5790/go.mod h1:VV+3haRsgDiVLxyifmMBrBIuCWFBPYKbRssXB9z67Hw=
 gopkg.in/yaml.v2 v2.0.0-20170407172122-cd8b52f8269e h1:o/mfNjxpTLivuKEfxzzwrJ8PmulH2wEp7t713uMwKAA=
 gopkg.in/yaml.v2 v2.0.0-20170407172122-cd8b52f8269e/go.mod h1:JAlM8MvJe8wmxCU4Bli9HhUf9+ttbYbLASfIpnQbh74=
