@@ -1,4 +1,9 @@
 ## 1.3.1 (Unreleased)
+
+IMPROVEMENTS:
+
+* Update ns1-go dependency to latest version [#54](https://github.com/terraform-providers/terraform-provider-ns1/pull/54). Thanks to @glennslaven!
+
 ## 1.3.0 (April 09, 2019)
 
 BUG FIXES:
