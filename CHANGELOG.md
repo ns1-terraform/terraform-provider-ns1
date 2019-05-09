@@ -1,8 +1,8 @@
 ## 1.4.0 (Unreleased)
 
-IMPROVEMENT:
+IMPROVEMENTS:
 
-* Update Terraform dependency to v0.12.0-rc1
+* Update Terraform dependency to v0.12.0-rc1 [#55](https://github.com/terraform-providers/terraform-provider-ns1/pull/55)
 
 ## 1.3.1 (April 30, 2019)
 
