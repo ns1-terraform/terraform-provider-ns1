@@ -1,4 +1,9 @@
-## 1.3.2 (Unreleased)
+## 1.4.0 (Unreleased)
+
+IMPROVEMENT:
+
+* Update Terraform dependency to v0.12.0-rc1
+
 ## 1.3.1 (April 30, 2019)
 
 IMPROVEMENTS:
