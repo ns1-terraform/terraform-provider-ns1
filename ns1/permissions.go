@@ -182,3 +182,11 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	}
 	return p
 }
+
+// removePermissionsMap resets a user's permissions to their zero values
+func removePermissionsMap(u *account.User) {
+	var p account.PermissionsMap
+	p.DNS.ZonesDeny = make([]string, 0)
+	p.DNS.ZonesAllow = make([]string, 0)
+	u.Permissions = p
+}
