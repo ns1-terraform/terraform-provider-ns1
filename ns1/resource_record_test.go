@@ -6,6 +6,7 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 
@@ -65,6 +66,29 @@ func TestAccRecord_updated(t *testing.T) {
 					testAccCheckRecordRegionName(&record, []string{"ny", "wa"}),
 					// testAccCheckRecordAnswerMetaWeight(&record, 5),
 					testAccCheckRecordAnswerRdata(&record, 0, "test2.terraform-record-test.io"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccRecord_meta(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("test.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordMeta(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordAnswerMetaIPPrefixes(&record, []string{"1.1.1.1/32", "2.2.2.2/32"}),
 				),
 			},
 		},
@@ -230,6 +254,25 @@ func testAccCheckRecordAnswerMetaWeight(r *dns.Record, expected float64) resourc
 	}
 }
 
+func testAccCheckRecordAnswerMetaIPPrefixes(r *dns.Record, expected []string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		recordAnswer := r.Answers[0]
+		recordMetas := recordAnswer.Meta
+		ipPrefixes := make([]string, len(recordMetas.IPPrefixes.([]interface{})))
+		//copy(ipPrefixes, recordMetas.IPPrefixes.([]string))
+		for i, v := range recordMetas.IPPrefixes.([]interface{}) {
+			ipPrefixes[i] = v.(string)
+		}
+
+		sort.Strings(ipPrefixes)
+		sort.Strings(expected)
+		if !reflect.DeepEqual(ipPrefixes, expected) {
+			return fmt.Errorf("ip-prefixes: got: %#v want: %#v", ipPrefixes, expected)
+		}
+		return nil
+	}
+}
+
 func testAccCheckRecordAnswerRdata(r *dns.Record, idx int, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		recordAnswer := r.Answers[0]
@@ -342,6 +385,28 @@ resource "ns1_zone" "test" {
   zone = "terraform-record-test.io"
 }
 `
+
+func testAccRecordMeta(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+	zone              = "${ns1_zone.test.zone}"
+	domain            = "test.${ns1_zone.test.zone}"
+	type              = "A"
+	answers {
+		answer = "1.2.3.4"
+
+		meta = {
+			weight = 5
+			ip_prefixes = "1.1.1.1/32,2.2.2.2/32"
+		}
+	}
+}
+
+resource "ns1_zone" "test" {
+	zone = "terraform-test-%s.io"
+}
+`, rString)
+}
 
 const testAccRecordSPF = `
 resource "ns1_record" "spf" {
