@@ -259,7 +259,6 @@ func testAccCheckRecordAnswerMetaIPPrefixes(r *dns.Record, expected []string) re
 		recordAnswer := r.Answers[0]
 		recordMetas := recordAnswer.Meta
 		ipPrefixes := make([]string, len(recordMetas.IPPrefixes.([]interface{})))
-		//copy(ipPrefixes, recordMetas.IPPrefixes.([]string))
 		for i, v := range recordMetas.IPPrefixes.([]interface{}) {
 			ipPrefixes[i] = v.(string)
 		}
