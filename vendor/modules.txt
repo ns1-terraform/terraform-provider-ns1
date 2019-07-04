@@ -294,7 +294,7 @@ google.golang.org/grpc/credentials/internal
 google.golang.org/grpc/balancer/base
 google.golang.org/grpc/binarylog/grpc_binarylog_v1
 google.golang.org/grpc/internal/syscall
-# gopkg.in/ns1/ns1-go.v2 v2.0.0-20190430170845-6c599e5e5790
+# gopkg.in/ns1/ns1-go.v2 v2.0.0-20190703192230-737a440630af
 gopkg.in/ns1/ns1-go.v2/rest
 gopkg.in/ns1/ns1-go.v2/rest/model/account
 gopkg.in/ns1/ns1-go.v2/rest/model/data
