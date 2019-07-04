@@ -1,4 +1,4 @@
-## 1.4.1 (Unreleased)
+## 1.4.1 (July 04, 2019)
 
 IMPROVEMENTS:
 * Update ns1-go dependency to latest version to fix bug when passing multiple `ip_prefixes` as comma delimited string [#57](https://github.com/terraform-providers/terraform-provider-ns1/pull/57)
