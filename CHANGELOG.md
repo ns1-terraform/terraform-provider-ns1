@@ -1,4 +1,9 @@
 ## 1.5.0 (Unreleased)
+
+FEATURES:
+
+* resource/notifylist: Adds support for all notifier types currently supported by SDK.  Returns error on unsupported notifier type. [#59](https://github.com/terraform-providers/terraform-provider-ns1/pull/59)
+
 ## 1.4.1 (July 04, 2019)
 
 IMPROVEMENTS:
