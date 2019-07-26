@@ -1,6 +1,7 @@
 package ns1
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -67,12 +68,22 @@ func resourceDataToNotifyList(nl *monitor.NotifyList, d *schema.ResourceData) er
 			config := ni["config"].(map[string]interface{})
 
 			switch ni["type"].(string) {
-			case "webhook":
-				ns[i] = monitor.NewWebNotification(config["url"].(string))
+			case "user":
+				ns[i] = monitor.NewUserNotification(config["user"].(string))
 			case "email":
 				ns[i] = monitor.NewEmailNotification(config["email"].(string))
 			case "datafeed":
 				ns[i] = monitor.NewFeedNotification(config["sourceid"].(string))
+			case "webhook":
+				ns[i] = monitor.NewWebNotification(config["url"].(string))
+			case "pagerduty":
+				ns[i] = monitor.NewPagerDutyNotification(config["service_key"].(string))
+			case "hipchat":
+				ns[i] = monitor.NewHipChatNotification(config["token"].(string), config["room"].(string))
+			case "slack":
+				ns[i] = monitor.NewSlackNotification(config["url"].(string), config["username"].(string), config["channel"].(string))
+			default:
+				return fmt.Errorf("%s is not a valid notifier type", ni["type"])
 			}
 		}
 		nl.Notifications = ns
