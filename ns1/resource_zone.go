@@ -52,11 +52,17 @@ func resourceZone() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			// TODO: test
 			"primary": {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
+			},
+			"additional_primaries": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"dns_servers": {
 				Type:     schema.TypeString,
@@ -93,6 +99,7 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) {
 	d.Set("dns_servers", strings.Join(z.DNSServers[:], ","))
 	if z.Secondary != nil && z.Secondary.Enabled {
 		d.Set("primary", z.Secondary.PrimaryIP)
+		d.Set("additional_primaries", z.Secondary.OtherIPs)
 	}
 	if z.Link != nil && *z.Link != "" {
 		d.Set("link", *z.Link)
@@ -121,6 +128,21 @@ func resourceToZoneData(z *dns.Zone, d *schema.ResourceData) {
 	}
 	if v, ok := d.GetOk("primary"); ok {
 		z.MakeSecondary(v.(string))
+	}
+	if v, ok := d.GetOk("additional_primaries"); ok {
+		otherIPsRaw := v.([]interface{})
+		z.Secondary.OtherIPs = make([]string, len(otherIPsRaw))
+		for i, otherIP := range otherIPsRaw {
+			z.Secondary.OtherIPs[i] = otherIP.(string)
+		}
+		// Fill a list of matching length with '53' for OtherPorts
+		// to match functionality of MakeSecondary for PrimaryPort
+		// TODO: Add ability to set custom OtherPorts and PrimaryPort
+		//otherPorts := make([]int, len(z.Secondary.OtherIPs))
+		z.Secondary.OtherPorts = make([]int, len(z.Secondary.OtherIPs))
+		for i := range z.Secondary.OtherPorts {
+			z.Secondary.OtherPorts[i] = 53
+		}
 	}
 	if v, ok := d.GetOk("link"); ok {
 		z.LinkTo(v.(string))

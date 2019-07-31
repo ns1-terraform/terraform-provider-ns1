@@ -69,6 +69,29 @@ func TestAccZone_updated(t *testing.T) {
 	})
 }
 
+func TestAccZone_secondary(t *testing.T) {
+	var zone dns.Zone
+	expectedOtherPorts := []int{53, 53}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccZonePrimary,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, "terraform-test-zone.io"),
+					resource.TestCheckResourceAttr("ns1_zone.it", "primary", "1.1.1.1"),
+					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.0", "2.2.2.2"),
+					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.1", "3.3.3.3"),
+					testAccCheckOtherPorts(&zone, expectedOtherPorts),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckZoneExists(n string, zone *dns.Zone) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -169,6 +192,20 @@ func testAccCheckZoneNxTTL(zone *dns.Zone, expected int) resource.TestCheckFunc 
 	}
 }
 
+func testAccCheckOtherPorts(zone *dns.Zone, expected []int) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if len(zone.Secondary.OtherPorts) != len(expected) {
+			return fmt.Errorf("other_ports: got: %d want %d", len(zone.Secondary.OtherPorts), len(expected))
+		}
+		for i, v := range zone.Secondary.OtherPorts {
+			if v != expected[i] {
+				return fmt.Errorf("other_ports[%d]: got: %d want %d", i, v, expected[i])
+			}
+		}
+		return nil
+	}
+}
+
 const testAccZoneBasic = `
 resource "ns1_zone" "it" {
   zone = "terraform-test-zone.io"
@@ -185,5 +222,18 @@ resource "ns1_zone" "it" {
   nx_ttl  = 3601
   # link    = "1.2.3.4.in-addr.arpa" # TODO
   # primary = "1.2.3.4.in-addr.arpa" # TODO
+}
+`
+
+const testAccZonePrimary = `
+resource "ns1_zone" "it" {
+  zone    = "terraform-test-zone.io"
+  ttl     = 10800
+  refresh = 3600
+  retry   = 300
+  expiry  = 2592000
+  nx_ttl  = 3601
+  primary = "1.1.1.1"
+  additional_primaries = ["2.2.2.2", "3.3.3.3"]
 }
 `
