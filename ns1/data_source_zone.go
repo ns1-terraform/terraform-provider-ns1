@@ -44,6 +44,13 @@ func dataSourceZone() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"additional_primaries": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"dns_servers": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -75,6 +82,7 @@ func dataSourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) {
 	d.Set("link", z.Link)
 	if z.Secondary != nil && z.Secondary.Enabled {
 		d.Set("primary", z.Secondary.PrimaryIP)
+		d.Set("additional_primaries", z.Secondary.OtherIPs)
 	}
 }
 

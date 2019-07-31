@@ -26,9 +26,18 @@ The following arguments are supported:
 
 * `zone` - (Required) The domain name of the zone.
 * `link` - (Optional) The target zone(domain name) to link to.
-* `ttl` - (Optional) The SOA TTL.
-* `refresh` - (Optional) The SOA Refresh.
-* `retry` - (Optional) The SOA Retry.
-* `expiry` - (Optional) The SOA Expiry.
-* `nx_ttl` - (Optional) The SOA NX TTL.
-* `primary` - (Optional) The primary zones' ip. This makes the zone a secondary.
+* `primary` - (Optional) The primary zones' IP. This makes the zone a secondary.
+* `additional_primaries` - (Optional) List of additional IPs for the primary zone.
+* `ttl` - (Optional/Computed) The SOA TTL.
+* `refresh` - (Optional/Computed) The SOA Refresh.
+* `retry` - (Optional/Computed) The SOA Retry.
+* `expiry` - (Optional/Computed) The SOA Expiry.
+* `nx_ttl` - (Optional/Computed) The SOA NX TTL.
+* `networks` - (Optional/Computed) List of network IDs for which the zone is available.  If no network is provided, the zone will be created in network 0, the primary NS1 Global Network.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+* `dns_servers` - (Computed) Authoritative Name Servers.
+* `hostmaster` - (Computed) The SOA Hostmaster.

@@ -26,10 +26,13 @@ data "ns1_zone" "example" {
 ## Attributes Reference
 
 * `link` - The linked target zone.
+* `primary` - The primary ip.
+* `additional_primaries` - List of additional IPs for the primary zone.
 * `ttl` - The SOA TTL.
 * `refresh` - The SOA Refresh.
 * `retry` - The SOA Retry.
 * `expiry` - The SOA Expiry.
 * `nx_ttl` - The SOA NX TTL.
-* `primary` - The primary ip.
+* `networks` - List of network IDs for which the zone is available.
 * `dns_servers` - Authoritative Name Servers.
+* `hostmaster` - The SOA Hostmaster.
