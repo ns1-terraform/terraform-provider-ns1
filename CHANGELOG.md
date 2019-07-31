@@ -1,13 +1,13 @@
-## 1.5.0 (Unreleased)
+## 1.5.0 (July 31, 2019)
 
 ENHANCEMENTS:
 
 * resource/notifylist: Add support for all notifier types currently supported by SDK. [#59](https://github.com/terraform-providers/terraform-provider-ns1/pull/59)
-* resource/ns1_zone: Add `additional_primaries` argument. Add documentation for all arguments and attributes. [GH-60]
-* datasource/ns1_zone: Add `additional_primaries` attribute. Add documentation for all arguments and attributes. [GH-60]
+* resource/ns1_zone: Add `additional_primaries` argument. Add documentation for all arguments and attributes. ([#60](https://github.com/terraform-providers/terraform-provider-ns1/issues/60))
+* datasource/ns1_zone: Add `additional_primaries` attribute. Add documentation for all arguments and attributes. ([#60](https://github.com/terraform-providers/terraform-provider-ns1/issues/60))
 
 IMPROVEMENTS:
-* Updates ns1-go dependency to latest version [GH-60]
+* Updates ns1-go dependency to latest version ([#60](https://github.com/terraform-providers/terraform-provider-ns1/issues/60))
 
 
 ## 1.4.1 (July 04, 2019)
