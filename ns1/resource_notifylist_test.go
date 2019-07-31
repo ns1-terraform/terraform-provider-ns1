@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 
@@ -48,6 +49,46 @@ func TestAccNotifyList_updated(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNotifyListExists("ns1_notifylist.test", &nl),
 					testAccCheckNotifyListName(&nl, "terraform test"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNotifyList_types(t *testing.T) {
+	var nl monitor.NotifyList
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNotifyListDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNotifyListSlack,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNotifyListExists("ns1_notifylist.test_slack", &nl),
+					testAccCheckNotifyListName(&nl, "terraform test slack"),
+				),
+			},
+			{
+				Config: testAccNotifyListHipChat,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNotifyListExists("ns1_notifylist.test_hipchat", &nl),
+					testAccCheckNotifyListName(&nl, "terraform test hipchat"),
+				),
+			},
+			{
+				Config: testAccNotifyListPagerDuty,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNotifyListExists("ns1_notifylist.test_pagerduty", &nl),
+					testAccCheckNotifyListName(&nl, "terraform test pagerduty"),
+				),
+			},
+			{
+				Config: testAccNotifyListUser(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNotifyListExists("ns1_notifylist.test_user", &nl),
+					testAccCheckNotifyListName(&nl, "terraform test user"),
 				),
 			},
 		},
@@ -156,3 +197,61 @@ resource "ns1_notifylist" "test" {
   }
 }
 `
+const testAccNotifyListSlack = `
+resource "ns1_notifylist" "test_slack" {
+  name = "terraform test slack"
+  notifications {
+    type = "slack"
+    config = {
+      username = "tf-test"
+      url = "http://localhost:9091"
+      channel = "TF Test Channel"
+    }
+  }
+}
+`
+const testAccNotifyListHipChat = `
+resource "ns1_notifylist" "test_hipchat" {
+  name = "terraform test hipchat"
+  notifications {
+    type = "hipchat"
+    config = {
+      token = "tftesttoken"
+      room = "TF Test Room"
+    }
+  }
+}
+`
+const testAccNotifyListPagerDuty = `
+resource "ns1_notifylist" "test_pagerduty" {
+  name = "terraform test pagerduty"
+  notifications {
+    type = "pagerduty"
+    config = {
+      service_key = "tftestkey"
+    }
+  }
+}
+`
+
+func testAccNotifyListUser(rString string) string {
+	return fmt.Sprintf(`resource "ns1_user" "u" {
+  name = "terraform acc test user %s"
+  username = "tf_acc_test_user_%s"
+  email = "tf_acc_test_ns1@hashicorp.com"
+  notify = {
+  	billing = true
+  }
+}
+
+resource "ns1_notifylist" "test_user" {
+  name = "terraform test user"
+  notifications {
+    type = "user"
+    config = {
+      user = "tf_acc_test_user_%s"
+    }
+  }
+}
+`, rString, rString, rString)
+}
