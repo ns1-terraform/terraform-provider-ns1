@@ -1,4 +1,9 @@
 ## 1.5.1 (Unreleased)
+
+* General Documentation updates: Flesh out examples and attributes across the board. [GH-62]
+* Add known issues/roadmap section to main README [GH-62]
+* resource/ns1_record: Document import and `meta` arguments. [GH-62]
+
 ## 1.5.0 (July 31, 2019)
 
 ENHANCEMENTS:
