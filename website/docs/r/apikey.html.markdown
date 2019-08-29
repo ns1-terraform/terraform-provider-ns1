@@ -54,3 +54,7 @@ The following arguments are supported:
 * `monitoring_manage_jobs` - (Optional) Whether the apikey can modify monitoring jobs.
 * `monitoring_view_jobs` - (Optional) Whether the apikey can view monitoring jobs.
 
+## Attributes Reference
+
+All of the arguments listed above are exported as attributes, with no
+additions.

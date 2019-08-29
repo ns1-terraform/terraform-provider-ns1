@@ -14,6 +14,7 @@ Contents
 2. [Building The Provider](#building-the-provider) - lists the steps for building the provider
 3. [Using The Provider](#using-the-provider) - details how to use the provider
 4. [Developing The Provider](#developing-the-provider) - steps for contributing back to the provider
+5. [Known Isssues/Roadmap](#known-issues) - check here for some of the improvements we are working on
 
 Requirements
 ------------
@@ -185,7 +186,8 @@ Records have metadata at three different levels:
 
 Due to some limitations in Terraform's support of nested maplike objects,
 there are some irregularities in supporting metadata, however metadata is
-now supported at every level.
+now supported at every level. See the documentation for `ns1_record` for
+more details and examples.
 
 Note that regions should be sorted by name in the record's regions list,
 otherwise terraform will detect changes to the record when none actually exist.
@@ -369,3 +371,18 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 ```sh
 $ make testacc
 ```
+
+Known Issues/Roadmap
+--------------------
+
+* Currently, some arguments marked as required in resource documentation are
+  de-facto optional. A resource will be created/updated without error, but
+  in general will lead to a "dirty terraform" state, since the defaulted
+  attributes on the returned state may not match the resource descriptions.
+  We're working on making these either truly Required or truly Optional as
+  appropriate.
+* Currently, some resources do not return attributes for optional features that
+  are unused. We are working on making the resource schemas fixed, with proper
+  defaults returned for optional/unused features.
+* We'll be adding a `record` data source ASAP, to cover simple read-only use
+  cases

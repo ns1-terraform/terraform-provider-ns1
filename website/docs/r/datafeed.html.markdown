@@ -43,5 +43,10 @@ The following arguments are supported:
 
 * `source_id` - (Required) The data source id that this feed is connected to.
 * `name` - (Required) The free form name of the data feed.
-* `config` - (Optional) The feeds configuration matching the specification in 'feed\_config' from /data/sourcetypes.
+* `config` - (Optional) The feeds configuration matching the specification in
+  `feed_config` from /data/sourcetypes.
 
+## Attributes Reference
+
+All of the arguments listed above are exported as attributes, with no
+additions.

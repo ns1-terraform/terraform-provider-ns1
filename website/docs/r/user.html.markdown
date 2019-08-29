@@ -8,7 +8,9 @@ description: |-
 
 # ns1\_user
 
-Provides a NS1 User resource. Creating a user sends an invitation email to the user's email address. This can be used to create, modify, and delete users.
+Provides a NS1 User resource. Creating a user sends an invitation email to the
+user's email address. This can be used to create, modify, and delete users.
+The credentials used must have the `manage_users` permission set.
 
 ## Example Usage
 
@@ -35,7 +37,7 @@ The following arguments are supported:
 * `name` - (Required) The free form name of the user.
 * `username` - (Required) The users login name.
 * `email` - (Required) The email address of the user.
-* `notify` - (Required) The Whether or not to notify the user of specified events. Only `billing` is available currently.
+* `notify` - (Required) Whether or not to notify the user of specified events. Only `billing` is available currently.
 * `teams` - (Required) The teams that the user belongs to.
 * `dns_view_zones` - (Optional) Whether the user can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the user can modify the accounts zones.
@@ -57,3 +59,7 @@ The following arguments are supported:
 * `monitoring_manage_jobs` - (Optional) Whether the user can modify monitoring jobs.
 * `monitoring_view_jobs` - (Optional) Whether the user can view monitoring jobs.
 
+## Attributes Reference
+
+All of the arguments listed above are exported as attributes, with no
+additions.

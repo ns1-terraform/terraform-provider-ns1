@@ -8,8 +8,10 @@ description: |-
 
 # NS1 Provider
 
-The NS1 provider exposes resources to interact with the NS1 REST API. The provider needs to be configured
-with the proper credentials before it can be used.
+The NS1 provider exposes resources to interact with the NS1 REST API. The
+provider needs to be configured with the proper credentials before it can be
+used. Note also that for a given resource to function, the API key used must
+have the corresponding permissions set.
 
 Use the navigation to the left to read about the available resources.
 
@@ -33,4 +35,5 @@ The following arguments are supported:
 
 * `apikey` - (Required) NS1 API token. It must be provided, but it can also
   be sourced from the `NS1_APIKEY` environment variable.
-
+* `version` - (Optional, but recommended if you don't like surprises) From
+  output of `terraform init`.

@@ -41,3 +41,11 @@ In addition to all arguments above, the following attributes are exported:
 
 * `dns_servers` - (Computed) Authoritative Name Servers.
 * `hostmaster` - (Computed) The SOA Hostmaster.
+
+## Import
+
+`terraform import ns1_zone.<name> <zone>`
+
+So for the example above:
+
+`terraform import ns1_zone.example terraform.example.io`

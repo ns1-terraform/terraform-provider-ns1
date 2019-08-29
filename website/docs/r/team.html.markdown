@@ -8,7 +8,8 @@ description: |-
 
 # ns1\_team
 
-Provides a NS1 Team resource. This can be used to create, modify, and delete teams.
+Provides a NS1 Team resource. This can be used to create, modify, and delete
+teams. The credentials used must have the `manage_teams` permission set.
 
 ## Example Usage
 
@@ -48,3 +49,7 @@ The following arguments are supported:
 * `monitoring_manage_jobs` - (Optional) Whether the team can modify monitoring jobs.
 * `monitoring_view_jobs` - (Optional) Whether the team can view monitoring jobs.
 
+## Attributes Reference
+
+All of the arguments listed above are exported as attributes, with no
+additions.

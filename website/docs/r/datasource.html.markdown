@@ -25,5 +25,10 @@ The following arguments are supported:
 
 * `name` - (Required) The free form name of the data source.
 * `sourcetype` - (Required) The data sources type, listed in API endpoint https://api.nsone.net/v1/data/sourcetypes.
-* `config` - (Optional) The data source configuration, determined by its type.
+* `config` - (Optional) The data source configuration, determined by its type,
+  matching the specification in `config` from /data/sourcetypes.
 
+## Attributes Reference
+
+All of the arguments listed above are exported as attributes, with no
+additions.
