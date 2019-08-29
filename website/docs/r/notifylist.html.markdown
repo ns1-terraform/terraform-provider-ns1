@@ -43,3 +43,7 @@ Notify List Notifiers (`notifications`) support the following:
 * `type` - (Required) The type of notifier. Available notifiers are indicated in /notifytypes endpoint. 
 * `config` - (Required) Configuration details for the given notifier type.
 
+## Attributes Reference
+
+All of the arguments listed above are exported as attributes, with no
+additions.

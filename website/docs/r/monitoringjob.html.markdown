@@ -41,12 +41,15 @@ resource "ns1_monitoringjob" "uswest_monitor" {
 The following arguments are supported:
 
 * `name` - (Required) The free-form display name for the monitoring job.
-* `job_type` - (Required) The type of monitoring job to be run.
-* `active` - (Required) Indicates if the job is active or temporaril.y disabled.
-* `regions` - (Required) The list of region codes in which to run the monitoring job.
+* `job_type` - (Required) The type of monitoring job to be run. See NS1 API
+  docs for supported values.
+* `active` - (Required) Indicates if the job is active or temporarily disabled.
+* `regions` - (Required) The list of region codes in which to run the monitoring
+  job. See NS1 API docs for supported values.
 * `frequency` - (Required) The frequency, in seconds, at which to run the monitoring job in each region.
 * `rapid_recheck` - (Required) If true, on any apparent state change, the job is quickly re-run after one second to confirm the state change before notification.
-* `policy` - (Required) The policy for determining the monitor's global status based on the status of the job in all regions.
+* `policy` - (Required) The policy for determining the monitor's global status
+  based on the status of the job in all regions. See NS1 API docs for supported values.
 * `config` - (Required) A configuration dictionary with keys and values depending on the jobs' type.
 * `notify_delay` - (Optional) The time in seconds after a failure to wait before sending a notification.
 * `notify_repeat` - (Optional) The time in seconds between repeat notifications of a failed job.
@@ -62,3 +65,7 @@ Monitoring Job Rules (`rules`) support the following:
 * `comparison` - (Required) The comparison to perform on the the output.
 * `value` - (Required) The value to compare to.
 
+## Attributes Reference
+
+All of the arguments listed above are exported as attributes, with no
+additions.

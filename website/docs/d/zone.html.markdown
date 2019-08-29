@@ -8,7 +8,9 @@ description: |-
 
 # Data Source: ns1_zone
 
-Provides details about a NS1 Zone.
+Provides details about a NS1 Zone. Use this if you would simply like to read
+information from NS1 into your configurations. For read/write operations, you
+should use a resource.
 
 ## Example Usage
 
@@ -24,6 +26,8 @@ data "ns1_zone" "example" {
 * `zone` - (Required) The domain name of the zone.
 
 ## Attributes Reference
+
+In addition to the argument above, the following are exported:
 
 * `link` - The linked target zone.
 * `primary` - The primary ip.
