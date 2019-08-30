@@ -1,8 +1,8 @@
-## 1.5.1 (Unreleased)
+## 1.5.1 (August 30, 2019)
 
-* General Documentation updates: Flesh out examples and attributes across the board. [GH-62]
-* Add known issues/roadmap section to main README [GH-62]
-* resource/ns1_record: Document import and `meta` arguments. [GH-62]
+* General Documentation updates: Flesh out examples and attributes across the board. ([#62](https://github.com/terraform-providers/terraform-provider-ns1/issues/62))
+* Add known issues/roadmap section to main README ([#62](https://github.com/terraform-providers/terraform-provider-ns1/issues/62))
+* resource/ns1_record: Document import and `meta` arguments. ([#62](https://github.com/terraform-providers/terraform-provider-ns1/issues/62))
 
 ## 1.5.0 (July 31, 2019)
 
