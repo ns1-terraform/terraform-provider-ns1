@@ -180,7 +180,7 @@ func resourceZoneRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-// resourceZoneDelete deteles the given zone from ns1
+// resourceZoneDelete deletes the given zone from ns1
 func resourceZoneDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	_, err := client.Zones.Delete(d.Get("zone").(string))
