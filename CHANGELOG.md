@@ -1,5 +1,12 @@
 ## 1.5.2 (Unreleased)
+
+IMPROVEMENTS:
+
+* acc tests: Randomize zone names to help prevent collisions
+
 ## 1.5.1 (August 30, 2019)
+
+IMPROVEMENTS:
 
 * General Documentation updates: Flesh out examples and attributes across the board. ([#62](https://github.com/terraform-providers/terraform-provider-ns1/issues/62))
 * Add known issues/roadmap section to main README ([#62](https://github.com/terraform-providers/terraform-provider-ns1/issues/62))

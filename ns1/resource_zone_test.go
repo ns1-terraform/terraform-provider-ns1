@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 
@@ -13,16 +14,20 @@ import (
 
 func TestAccZone_basic(t *testing.T) {
 	var zone dns.Zone
+	zoneName := fmt.Sprintf(
+		"terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckZoneDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccZoneBasic,
+				Config: testAccZoneBasic(zoneName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
-					testAccCheckZoneName(&zone, "terraform-test-zone.io"),
+					testAccCheckZoneName(&zone, zoneName),
 					testAccCheckZoneTTL(&zone, 3600),
 					testAccCheckZoneRefresh(&zone, 43200),
 					testAccCheckZoneRetry(&zone, 7200),
@@ -36,16 +41,20 @@ func TestAccZone_basic(t *testing.T) {
 
 func TestAccZone_updated(t *testing.T) {
 	var zone dns.Zone
+	zoneName := fmt.Sprintf(
+		"terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckZoneDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccZoneBasic,
+				Config: testAccZoneBasic(zoneName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
-					testAccCheckZoneName(&zone, "terraform-test-zone.io"),
+					testAccCheckZoneName(&zone, zoneName),
 					testAccCheckZoneTTL(&zone, 3600),
 					testAccCheckZoneRefresh(&zone, 43200),
 					testAccCheckZoneRetry(&zone, 7200),
@@ -54,10 +63,10 @@ func TestAccZone_updated(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccZoneUpdated,
+				Config: testAccZoneUpdated(zoneName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
-					testAccCheckZoneName(&zone, "terraform-test-zone.io"),
+					testAccCheckZoneName(&zone, zoneName),
 					testAccCheckZoneTTL(&zone, 10800),
 					testAccCheckZoneRefresh(&zone, 3600),
 					testAccCheckZoneRetry(&zone, 300),
@@ -71,6 +80,10 @@ func TestAccZone_updated(t *testing.T) {
 
 func TestAccZone_secondary(t *testing.T) {
 	var zone dns.Zone
+	zoneName := fmt.Sprintf(
+		"terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
 	expectedOtherPorts := []int{53, 53}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -78,10 +91,10 @@ func TestAccZone_secondary(t *testing.T) {
 		CheckDestroy: testAccCheckZoneDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccZonePrimary,
+				Config: testAccZonePrimary(zoneName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
-					testAccCheckZoneName(&zone, "terraform-test-zone.io"),
+					testAccCheckZoneName(&zone, zoneName),
 					resource.TestCheckResourceAttr("ns1_zone.it", "primary", "1.1.1.1"),
 					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.0", "2.2.2.2"),
 					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.1", "3.3.3.3"),
@@ -206,15 +219,17 @@ func testAccCheckOtherPorts(zone *dns.Zone, expected []int) resource.TestCheckFu
 	}
 }
 
-const testAccZoneBasic = `
-resource "ns1_zone" "it" {
-  zone = "terraform-test-zone.io"
+func testAccZoneBasic(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone = "%s"
 }
-`
+`, zoneName)
+}
 
-const testAccZoneUpdated = `
+func testAccZoneUpdated(zoneName string) string {
+	return fmt.Sprintf(`
 resource "ns1_zone" "it" {
-  zone    = "terraform-test-zone.io"
+  zone    = "%s"
   ttl     = 10800
   refresh = 3600
   retry   = 300
@@ -223,11 +238,12 @@ resource "ns1_zone" "it" {
   # link    = "1.2.3.4.in-addr.arpa" # TODO
   # primary = "1.2.3.4.in-addr.arpa" # TODO
 }
-`
+`, zoneName)
+}
 
-const testAccZonePrimary = `
-resource "ns1_zone" "it" {
-  zone    = "terraform-test-zone.io"
+func testAccZonePrimary(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone    = "%s"
   ttl     = 10800
   refresh = 3600
   retry   = 300
@@ -236,4 +252,5 @@ resource "ns1_zone" "it" {
   primary = "1.1.1.1"
   additional_primaries = ["2.2.2.2", "3.3.3.3"]
 }
-`
+`, zoneName)
+}
