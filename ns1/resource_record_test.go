@@ -363,7 +363,7 @@ resource "ns1_record" "it" {
     //   us_state = ["NY"]
     // }
   }
-	
+
   regions {
     name = "wa"
     // meta {
@@ -440,3 +440,31 @@ resource "ns1_zone" "test" {
   zone = "terraform-record-test.io"
 }
 `
+
+func TestRegionsMetaDiffSuppress(t *testing.T) {
+	meta_keys := []string{"georegion", "country", "us_state", "ca_province"}
+
+	for _, meta_key := range meta_keys {
+		key := fmt.Sprintf("somepath.%s", meta_key)
+
+		if regionsMetaDiffSuppress(key, "val1", "val2", nil) {
+			t.Errorf("does not return that different strings are different (%s)", meta_key)
+		}
+
+		if !regionsMetaDiffSuppress(key, "val1", "val1", nil) {
+			t.Errorf("does return that identical strings are different (%s)", meta_key)
+		}
+
+		if !regionsMetaDiffSuppress(key, "val1,val2", "val1,val2", nil) {
+			t.Errorf("does return that identical strings with multiple elements are different (%s)", meta_key)
+		}
+
+		if !regionsMetaDiffSuppress(key, "val2,val1", "val1,val2", nil) {
+			t.Errorf("does return that identical values with different orders are different (%s)", meta_key)
+		}
+	}
+
+	if regionsMetaDiffSuppress("somepath.ignorekey", "val2,val1", "val1,val2", nil) {
+		t.Errorf("is processing non-related meta keys")
+	}
+}
