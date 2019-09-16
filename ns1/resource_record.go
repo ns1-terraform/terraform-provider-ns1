@@ -16,7 +16,7 @@ import (
 	"gopkg.in/ns1/ns1-go.v2/rest/model/filter"
 )
 
-var recordTypeStringEnum *StringEnum = NewStringEnum([]string{
+var recordTypeStringEnum = NewStringEnum([]string{
 	"A",
 	"AAAA",
 	"ALIAS",
@@ -140,7 +140,7 @@ func recordResource() *schema.Resource {
 		Read:     RecordRead,
 		Update:   RecordUpdate,
 		Delete:   RecordDelete,
-		Importer: &schema.ResourceImporter{State: RecordStateFunc},
+		Importer: &schema.ResourceImporter{State: recordStateFunc},
 	}
 }
 
@@ -413,10 +413,10 @@ func RecordUpdate(d *schema.ResourceData, meta interface{}) error {
 	return recordToResourceData(d, r)
 }
 
-func RecordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func recordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	parts := strings.Split(d.Id(), "/")
 	if len(parts) != 3 {
-		return nil, fmt.Errorf("Invalid record specifier.  Expecting 2 slashes (\"zone/domain/type\"), got %d.", len(parts)-1)
+		return nil, fmt.Errorf("invalid record specifier.  Expecting 2 slashes (\"zone/domain/type\"), got %d", len(parts)-1)
 	}
 
 	d.Set("zone", parts[0])

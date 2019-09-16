@@ -9,13 +9,14 @@ import (
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 )
 
+// Config for NS1 API
 type Config struct {
 	Key       string
 	Endpoint  string
 	IgnoreSSL bool
 }
 
-// Client() returns a new NS1 client.
+// Client returns a new NS1 client.
 func (c *Config) Client() (*ns1.Client, error) {
 	httpClient := &http.Client{}
 	decos := []func(*ns1.Client){}

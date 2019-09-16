@@ -50,7 +50,7 @@ func Provider() terraform.ResourceProvider {
 	}
 }
 
-var ErrNoAPIKey = errors.New("ns1: could not find api key")
+var errNoAPIKey = errors.New("ns1: could not find api key")
 
 func ns1Configure(d *schema.ResourceData) (interface{}, error) {
 	config := Config{}
@@ -62,7 +62,7 @@ func ns1Configure(d *schema.ResourceData) (interface{}, error) {
 	}
 
 	if key == "" {
-		return nil, ErrNoAPIKey
+		return nil, errNoAPIKey
 	}
 
 	config.Key = key
