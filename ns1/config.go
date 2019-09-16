@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -21,7 +22,7 @@ type Config struct {
 	IgnoreSSL bool
 }
 
-// Client() returns a new NS1 client.
+// Client returns a new NS1 client.
 func (c *Config) Client() (*ns1.Client, error) {
 	var client *ns1.Client
 	httpClient := &http.Client{}
@@ -44,7 +45,7 @@ func (c *Config) Client() (*ns1.Client, error) {
 		httpClient.Transport = tr
 	}
 
-	// If NS1_DEBUG is set, log the requests and responses
+	// If NS1_DEBUG is set, define custom Doer to log HTTP requests made by SDK
 	if os.Getenv("NS1_DEBUG") != "" {
 		doer := ns1.Decorate(httpClient, Logging())
 		client = ns1.NewClient(doer, decos...)
@@ -59,11 +60,12 @@ func (c *Config) Client() (*ns1.Client, error) {
 	return client, nil
 }
 
+// Logging returns a ns1.Decorator with a ns1.Doer lambda that logs HTTP requests
 func Logging() ns1.Decorator {
 	return func(d ns1.Doer) ns1.Doer {
 		return ns1.DoerFunc(func(r *http.Request) (*http.Response, error) {
-			log.Printf("%s: %s %s", r.UserAgent(), r.Method, r.URL)
-			log.Printf("Headers: %s", r.Header)
+			log.Printf("[DEBUG] %s: %s %s", r.UserAgent(), r.Method, r.URL)
+			log.Printf("[DEBUG] Headers: %s", r.Header)
 			var err error
 			if r.Body != nil {
 				r.Body, err = logRequest(r.Body)
@@ -76,6 +78,7 @@ func Logging() ns1.Decorator {
 	}
 }
 
+// logRequest logs a HTTP request and returns a copy that can be read again
 func logRequest(original io.ReadCloser) (io.ReadCloser, error) {
 	// Handle request contentType
 	var bs bytes.Buffer
@@ -86,26 +89,25 @@ func logRequest(original io.ReadCloser) (io.ReadCloser, error) {
 		return nil, err
 	}
 
-	debugInfo := formatJSON(bs.Bytes())
-	log.Printf("[DEBUG] Request Body: %s", debugInfo)
+	debugInfo, err := formatJSON(bs.Bytes())
+	if err == nil {
+		log.Printf("[DEBUG] Request Body: %s", debugInfo)
+	}
 
 	return ioutil.NopCloser(strings.NewReader(bs.String())), nil
-
-	return original, nil
 }
 
-func formatJSON(raw []byte) string {
+// formatJSON attempts to format a byte slice as indented JSON for pretty printing
+func formatJSON(raw []byte) (string, error) {
 	var rawData interface{}
 	err := json.Unmarshal(raw, &rawData)
 	if err != nil {
-		log.Printf("[DEBUG] Unable to parse JSON: %s", err)
-		return string(raw)
+		return string(raw), fmt.Errorf("Unable to parse JSON: %s", err)
 	}
 	pretty, err := json.MarshalIndent(rawData, "", "  ")
 	if err != nil {
-		log.Printf("[DEBUG] Unable to re-marshal JSON: %s", err)
-		return string(raw)
+		return string(raw), fmt.Errorf("Unable to re-marshal JSON: %s", err)
 	}
 
-	return string(pretty)
+	return string(pretty), nil
 }
