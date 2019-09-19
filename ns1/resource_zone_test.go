@@ -106,8 +106,8 @@ func TestAccZone_primary(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
 					testAccCheckZoneName(&zone, zoneName),
-					testAccCheckZoneSecondary(&zone, 0, expected[0]),
-					testAccCheckZoneSecondary(&zone, 1, expected[1]),
+					testAccCheckZoneSecondary(t, &zone, 0, expected[0]),
+					testAccCheckZoneSecondary(t, &zone, 1, expected[1]),
 				),
 			},
 			{

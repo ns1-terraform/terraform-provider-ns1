@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -97,9 +98,10 @@ func resourceZone() *schema.Resource {
 							Default:  false,
 						},
 						"port": {
-							Type:     schema.TypeInt,
-							Optional: true,
-							Default:  53,
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Default:      53,
+							ValidateFunc: validation.IntBetween(1, 65535),
 						},
 						"networks": &schema.Schema{
 							Type:     schema.TypeSet,
