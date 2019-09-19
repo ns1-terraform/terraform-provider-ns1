@@ -442,25 +442,25 @@ resource "ns1_zone" "test" {
 `
 
 func TestRegionsMetaDiffSuppress(t *testing.T) {
-	meta_keys := []string{"georegion", "country", "us_state", "ca_province"}
+	metaKeys := []string{"georegion", "country", "us_state", "ca_province"}
 
-	for _, meta_key := range meta_keys {
-		key := fmt.Sprintf("somepath.%s", meta_key)
+	for _, metaKey := range metaKeys {
+		key := fmt.Sprintf("somepath.%s", metaKey)
 
 		if regionsMetaDiffSuppress(key, "val1", "val2", nil) {
-			t.Errorf("does not return that different strings are different (%s)", meta_key)
+			t.Errorf("does not return that different strings are different (%s)", metaKey)
 		}
 
 		if !regionsMetaDiffSuppress(key, "val1", "val1", nil) {
-			t.Errorf("does return that identical strings are different (%s)", meta_key)
+			t.Errorf("does return that identical strings are different (%s)", metaKey)
 		}
 
 		if !regionsMetaDiffSuppress(key, "val1,val2", "val1,val2", nil) {
-			t.Errorf("does return that identical strings with multiple elements are different (%s)", meta_key)
+			t.Errorf("does return that identical strings with multiple elements are different (%s)", metaKey)
 		}
 
 		if !regionsMetaDiffSuppress(key, "val2,val1", "val1,val2", nil) {
-			t.Errorf("does return that identical values with different orders are different (%s)", meta_key)
+			t.Errorf("does return that identical values with different orders are different (%s)", metaKey)
 		}
 	}
 
