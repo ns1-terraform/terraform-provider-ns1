@@ -433,20 +433,20 @@ func regionsMetaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 		strings.HasSuffix(k, ".us_state") ||
 		strings.HasSuffix(k, ".ca_province") {
 
-		compare_map := make(map[string]bool)
+		compareMap := make(map[string]bool)
 		for _, value := range strings.Split(old, ",") {
-			compare_map[strings.TrimSpace(value)] = true
+			compareMap[strings.TrimSpace(value)] = true
 		}
 		for _, value := range strings.Split(new, ",") {
 			value = strings.TrimSpace(value)
-			if _, ok := compare_map[value]; ok {
-				delete(compare_map, value)
+			if _, ok := compareMap[value]; ok {
+				delete(compareMap, value)
 			} else {
 				return false
 			}
 		}
 
-		return len(compare_map) == 0
+		return len(compareMap) == 0
 	}
 
 	return false
