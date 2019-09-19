@@ -47,18 +47,25 @@ resource "ns1_record" "www" {
     up   = true
   }
 
+  regions {
+    name = "east"
+    meta = {
+      georegion = "US-EAST"
+    }
+  }
+
+  regions {
+    name = "usa"
+    meta = {
+      country = "US"
+    }
+  }
+
   answers {
     answer  = "sub1.${ns1_zone.tld.zone}"
-    regions = [
-      {
-        name = "east"
-        meta = {
-          georegion = "US-EAST"
-        }
-      }
-    ]
-    meta = {
-      up = "{\"feed\":\"${ns1_datafeed.foo.id}\"}"
+    region  = "east"
+    meta    = {
+      up    = "{\"feed\":\"${ns1_datafeed.foo.id}\"}"
     }
   }
 
@@ -88,10 +95,18 @@ The following arguments are supported:
 * `domain` - (Required) The records' domain.
 * `type` - (Required) The records' RR type.
 * `ttl` - (Optional) The records' time to live.
-* `link` - (Optional) The target record to link to. This means this record is a 'linked' record, and it inherits all properties from its target.
-* `use_client_subnet` - (Optional) Whether to use EDNS client subnet data when available(in filter chain).
+* `link` - (Optional) The target record to link to. This means this record is a
+  'linked' record, and it inherits all properties from its target.
+* `use_client_subnet` - (Optional) Whether to use EDNS client subnet data when
+  available(in filter chain).
 * ` meta` - (Optional) meta is supported at the `record` level. [Meta](#meta-3)
   is documented below.
+* `regions` - (Optional) One or more "regions" for the record. These are really
+  just groupings based on metadata, and are called "Answer Groups" in the NS1 UI,
+  but remain `regions` here for legacy reasons. Regions must be sorted
+  alphanumerically by name, otherwise Terraform will detect changes to the
+  record when none actually exist.
+  [Regions](#regions-1) are documented below.
 * `answers` - (Optional) One or more NS1 answers for the records' specified type.
   [Answers](#answers-1) are documented below.
 * `filters` - (Optional) One or more NS1 filters for the record(order matters).
@@ -124,10 +139,11 @@ The following arguments are supported:
         answer = "v=DKIM1; k=rsa; p=XXXXXXXX"
 
    
-* `regions` - (Optional) One or more regions (or groups) that this answer
-  belongs to. Regions must be sorted alphanumerically by name, otherwise
-  Terraform will detect changes to the record when none actually exist.
-  [Regions](#regions-1) are documented below.
+* `region` - (Optional) The region (Answer Group really) that this answer
+  belongs to. This should be one of the names specified in `regions`. Only a
+  single `region` per answer is currently supported. If you want an answer in
+  multiple regions, duplicating the answer (including metadata) is the correct
+  approach.
 * ` meta` - (Optional) meta is supported at the `answer` level. [Meta](#meta-3)
   is documented below.
 
@@ -145,9 +161,12 @@ The following arguments are supported:
 
 `regions` support the following:
 
-* `name` - (Required) Region (or group) name.
+* `name` - (Required) Name of the region (or Answer Group).
 * `meta` - (Optional) meta is supported at the `regions` level. [Meta](#meta-3)
   is documented below.
+  Note that `Meta` values for `country`, `ca_province`, `georegion`, and
+  `us_state` should be comma separated strings, and changes in ordering will not
+  lead to terraform detecting a change.
 
 #### Meta
 
