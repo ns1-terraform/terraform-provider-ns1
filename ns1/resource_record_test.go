@@ -16,22 +16,32 @@ import (
 
 func TestAccRecord_basic(t *testing.T) {
 	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("test.%s", zoneName)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRecordBasic,
+				Config: testAccRecordBasic(rString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
-					testAccCheckRecordDomain(&record, "test.terraform-record-test.io"),
+					testAccCheckRecordDomain(&record, domainName),
 					testAccCheckRecordTTL(&record, 60),
 					testAccCheckRecordUseClientSubnet(&record, true),
 					testAccCheckRecordRegionName(&record, []string{"cal"}),
 					// testAccCheckRecordAnswerMetaWeight(&record, 10),
-					testAccCheckRecordAnswerRdata(&record, 0, "test1.terraform-record-test.io"),
+					testAccCheckRecordAnswerRdata(&record, 0, fmt.Sprintf("test1.%s", zoneName)),
 				),
+			},
+			{
+				ResourceName:      "ns1_record.it",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/CNAME", zoneName, domainName),
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -39,34 +49,44 @@ func TestAccRecord_basic(t *testing.T) {
 
 func TestAccRecord_updated(t *testing.T) {
 	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("test.%s", zoneName)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRecordBasic,
+				Config: testAccRecordBasic(rString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
-					testAccCheckRecordDomain(&record, "test.terraform-record-test.io"),
+					testAccCheckRecordDomain(&record, domainName),
 					testAccCheckRecordTTL(&record, 60),
 					testAccCheckRecordUseClientSubnet(&record, true),
 					testAccCheckRecordRegionName(&record, []string{"cal"}),
 					// testAccCheckRecordAnswerMetaWeight(&record, 10),
-					testAccCheckRecordAnswerRdata(&record, 0, "test1.terraform-record-test.io"),
+					testAccCheckRecordAnswerRdata(&record, 0, fmt.Sprintf("test1.%s", zoneName)),
 				),
 			},
 			{
-				Config: testAccRecordUpdated,
+				Config: testAccRecordUpdated(rString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
-					testAccCheckRecordDomain(&record, "test.terraform-record-test.io"),
+					testAccCheckRecordDomain(&record, domainName),
 					testAccCheckRecordTTL(&record, 120),
 					testAccCheckRecordUseClientSubnet(&record, false),
 					testAccCheckRecordRegionName(&record, []string{"ny", "wa"}),
 					// testAccCheckRecordAnswerMetaWeight(&record, 5),
-					testAccCheckRecordAnswerRdata(&record, 0, "test2.terraform-record-test.io"),
+					testAccCheckRecordAnswerRdata(&record, 0, fmt.Sprintf("test2.%s", zoneName)),
 				),
+			},
+			{
+				ResourceName:      "ns1_record.it",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/CNAME", zoneName, domainName),
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -91,26 +111,41 @@ func TestAccRecord_meta(t *testing.T) {
 					testAccCheckRecordAnswerMetaIPPrefixes(&record, []string{"1.1.1.1/32", "2.2.2.2/32"}),
 				),
 			},
+			{
+				ResourceName:      "ns1_record.it",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/A", zoneName, domainName),
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
 
 func TestAccRecord_SPF(t *testing.T) {
 	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRecordSPF,
+				Config: testAccRecordSPF(rString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.spf", &record),
-					testAccCheckRecordDomain(&record, "terraform-record-test.io"),
+					testAccCheckRecordDomain(&record, zoneName),
 					testAccCheckRecordTTL(&record, 86400),
 					testAccCheckRecordUseClientSubnet(&record, true),
 					testAccCheckRecordAnswerRdata(&record, 0, "v=DKIM1; k=rsa; p=XXXXXXXX"),
 				),
+			},
+			{
+				ResourceName:      "ns1_record.it",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/SPF", zoneName),
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -118,23 +153,33 @@ func TestAccRecord_SPF(t *testing.T) {
 
 func TestAccRecord_SRV(t *testing.T) {
 	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("_some-server._tcp.%s", zoneName)
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRecordSRV,
+				Config: testAccRecordSRV(rString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.srv", &record),
-					testAccCheckRecordDomain(&record, "_some-server._tcp.terraform-record-test.io"),
+					testAccCheckRecordDomain(&record, domainName),
 					testAccCheckRecordTTL(&record, 86400),
 					testAccCheckRecordUseClientSubnet(&record, true),
 					testAccCheckRecordAnswerRdata(&record, 0, "10"),
 					testAccCheckRecordAnswerRdata(&record, 1, "0"),
 					testAccCheckRecordAnswerRdata(&record, 2, "2380"),
-					testAccCheckRecordAnswerRdata(&record, 3, "node-1.terraform-record-test.io"),
+					testAccCheckRecordAnswerRdata(&record, 3, fmt.Sprintf("node-1.%s", zoneName)),
 				),
+			},
+			{
+				ResourceName:      "ns1_record.it",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/SRV", zoneName, domainName),
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -283,9 +328,10 @@ func testAccCheckRecordAnswerRdata(r *dns.Record, idx int, expected string) reso
 	}
 }
 
-const testAccRecordBasic = `
+func testAccRecordBasic(rString string) string {
+	return fmt.Sprintf(`
 resource "ns1_record" "it" {
-  zone              = ns1_zone.test.zone
+  zone              = "${ns1_zone.test.zone}"
   domain            = "test.${ns1_zone.test.zone}"
   type              = "CNAME"
   ttl               = 60
@@ -297,7 +343,7 @@ resource "ns1_record" "it" {
   // }
 
   answers {
-    answer = "test1.terraform-record-test.io"
+    answer = "test1.${ns1_zone.test.zone}"
     region = "cal"
 
     // meta {
@@ -329,11 +375,13 @@ resource "ns1_record" "it" {
 }
 
 resource "ns1_zone" "test" {
-  zone = "terraform-record-test.io"
+  zone = "terraform-test-%s.io"
 }
-`
+`, rString)
+}
 
-const testAccRecordUpdated = `
+func testAccRecordUpdated(rString string) string {
+	return fmt.Sprintf(`
 resource "ns1_record" "it" {
   zone              = "${ns1_zone.test.zone}"
   domain            = "test.${ns1_zone.test.zone}"
@@ -348,7 +396,7 @@ resource "ns1_record" "it" {
   // }
 
   answers {
-    answer = "test2.terraform-record-test.io"
+    answer = "test2.${ns1_zone.test.zone}"
     region = "ny"
 
     // meta {
@@ -357,7 +405,7 @@ resource "ns1_record" "it" {
     // }
   }
 
-	regions {
+  regions {
     name = "ny"
     // meta {
     //   us_state = ["NY"]
@@ -381,33 +429,35 @@ resource "ns1_record" "it" {
 }
 
 resource "ns1_zone" "test" {
-  zone = "terraform-record-test.io"
-}
-`
-
-func testAccRecordMeta(rString string) string {
-	return fmt.Sprintf(`
-resource "ns1_record" "it" {
-	zone              = "${ns1_zone.test.zone}"
-	domain            = "test.${ns1_zone.test.zone}"
-	type              = "A"
-	answers {
-		answer = "1.2.3.4"
-
-		meta = {
-			weight = 5
-			ip_prefixes = "1.1.1.1/32,2.2.2.2/32"
-		}
-	}
-}
-
-resource "ns1_zone" "test" {
-	zone = "terraform-test-%s.io"
+  zone = "terraform-test-%s.io"
 }
 `, rString)
 }
 
-const testAccRecordSPF = `
+func testAccRecordMeta(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "test.${ns1_zone.test.zone}"
+  type              = "A"
+  answers {
+    answer = "1.2.3.4"
+
+    meta = {
+      weight = 5
+      ip_prefixes = "1.1.1.1/32,2.2.2.2/32"
+    }
+  }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordSPF(rString string) string {
+	return fmt.Sprintf(`
 resource "ns1_record" "spf" {
   zone              = "${ns1_zone.test.zone}"
   domain            = "${ns1_zone.test.zone}"
@@ -420,11 +470,13 @@ resource "ns1_record" "spf" {
 }
 
 resource "ns1_zone" "test" {
-  zone = "terraform-record-test.io"
+  zone = "terraform-test-%s.io"
 }
-`
+`, rString)
+}
 
-const testAccRecordSRV = `
+func testAccRecordSRV(rString string) string {
+	return fmt.Sprintf(`
 resource "ns1_record" "srv" {
   zone              = "${ns1_zone.test.zone}"
   domain            = "_some-server._tcp.${ns1_zone.test.zone}"
@@ -437,9 +489,10 @@ resource "ns1_record" "srv" {
 }
 
 resource "ns1_zone" "test" {
-  zone = "terraform-record-test.io"
+  zone = "terraform-test-%s.io"
 }
-`
+`, rString)
+}
 
 func TestRegionsMetaDiffSuppress(t *testing.T) {
 	metaKeys := []string{"georegion", "country", "us_state", "ca_province"}

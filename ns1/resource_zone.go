@@ -1,9 +1,11 @@
 package ns1
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -53,9 +55,10 @@ func resourceZone() *schema.Resource {
 				ForceNew: true,
 			},
 			"primary": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"secondaries"},
 			},
 			"additional_primaries": {
 				Type:     schema.TypeList,
@@ -63,6 +66,7 @@ func resourceZone() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				ConflictsWith: []string{"secondaries"},
 			},
 			"dns_servers": {
 				Type:     schema.TypeString,
@@ -78,6 +82,35 @@ func resourceZone() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 			},
+			"secondaries": {
+				Type:          schema.TypeSet,
+				Optional:      true,
+				ConflictsWith: []string{"primary", "additional_primaries"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"notify": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Default:  false,
+						},
+						"port": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Default:      53,
+							ValidateFunc: validation.IntBetween(1, 65535),
+						},
+						"networks": &schema.Schema{
+							Type:     schema.TypeSet,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeInt},
+						},
+					},
+				},
+			},
 		},
 		Create:   resourceZoneCreate,
 		Read:     resourceZoneRead,
@@ -87,7 +120,7 @@ func resourceZone() *schema.Resource {
 	}
 }
 
-func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) {
+func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	d.SetId(z.ID)
 	d.Set("hostmaster", z.Hostmaster)
 	d.Set("ttl", z.TTL)
@@ -101,9 +134,29 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) {
 		d.Set("primary", z.Secondary.PrimaryIP)
 		d.Set("additional_primaries", z.Secondary.OtherIPs)
 	}
+	if z.Primary != nil && z.Primary.Enabled {
+		secondaries := make([]map[string]interface{}, 0)
+		for _, secondary := range z.Primary.Secondaries {
+			secondaries = append(secondaries, secondaryToMap(&secondary))
+		}
+		err := d.Set("secondaries", secondaries)
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error setting secondaries for: %s, error: %#v", z.Zone, err)
+		}
+	}
 	if z.Link != nil && *z.Link != "" {
 		d.Set("link", *z.Link)
 	}
+	return nil
+}
+
+func secondaryToMap(s *dns.ZoneSecondaryServer) map[string]interface{} {
+	m := make(map[string]interface{})
+	m["ip"] = s.IP
+	m["port"] = s.Port
+	m["notify"] = s.Notify
+	m["networks"] = s.NetworkIDs
+	return m
 }
 
 func resourceToZoneData(z *dns.Zone, d *schema.ResourceData) {
@@ -144,16 +197,35 @@ func resourceToZoneData(z *dns.Zone, d *schema.ResourceData) {
 			z.Secondary.OtherPorts[i] = 53
 		}
 	}
+	if v, ok := d.GetOk("secondaries"); ok {
+		secondariesSet := v.(*schema.Set)
+		secondaries := make([]dns.ZoneSecondaryServer, secondariesSet.Len())
+		for i, secondaryRaw := range secondariesSet.List() {
+			secondary := secondaryRaw.(map[string]interface{})
+			networkIDSet := secondary["networks"].(*schema.Set)
+			secondaries[i] = dns.ZoneSecondaryServer{
+				NetworkIDs: setToInts(networkIDSet),
+				IP:         secondary["ip"].(string),
+				Port:       secondary["port"].(int),
+				Notify:     secondary["notify"].(bool),
+			}
+		}
+		z.MakePrimary(secondaries...)
+	} else {
+		// Ensure Primary is cleared out if we remove all of our secondaries
+		if _, ok := d.GetOk("primary"); !ok {
+			z.Primary = &dns.ZonePrimary{
+				Enabled:     false,
+				Secondaries: make([]dns.ZoneSecondaryServer, 0),
+			}
+		}
+	}
 	if v, ok := d.GetOk("link"); ok {
 		z.LinkTo(v.(string))
 	}
 	if v, ok := d.GetOk("networks"); ok {
 		networkIDSet := v.(*schema.Set)
-		networkIDs := make([]int, networkIDSet.Len())
-		for i, networkID := range networkIDSet.List() {
-			networkIDs[i] = networkID.(int)
-		}
-		z.NetworkIDs = networkIDs
+		z.NetworkIDs = setToInts(networkIDSet)
 	}
 }
 
@@ -165,7 +237,9 @@ func resourceZoneCreate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := client.Zones.Create(z); err != nil {
 		return err
 	}
-	resourceZoneToResourceData(d, z)
+	if err := resourceZoneToResourceData(d, z); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -176,7 +250,9 @@ func resourceZoneRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	resourceZoneToResourceData(d, z)
+	if err := resourceZoneToResourceData(d, z); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -196,11 +272,22 @@ func resourceZoneUpdate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := client.Zones.Update(z); err != nil {
 		return err
 	}
-	resourceZoneToResourceData(d, z)
+	if err := resourceZoneToResourceData(d, z); err != nil {
+		return err
+	}
 	return nil
 }
 
 func resourceZoneStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	d.Set("zone", d.Id())
 	return []*schema.ResourceData{d}, nil
+}
+
+// translates *schema.Set to []int
+func setToInts(schemaSet *schema.Set) []int {
+	ints := make([]int, schemaSet.Len())
+	for i, v := range schemaSet.List() {
+		ints[i] = v.(int)
+	}
+	return ints
 }

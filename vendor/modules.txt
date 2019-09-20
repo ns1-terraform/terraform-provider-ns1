@@ -111,13 +111,13 @@ github.com/hashicorp/hcl/json/token
 github.com/hashicorp/hcl2/hcl
 github.com/hashicorp/hcl2/hcl/hclsyntax
 github.com/hashicorp/hcl2/hcldec
-github.com/hashicorp/hcl2/gohcl
+github.com/hashicorp/hcl2/hcled
 github.com/hashicorp/hcl2/hclparse
+github.com/hashicorp/hcl2/gohcl
 github.com/hashicorp/hcl2/ext/typeexpr
 github.com/hashicorp/hcl2/ext/dynblock
-github.com/hashicorp/hcl2/hclwrite
 github.com/hashicorp/hcl2/hcl/json
-github.com/hashicorp/hcl2/hcled
+github.com/hashicorp/hcl2/hclwrite
 # github.com/hashicorp/hil v0.0.0-20190212112733-ab17b08d6590
 github.com/hashicorp/hil
 github.com/hashicorp/hil/ast
@@ -127,7 +127,9 @@ github.com/hashicorp/hil/scanner
 github.com/hashicorp/logutils
 # github.com/hashicorp/terraform v0.12.3
 github.com/hashicorp/terraform/plugin
+github.com/hashicorp/terraform/helper/resource
 github.com/hashicorp/terraform/helper/schema
+github.com/hashicorp/terraform/helper/validation
 github.com/hashicorp/terraform/terraform
 github.com/hashicorp/terraform/configs/configschema
 github.com/hashicorp/terraform/helper/plugin
@@ -137,41 +139,41 @@ github.com/hashicorp/terraform/plugin/discovery
 github.com/hashicorp/terraform/providers
 github.com/hashicorp/terraform/provisioners
 github.com/hashicorp/terraform/version
+github.com/hashicorp/terraform/addrs
+github.com/hashicorp/terraform/command/format
 github.com/hashicorp/terraform/config
 github.com/hashicorp/terraform/config/hcl2shim
-github.com/hashicorp/terraform/helper/hashcode
-github.com/hashicorp/terraform/tfdiags
-github.com/hashicorp/terraform/addrs
-github.com/hashicorp/terraform/config/module
 github.com/hashicorp/terraform/configs
+github.com/hashicorp/terraform/configs/configload
+github.com/hashicorp/terraform/helper/config
+github.com/hashicorp/terraform/helper/logging
+github.com/hashicorp/terraform/internal/initwd
+github.com/hashicorp/terraform/plans
+github.com/hashicorp/terraform/states
+github.com/hashicorp/terraform/tfdiags
+github.com/hashicorp/terraform/helper/hashcode
+github.com/hashicorp/terraform/helper/structure
+github.com/hashicorp/terraform/config/module
 github.com/hashicorp/terraform/dag
 github.com/hashicorp/terraform/flatmap
 github.com/hashicorp/terraform/helper/didyoumean
 github.com/hashicorp/terraform/httpclient
 github.com/hashicorp/terraform/lang
 github.com/hashicorp/terraform/moduledeps
-github.com/hashicorp/terraform/plans
 github.com/hashicorp/terraform/plans/objchange
-github.com/hashicorp/terraform/states
 github.com/hashicorp/terraform/states/statefile
 github.com/hashicorp/terraform/helper/acctest
-github.com/hashicorp/terraform/helper/resource
 github.com/hashicorp/terraform/registry
 github.com/hashicorp/terraform/registry/regsrc
 github.com/hashicorp/terraform/registry/response
 github.com/hashicorp/terraform/svchost/disco
 github.com/hashicorp/terraform/helper/hilmapstructure
-github.com/hashicorp/terraform/lang/blocktoattr
-github.com/hashicorp/terraform/lang/funcs
-github.com/hashicorp/terraform/command/format
-github.com/hashicorp/terraform/configs/configload
-github.com/hashicorp/terraform/helper/config
-github.com/hashicorp/terraform/helper/logging
-github.com/hashicorp/terraform/internal/initwd
-github.com/hashicorp/terraform/svchost
-github.com/hashicorp/terraform/svchost/auth
 github.com/hashicorp/terraform/internal/modsdir
 github.com/hashicorp/terraform/internal/earlyconfig
+github.com/hashicorp/terraform/lang/blocktoattr
+github.com/hashicorp/terraform/lang/funcs
+github.com/hashicorp/terraform/svchost
+github.com/hashicorp/terraform/svchost/auth
 # github.com/hashicorp/terraform-config-inspect v0.0.0-20190327195015-8022a2663a70
 github.com/hashicorp/terraform-config-inspect/tfconfig
 # github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb
@@ -202,6 +204,8 @@ github.com/mitchellh/mapstructure
 github.com/mitchellh/reflectwalk
 # github.com/oklog/run v1.0.0
 github.com/oklog/run
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/posener/complete v1.2.1
 github.com/posener/complete
 github.com/posener/complete/cmd/install
@@ -212,6 +216,8 @@ github.com/satori/go.uuid
 # github.com/spf13/afero v1.2.1
 github.com/spf13/afero
 github.com/spf13/afero/mem
+# github.com/stretchr/testify v1.4.0
+github.com/stretchr/testify/assert
 # github.com/ulikunitz/xz v0.5.5
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/xlog
@@ -316,6 +322,7 @@ google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/api/annotations
 # google.golang.org/grpc v1.18.0
 google.golang.org/grpc
+google.golang.org/grpc/test/bufconn
 google.golang.org/grpc/credentials
 google.golang.org/grpc/health
 google.golang.org/grpc/health/grpc_health_v1
@@ -344,7 +351,6 @@ google.golang.org/grpc/resolver/passthrough
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-google.golang.org/grpc/test/bufconn
 google.golang.org/grpc/credentials/internal
 google.golang.org/grpc/balancer/base
 google.golang.org/grpc/binarylog/grpc_binarylog_v1
@@ -356,3 +362,5 @@ gopkg.in/ns1/ns1-go.v2/rest/model/data
 gopkg.in/ns1/ns1-go.v2/rest/model/dns
 gopkg.in/ns1/ns1-go.v2/rest/model/filter
 gopkg.in/ns1/ns1-go.v2/rest/model/monitor
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2

@@ -21,6 +21,7 @@ require (
 	github.com/satori/uuid v0.0.0-20160927100844-b061729afc07 // indirect
 	github.com/smartystreets/assertions v0.0.0-20190116191733-b6c0e53d7304 // indirect
 	github.com/smartystreets/goconvey v0.0.0-20190222223459-a17d461953aa // indirect
+	github.com/stretchr/testify v1.4.0
 	github.com/terraform-providers/terraform-provider-aws v1.29.0 // indirect
 	github.com/terraform-providers/terraform-provider-template v1.0.0 // indirect
 	github.com/terraform-providers/terraform-provider-tls v1.2.0 // indirect

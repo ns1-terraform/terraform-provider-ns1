@@ -1,6 +1,7 @@
 package ns1
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -64,12 +65,37 @@ func dataSourceZone() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 			},
+			"secondaries": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ip": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"notify": {
+							Type:     schema.TypeBool,
+							Computed: true,
+						},
+						"port": {
+							Type:     schema.TypeInt,
+							Computed: true,
+						},
+						"networks": &schema.Schema{
+							Type:     schema.TypeSet,
+							Computed: true,
+							Elem:     &schema.Schema{Type: schema.TypeInt},
+						},
+					},
+				},
+			},
 		},
 		Read: dataSourceZoneRead,
 	}
 }
 
-func dataSourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) {
+func dataSourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	d.SetId(z.ID)
 	d.Set("hostmaster", z.Hostmaster)
 	d.Set("ttl", z.TTL)
@@ -84,6 +110,17 @@ func dataSourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) {
 		d.Set("primary", z.Secondary.PrimaryIP)
 		d.Set("additional_primaries", z.Secondary.OtherIPs)
 	}
+	if z.Primary != nil && z.Primary.Enabled {
+		secondaries := make([]map[string]interface{}, 0)
+		for _, secondary := range z.Primary.Secondaries {
+			secondaries = append(secondaries, secondaryToMap(&secondary))
+		}
+		err := d.Set("secondaries", secondaries)
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error setting secondaries for: %s, error: %#v", z.Zone, err)
+		}
+	}
+	return nil
 }
 
 func dataSourceZoneRead(d *schema.ResourceData, meta interface{}) error {
@@ -92,6 +129,8 @@ func dataSourceZoneRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-	dataSourceZoneToResourceData(d, z)
+	if err := dataSourceZoneToResourceData(d, z); err != nil {
+		return err
+	}
 	return nil
 }

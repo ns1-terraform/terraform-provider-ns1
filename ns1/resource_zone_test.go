@@ -33,6 +33,7 @@ func TestAccZone_basic(t *testing.T) {
 					testAccCheckZoneRetry(&zone, 7200),
 					testAccCheckZoneExpiry(&zone, 1209600),
 					testAccCheckZoneNxTTL(&zone, 3600),
+					testAccCheckZoneNotPrimary(&zone),
 				),
 			},
 		},
@@ -74,6 +75,56 @@ func TestAccZone_updated(t *testing.T) {
 					testAccCheckZoneNxTTL(&zone, 3601),
 				),
 			},
+			{
+				ResourceName:      "ns1_zone.it",
+				ImportState:       true,
+				ImportStateId:     zoneName,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccZone_primary(t *testing.T) {
+	var zone dns.Zone
+	zoneName := fmt.Sprintf(
+		"terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
+	// sorted by IP please
+	expected := []*dns.ZoneSecondaryServer{
+		&dns.ZoneSecondaryServer{NetworkIDs: []int{0}, IP: "2.2.2.2", Port: 53, Notify: false},
+		&dns.ZoneSecondaryServer{NetworkIDs: []int{0}, IP: "3.3.3.3", Port: 5353, Notify: true},
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccZonePrimary(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneSecondary(t, &zone, 0, expected[0]),
+					testAccCheckZoneSecondary(t, &zone, 1, expected[1]),
+				),
+			},
+			{
+				ResourceName:      "ns1_zone.it",
+				ImportState:       true,
+				ImportStateId:     zoneName,
+				ImportStateVerify: true,
+			},
+			// should correctly clear zone.Primary
+			{
+				Config: testAccZonePrimaryUpdated(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneNotPrimary(&zone),
+				),
+			},
 		},
 	})
 }
@@ -91,7 +142,7 @@ func TestAccZone_secondary(t *testing.T) {
 		CheckDestroy: testAccCheckZoneDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccZonePrimary(zoneName),
+				Config: testAccZoneSecondary(zoneName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
 					testAccCheckZoneName(&zone, zoneName),
@@ -99,7 +150,14 @@ func TestAccZone_secondary(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.0", "2.2.2.2"),
 					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.1", "3.3.3.3"),
 					testAccCheckOtherPorts(&zone, expectedOtherPorts),
+					testAccCheckZoneNotPrimary(&zone),
 				),
+			},
+			{
+				ResourceName:      "ns1_zone.it",
+				ImportState:       true,
+				ImportStateId:     zoneName,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -219,6 +277,18 @@ func testAccCheckOtherPorts(zone *dns.Zone, expected []int) resource.TestCheckFu
 	}
 }
 
+func testAccCheckZoneNotPrimary(z *dns.Zone) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if z.Primary.Enabled != false {
+			return fmt.Errorf("Primary.Enabled: got: true want: false")
+		}
+		if len(z.Primary.Secondaries) != 0 {
+			return fmt.Errorf("Secondaries: got: len(%d) want: len(0)", len(z.Primary.Secondaries))
+		}
+		return nil
+	}
+}
+
 func testAccZoneBasic(zoneName string) string {
 	return fmt.Sprintf(`resource "ns1_zone" "it" {
   zone = "%s"
@@ -242,6 +312,28 @@ resource "ns1_zone" "it" {
 }
 
 func testAccZonePrimary(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone    = "%s"
+  secondaries {
+    ip       = "2.2.2.2"
+  }
+  secondaries {
+    ip       = "3.3.3.3"
+    notify   = true
+    port     = 5353
+  }
+}
+`, zoneName)
+}
+
+func testAccZonePrimaryUpdated(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone    = "%s"
+}
+`, zoneName)
+}
+
+func testAccZoneSecondary(zoneName string) string {
 	return fmt.Sprintf(`resource "ns1_zone" "it" {
   zone    = "%s"
   ttl     = 10800
