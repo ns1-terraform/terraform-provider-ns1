@@ -1,15 +1,15 @@
-## 1.5.2 (Unreleased)
+## 1.5.2 (September 20, 2019)
 
 ENHANCEMENTS:
 
-* Support outgoing transfer a.k.a. primary zone [GH-65]
-* Add option to enable request body logging via env var [GH-67]
+* Support outgoing transfer a.k.a. primary zone ([#65](https://github.com/terraform-providers/terraform-provider-ns1/issues/65))
+* Add option to enable request body logging via env var ([#67](https://github.com/terraform-providers/terraform-provider-ns1/issues/67))
 
 IMPROVEMENTS:
 
-* acc tests: Randomize zone names to help prevent collisions [GH-64]
-* Ignore order of location fields (comma sep strings) in record regions block [GH-68] 
-* Correct and improve docs around "regions" in record resource [GH-69]
+* acc tests: Randomize zone names to help prevent collisions ([#64](https://github.com/terraform-providers/terraform-provider-ns1/issues/64))
+* Ignore order of location fields (comma sep strings) in record regions block [[#68](https://github.com/terraform-providers/terraform-provider-ns1/issues/68)] 
+* Correct and improve docs around "regions" in record resource ([#69](https://github.com/terraform-providers/terraform-provider-ns1/issues/69))
 
 ## 1.5.1 (August 30, 2019)
 
