@@ -1,8 +1,15 @@
 ## 1.5.2 (Unreleased)
 
+ENHANCEMENTS:
+
+* Support outgoing transfer a.k.a. primary zone [GH-65]
+* Add option to enable request body logging via env var [GH-67]
+
 IMPROVEMENTS:
 
-* acc tests: Randomize zone names to help prevent collisions
+* acc tests: Randomize zone names to help prevent collisions [GH-64]
+* Ignore order of location fields (comma sep strings) in record regions block [GH-68] 
+* Correct and improve docs around "regions" in record resource [GH-69]
 
 ## 1.5.1 (August 30, 2019)
 
