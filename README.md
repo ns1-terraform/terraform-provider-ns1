@@ -372,6 +372,12 @@ In order to run the full suite of Acceptance tests, run `make testacc`.
 $ make testacc
 ```
 
+Some helpful things for debugging:
+
+* Set `TF_LOG=DEBUG` for verbose logging.
+* Additionally set `NS1_DEBUG` environment variable to include details of the
+  API requests in the logs.
+
 Known Issues/Roadmap
 --------------------
 

@@ -2,6 +2,10 @@ package ns1
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -34,6 +38,7 @@ func TestAccZone_basic(t *testing.T) {
 					testAccCheckZoneExpiry(&zone, 1209600),
 					testAccCheckZoneNxTTL(&zone, 3600),
 					testAccCheckZoneNotPrimary(&zone),
+					testAccCheckZoneDNSSEC(&zone, false),
 				),
 			},
 		},
@@ -61,6 +66,7 @@ func TestAccZone_updated(t *testing.T) {
 					testAccCheckZoneRetry(&zone, 7200),
 					testAccCheckZoneExpiry(&zone, 1209600),
 					testAccCheckZoneNxTTL(&zone, 3600),
+					testAccCheckZoneDNSSEC(&zone, false),
 				),
 			},
 			{
@@ -73,6 +79,7 @@ func TestAccZone_updated(t *testing.T) {
 					testAccCheckZoneRetry(&zone, 300),
 					testAccCheckZoneExpiry(&zone, 2592000),
 					testAccCheckZoneNxTTL(&zone, 3601),
+					testAccCheckZoneDNSSEC(&zone, false),
 				),
 			},
 			{
@@ -108,6 +115,7 @@ func TestAccZone_primary(t *testing.T) {
 					testAccCheckZoneName(&zone, zoneName),
 					testAccCheckZoneSecondary(t, &zone, 0, expected[0]),
 					testAccCheckZoneSecondary(t, &zone, 1, expected[1]),
+					testAccCheckZoneDNSSEC(&zone, false),
 				),
 			},
 			{
@@ -123,6 +131,7 @@ func TestAccZone_primary(t *testing.T) {
 					testAccCheckZoneExists("ns1_zone.it", &zone),
 					testAccCheckZoneName(&zone, zoneName),
 					testAccCheckZoneNotPrimary(&zone),
+					testAccCheckZoneDNSSEC(&zone, false),
 				),
 			},
 		},
@@ -151,6 +160,7 @@ func TestAccZone_secondary(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.1", "3.3.3.3"),
 					testAccCheckOtherPorts(&zone, expectedOtherPorts),
 					testAccCheckZoneNotPrimary(&zone),
+					testAccCheckZoneDNSSEC(&zone, false),
 				),
 			},
 			{
@@ -161,6 +171,95 @@ func TestAccZone_secondary(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccZone_dnssec(t *testing.T) {
+	var zone dns.Zone
+	zoneName := fmt.Sprintf(
+		"terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t); testAccDNSSECPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccZoneDNSSEC(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneDNSSEC(&zone, true),
+				),
+			},
+			{
+				ResourceName:      "ns1_zone.it",
+				ImportState:       true,
+				ImportStateId:     zoneName,
+				ImportStateVerify: true,
+			},
+			{
+				Config: testAccZoneDNSSECUpdated(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneDNSSEC(&zone, false),
+				),
+			},
+		},
+	})
+}
+
+// A Client instance we can use outside of a TestStep
+func sharedClient() (*ns1.Client, error) {
+	var ignoreSSL bool
+	v := os.Getenv("NS1_IGNORE_SSL")
+	if v == "" {
+		ignoreSSL = false
+	} else {
+		v, err := strconv.ParseBool(v)
+		if err != nil {
+			return nil, err
+		}
+		ignoreSSL = v
+	}
+	config := &Config{
+		Key:       os.Getenv("NS1_APIKEY"),
+		Endpoint:  os.Getenv("NS1_ENDPOINT"),
+		IgnoreSSL: ignoreSSL,
+	}
+	client, err := config.Client()
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+// See if we have DNSSEC permission by trying to create a zone with it
+func testAccDNSSECPreCheck(t *testing.T) {
+	client, err := sharedClient()
+	if err != nil {
+		log.Fatalf("failed to get shared client: %s", err)
+	}
+	zoneName := fmt.Sprintf(
+		"terraform-dnssec-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
+	dnssec := true
+	_, err = client.Zones.Create(
+		&dns.Zone{Zone: zoneName, DNSSEC: &dnssec},
+	)
+	if err != nil {
+		if strings.Contains(err.Error(), "400 DNSSEC support is not enabled") {
+			t.Skipf("account not authorized for DNSSEC changes, skipping test")
+			return
+		}
+		log.Fatalf("failed to create test zone %s: %s", zoneName, err)
+	}
+	_, err = client.Zones.Delete(zoneName)
+	if err != nil {
+		log.Fatalf("failed to delete test zone %s", zoneName)
+	}
 }
 
 func testAccCheckZoneExists(n string, zone *dns.Zone) resource.TestCheckFunc {
@@ -289,6 +388,15 @@ func testAccCheckZoneNotPrimary(z *dns.Zone) resource.TestCheckFunc {
 	}
 }
 
+func testAccCheckZoneDNSSEC(zone *dns.Zone, expected bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if *zone.DNSSEC != expected {
+			return fmt.Errorf("DNSSEC: got: %t want: %t", *zone.DNSSEC, expected)
+		}
+		return nil
+	}
+}
+
 func testAccZoneBasic(zoneName string) string {
 	return fmt.Sprintf(`resource "ns1_zone" "it" {
   zone = "%s"
@@ -305,6 +413,7 @@ resource "ns1_zone" "it" {
   retry   = 300
   expiry  = 2592000
   nx_ttl  = 3601
+  dnssec  = false
   # link    = "1.2.3.4.in-addr.arpa" # TODO
   # primary = "1.2.3.4.in-addr.arpa" # TODO
 }
@@ -328,7 +437,8 @@ func testAccZonePrimary(zoneName string) string {
 
 func testAccZonePrimaryUpdated(zoneName string) string {
 	return fmt.Sprintf(`resource "ns1_zone" "it" {
-  zone    = "%s"
+  zone   = "%s"
+  dnssec = false
 }
 `, zoneName)
 }
@@ -339,6 +449,22 @@ func testAccZoneSecondary(zoneName string) string {
   ttl     = 10800
   primary = "1.1.1.1"
   additional_primaries = ["2.2.2.2", "3.3.3.3"]
+}
+`, zoneName)
+}
+
+func testAccZoneDNSSEC(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone   = "%s"
+  dnssec = true
+}
+`, zoneName)
+}
+
+func testAccZoneDNSSECUpdated(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone   = "%s"
+  dnssec = false
 }
 `, zoneName)
 }

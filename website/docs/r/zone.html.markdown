@@ -59,6 +59,9 @@ The following arguments are supported:
   `additional_primaries` (default must be accepted).
 * `nx_ttl` - (Optional/Computed) The SOA NX TTL. Conflicts with `primary` and
   `additional_primaries` (default must be accepted).
+* `dnssec` - (Optional/Computed) Whether or not DNSSEC is enabled for the zone.
+  Note that DNSSEC must be enabled on the account by support for this to be set
+  to `true`.
 * `networks` - (Optional/Computed) List of network IDs for which the zone is
   available. If no network is provided, the zone will be created in network 0,
   the primary NS1 Global Network.

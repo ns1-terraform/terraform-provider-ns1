@@ -115,6 +115,11 @@ func resourceZone() *schema.Resource {
 					},
 				},
 			},
+			"dnssec": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
 		},
 		Create:   resourceZoneCreate,
 		Read:     resourceZoneRead,
@@ -133,6 +138,9 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	d.Set("retry", z.Retry)
 	d.Set("expiry", z.Expiry)
 	d.Set("networks", z.NetworkIDs)
+	if z.DNSSEC != nil {
+		d.Set("dnssec", *z.DNSSEC)
+	}
 	d.Set("dns_servers", strings.Join(z.DNSServers[:], ","))
 	if z.Secondary != nil && z.Secondary.Enabled {
 		d.Set("primary", z.Secondary.PrimaryIP)
@@ -185,6 +193,12 @@ func resourceToZoneData(z *dns.Zone, d *schema.ResourceData) {
 	}
 	if v, ok := d.GetOk("primary"); ok {
 		z.MakeSecondary(v.(string))
+	}
+	if v, ok := d.GetOkExists("dnssec"); ok {
+		if v != nil {
+			dnssec := v.(bool)
+			z.DNSSEC = &dnssec
+		}
 	}
 	if v, ok := d.GetOk("additional_primaries"); ok {
 		otherIPsRaw := v.([]interface{})
