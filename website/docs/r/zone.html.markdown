@@ -51,10 +51,14 @@ The following arguments are supported:
 * `additional_primaries` - (Optional) List of additional IPs for the primary
   zone. Conflicts with `secondaries`.
 * `ttl` - (Optional/Computed) The SOA TTL.
-* `refresh` - (Optional/Computed) The SOA Refresh.
-* `retry` - (Optional/Computed) The SOA Retry.
-* `expiry` - (Optional/Computed) The SOA Expiry.
-* `nx_ttl` - (Optional/Computed) The SOA NX TTL.
+* `refresh` - (Optional/Computed) The SOA Refresh. Conflicts with `primary` and
+  `additional_primaries` (default must be accepted).
+* `retry` - (Optional/Computed) The SOA Retry. Conflicts with `primary` and
+  `additional_primaries` (default must be accepted).
+* `expiry` - (Optional/Computed) The SOA Expiry. Conflicts with `primary` and
+  `additional_primaries` (default must be accepted).
+* `nx_ttl` - (Optional/Computed) The SOA NX TTL. Conflicts with `primary` and
+  `additional_primaries` (default must be accepted).
 * `networks` - (Optional/Computed) List of network IDs for which the zone is
   available. If no network is provided, the zone will be created in network 0,
   the primary NS1 Global Network.

@@ -337,10 +337,6 @@ func testAccZoneSecondary(zoneName string) string {
 	return fmt.Sprintf(`resource "ns1_zone" "it" {
   zone    = "%s"
   ttl     = 10800
-  refresh = 3600
-  retry   = 300
-  expiry  = 2592000
-  nx_ttl  = 3601
   primary = "1.1.1.1"
   additional_primaries = ["2.2.2.2", "3.3.3.3"]
 }
