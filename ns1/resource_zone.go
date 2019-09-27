@@ -28,25 +28,29 @@ func resourceZone() *schema.Resource {
 			},
 			// SOA attributes per https://tools.ietf.org/html/rfc1035).
 			"refresh": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"primary", "additional_primaries"},
 			},
 			"retry": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"primary", "additional_primaries"},
 			},
 			"expiry": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"primary", "additional_primaries"},
 			},
 			// SOA MINUMUM overloaded as NX TTL per https://tools.ietf.org/html/rfc2308
 			"nx_ttl": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"primary", "additional_primaries"},
 			},
 			// TODO: test
 			"link": {
