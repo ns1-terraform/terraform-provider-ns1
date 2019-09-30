@@ -37,6 +37,7 @@ In addition to the argument above, the following are exported:
 * `retry` - The SOA Retry.
 * `expiry` - The SOA Expiry.
 * `nx_ttl` - The SOA NX TTL.
+* `dnssec` - Whether or not DNSSEC is enabled for the zone.
 * `networks` - List of network IDs for which the zone is available.
 * `dns_servers` - Authoritative Name Servers.
 * `hostmaster` - The SOA Hostmaster.

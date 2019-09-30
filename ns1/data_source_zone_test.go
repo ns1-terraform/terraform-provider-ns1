@@ -35,6 +35,7 @@ func TestAccDataSourceZone_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(dataSourceName, "primary", "1.1.1.1"),
 					resource.TestCheckResourceAttr(dataSourceName, "additional_primaries.0", "2.2.2.2"),
 					resource.TestCheckResourceAttr(dataSourceName, "additional_primaries.1", "3.3.3.3"),
+					testAccCheckZoneDNSSEC(&zone, false),
 				),
 			},
 		},
@@ -65,6 +66,30 @@ func TestAccDataSourceZone_primary(t *testing.T) {
 					resource.TestCheckResourceAttr(dataSourceName, "zone", zoneName),
 					testAccCheckZoneSecondary(t, &zone, 0, expected[0]),
 					testAccCheckZoneSecondary(t, &zone, 1, expected[1]),
+					testAccCheckZoneDNSSEC(&zone, false),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceZone_dnssec(t *testing.T) {
+	var zone dns.Zone
+	dataSourceName := "data.ns1_zone.test"
+	zoneName := fmt.Sprintf(
+		"terraform-dnssec-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t); testAccDNSSECPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataSourceZoneDNSSEC(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists(dataSourceName, &zone),
+					testAccCheckZoneDNSSEC(&zone, true),
 				),
 			},
 		},
@@ -97,6 +122,18 @@ func testAccDataSourceZonePrimary(zoneName string) string {
     notify = true
     port   = 5353
   }
+}
+
+data "ns1_zone" "test" {
+  zone = "${ns1_zone.it.zone}"
+}
+`, zoneName)
+}
+
+func testAccDataSourceZoneDNSSEC(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone   = "%s"
+  dnssec = true
 }
 
 data "ns1_zone" "test" {

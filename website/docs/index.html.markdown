@@ -37,3 +37,12 @@ The following arguments are supported:
   be sourced from the `NS1_APIKEY` environment variable.
 * `version` - (Optional, but recommended if you don't like surprises) From
   output of `terraform init`.
+
+## Environment Variables
+
+The provider does check some environment variables:
+
+* `NS1_APIKEY` - (string) Explained above.
+* `NS1_ENDPOINT` - (string) For managed clients, this normally should not be set.
+* `NS1_IGNORE_SSL` - (boolean) This normally does not need to be set. If set,
+  follows the convention of [strconv.ParseBool](https://golang.org/pkg/strconv/#ParseBool).

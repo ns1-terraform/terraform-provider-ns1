@@ -90,6 +90,10 @@ func dataSourceZone() *schema.Resource {
 					},
 				},
 			},
+			"dnssec": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 		},
 		Read: dataSourceZoneRead,
 	}
@@ -104,6 +108,7 @@ func dataSourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	d.Set("retry", z.Retry)
 	d.Set("expiry", z.Expiry)
 	d.Set("networks", z.NetworkIDs)
+	d.Set("dnssec", z.DNSSEC)
 	d.Set("dns_servers", strings.Join(z.DNSServers[:], ","))
 	d.Set("link", z.Link)
 	if z.Secondary != nil && z.Secondary.Enabled {
