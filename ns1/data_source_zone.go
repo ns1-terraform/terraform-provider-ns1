@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 
-	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 )
 
@@ -95,7 +94,7 @@ func dataSourceZone() *schema.Resource {
 				Computed: true,
 			},
 		},
-		Read: dataSourceZoneRead,
+		Read: zoneRead,
 	}
 }
 
@@ -124,18 +123,6 @@ func dataSourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 		if err != nil {
 			return fmt.Errorf("[DEBUG] Error setting secondaries for: %s, error: %#v", z.Zone, err)
 		}
-	}
-	return nil
-}
-
-func dataSourceZoneRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ns1.Client)
-	z, _, err := client.Zones.Get(d.Get("zone").(string))
-	if err != nil {
-		return err
-	}
-	if err := dataSourceZoneToResourceData(d, z); err != nil {
-		return err
 	}
 	return nil
 }
