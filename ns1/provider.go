@@ -33,7 +33,8 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"ns1_zone": dataSourceZone(),
+			"ns1_zone":   dataSourceZone(),
+			"ns1_dnssec": dataSourceDNSSEC(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ns1_zone":          resourceZone(),
