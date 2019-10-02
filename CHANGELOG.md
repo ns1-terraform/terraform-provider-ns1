@@ -1,16 +1,16 @@
-## 1.5.3 (Unreleased)
+## 1.5.3 (October 02, 2019)
 
 BUG FIXES:
 * Disallow setting SOA fields (refresh, retry, expiry, and nx_ttl) on secondary zones. An API bug allowed
   these fields to be set on "create", the API now discards any settings to these fields and sets them to default
   values. These fields are now marked as "ConflictsWith" for secondary zones. If you were doing this and tf complains
   or the plan becomes dirty, the solution is to ensure the values are correctly set to the defaults, and let these
-  fields be computed. [GH-71]
+  fields be computed. ([#71](https://github.com/terraform-providers/terraform-provider-ns1/issues/71))
 
 ENHANCEMENTS:
 
-* Support toggling DNSSEC on zones: requires account to have DNSSEC permission (this is managed by support) [GH-70]
-* Zone DNSSEC data_source: this data source has the DNSSEC info for a zone with DNSSEC enabled [GH-72]
+* Support toggling DNSSEC on zones: requires account to have DNSSEC permission (this is managed by support) ([#70](https://github.com/terraform-providers/terraform-provider-ns1/issues/70))
+* Zone DNSSEC data_source: this data source has the DNSSEC info for a zone with DNSSEC enabled ([#72](https://github.com/terraform-providers/terraform-provider-ns1/issues/72))
 
 ## 1.5.2 (September 20, 2019)
 
