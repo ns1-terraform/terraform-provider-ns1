@@ -1,4 +1,16 @@
 ## 1.5.3 (Unreleased)
+
+BUG FIXES:
+* Disallow setting SOA fields (refresh, retry, expiry, and nx_ttl) on secondary zones. An API bug allowed
+  these fields to be set on "create", the API now discards any settings to these fields and sets them to default
+  values. If you were doing this and tf plan becomes dirty, the solution is to ensure the values are set to the
+  defaults and make the reource match, or let the settings be computed. [GH-71]
+
+ENHANCEMENTS:
+
+* Support toggling DNSSEC on zones: requires account to have DNSSEC permission (this is managed by support) [GH-70]
+* Zone DNSSEC data_source: this data source has the DNSSEC info for a zone with DNSSEC enabled [GH-72]
+
 ## 1.5.2 (September 20, 2019)
 
 ENHANCEMENTS:
