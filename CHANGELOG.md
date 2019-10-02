@@ -3,8 +3,9 @@
 BUG FIXES:
 * Disallow setting SOA fields (refresh, retry, expiry, and nx_ttl) on secondary zones. An API bug allowed
   these fields to be set on "create", the API now discards any settings to these fields and sets them to default
-  values. If you were doing this and tf plan becomes dirty, the solution is to ensure the values are set to the
-  defaults and make the resource match, or let the settings be computed. [GH-71]
+  values. These fields are now marked as "ConflictsWith" for secondary zones. If you were doing this and tf complains
+  or the plan becomes dirty, the solution is to ensure the values are correctly set to the defaults, and let these
+  fields be computed. [GH-71]
 
 ENHANCEMENTS:
 
