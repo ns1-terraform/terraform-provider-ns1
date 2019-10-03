@@ -248,6 +248,9 @@ func (rl RateLimit) WaitTime() time.Duration {
 
 // WaitTimeRemaining returns the time.Duration ratio of Period to Remaining
 func (rl RateLimit) WaitTimeRemaining() time.Duration {
+	if rl.Remaining < 2 {
+		return time.Second * time.Duration(rl.Period)
+	}
 	return (time.Second * time.Duration(rl.Period)) / time.Duration(rl.Remaining)
 }
 
@@ -256,6 +259,17 @@ func (c *Client) RateLimitStrategySleep() {
 	c.RateLimitFunc = func(rl RateLimit) {
 		remaining := rl.WaitTimeRemaining()
 		time.Sleep(remaining)
+	}
+}
+
+// RateLimitStrategyConcurrent sleeps for WaitTime * parallelism when
+// remaining is less than or equal to parallelism.
+func (c *Client) RateLimitStrategyConcurrent(parallelism int) {
+	c.RateLimitFunc = func(rl RateLimit) {
+		if rl.Remaining <= parallelism {
+			wait := rl.WaitTime() * time.Duration(parallelism)
+			time.Sleep(wait)
+		}
 	}
 }
 

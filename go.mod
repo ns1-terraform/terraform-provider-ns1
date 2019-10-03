@@ -27,5 +27,6 @@ require (
 	github.com/terraform-providers/terraform-provider-template v1.0.0 // indirect
 	github.com/terraform-providers/terraform-provider-tls v1.2.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	gopkg.in/ns1/ns1-go.v2 v2.0.0-20190927162648-9d01ca2a3b6d
+	gopkg.in/ns1/ns1-go.v2 v2.0.0-20191003184858-8f6a6362673f
+	gopkg.in/yaml.v2 v2.2.4 // indirect
 )
