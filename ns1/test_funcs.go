@@ -12,7 +12,9 @@ import (
 )
 
 // Note: sorts the Set of secondaries by IP
-func testAccCheckZoneSecondary(t *testing.T, z *dns.Zone, idx int, expected *dns.ZoneSecondaryServer) resource.TestCheckFunc {
+func testAccCheckZoneSecondaries(
+	t *testing.T, z *dns.Zone, idx int, expected *dns.ZoneSecondaryServer,
+) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		assert.True(t, z.Primary.Enabled)
 

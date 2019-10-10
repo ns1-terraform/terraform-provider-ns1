@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 
@@ -61,7 +62,6 @@ func resourceZone() *schema.Resource {
 			"primary": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ForceNew:      true,
 				ConflictsWith: []string{"secondaries"},
 			},
 			"additional_primaries": {
@@ -126,6 +126,19 @@ func resourceZone() *schema.Resource {
 		Update:   zoneUpdate,
 		Delete:   zoneDelete,
 		Importer: &schema.ResourceImporter{State: zoneStateFunc},
+		CustomizeDiff: customdiff.All(
+			customdiff.ForceNewIfChange(
+				"primary",
+				func(old, new, meta interface{}) bool {
+					// ForceNew if we're becoming a secondary zone, otherwise allow
+					// change or removal in place.
+					if old == "" && new != "" {
+						return true
+					}
+					return false
+				},
+			),
+		),
 	}
 }
 
@@ -193,6 +206,14 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 	}
 	if v, ok := d.GetOk("primary"); ok {
 		z.MakeSecondary(v.(string))
+	} else {
+		existing, _ := d.GetChange("primary")
+		if existing != "" {
+			// If we are not secondary and our zone previously _was_ secondary
+			// "clear" that out. Note that API 500s if we attempt to do this when
+			// the zone wasn't already a secondary at some point.
+			z.Secondary = &dns.ZoneSecondary{Enabled: false}
+		}
 	}
 	if v, ok := d.GetOkExists("dnssec"); ok {
 		if v != nil {
@@ -229,9 +250,17 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 			}
 		}
 		z.MakePrimary(secondaries...)
+		// MakePrimary doesn't clear out z.Secondary, so we do it manually. Same
+		// thing applies: we need to check if it was previously set to avoid a 500.
+		existing, _ := d.GetChange("primary")
+		if existing != "" {
+			z.Secondary = &dns.ZoneSecondary{Enabled: false}
+		}
 	} else {
-		// Ensure Primary is cleared out if we remove all of our secondaries
-		if _, ok := d.GetOk("primary"); !ok {
+		// Ensure Primary is cleared out if we remove all of our secondaries. This
+		// field won't 500, but it's nice to check first :)
+		existing, _ := d.GetChange("secondaries")
+		if existing.(*schema.Set).Len() != 0 {
 			z.Primary = &dns.ZonePrimary{
 				Enabled:     false,
 				Secondaries: make([]dns.ZoneSecondaryServer, 0),

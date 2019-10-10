@@ -64,8 +64,8 @@ func TestAccDataSourceZone_primary(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists(dataSourceName, &zone),
 					resource.TestCheckResourceAttr(dataSourceName, "zone", zoneName),
-					testAccCheckZoneSecondary(t, &zone, 0, expected[0]),
-					testAccCheckZoneSecondary(t, &zone, 1, expected[1]),
+					testAccCheckZoneSecondaries(t, &zone, 0, expected[0]),
+					testAccCheckZoneSecondaries(t, &zone, 1, expected[1]),
 					testAccCheckZoneDNSSEC(&zone, false),
 				),
 			},

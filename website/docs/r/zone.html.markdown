@@ -89,6 +89,22 @@ In addition to all arguments above, the following attributes are exported:
 * `dns_servers` - (Computed) Authoritative Name Servers.
 * `hostmaster` - (Computed) The SOA Hostmaster.
 
+## A note on making Primary or Secondary changes to zones
+
+Switching a zone to being a secondary forces a new resource. In other words,
+the zone will first be destroyed, then recreated as a secondary.
+Editing or removing the `primary` key, or directly changing a secondary zone to
+a primary (by removing the `primary` and `additional_primaries` keys, and
+setting `secondaries`) is supported "in place". However, in these situations we
+do not alter records on the zone. You may need to amend records, or finagle
+them into Terraform state. As a particular example, if you change a secondary
+zone to be primary (or just not-a-secondary) before a zone transfer has
+occurred, you can end up with no records on the zone.
+
+Currently, this provider does not support zones being both Primary and
+Secondary. If that functionality is important for your workflow, please open
+an issue or contact support, so we can prioritize the work accordingly.
+
 ## Import
 
 `terraform import ns1_zone.<name> <zone>`
