@@ -55,6 +55,11 @@ func recordResource() *schema.Resource {
 				ValidateFunc: recordTypeStringEnum.ValidateFunc,
 			},
 			// Optional
+			"allow_overwrite": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 			"ttl": {
 				Type:     schema.TypeInt,
 				Optional: true,
@@ -371,12 +376,27 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 // RecordCreate creates DNS record in ns1
 func RecordCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r := dns.NewRecord(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	zone := d.Get("zone").(string)
+	domain := d.Get("domain").(string)
+	recordType := d.Get("type").(string)
+
+	r := dns.NewRecord(zone, domain, recordType)
 	if err := resourceDataToRecord(r, d); err != nil {
 		return err
 	}
 	if _, err := client.Records.Create(r); err != nil {
-		return err
+		if !d.Get("allow_overwrite").(bool) && err.Error() != "record already exists" {
+			return err
+		}
+
+		log.Printf("Record exists and allow_overwrite enabled: deleting %s record for %s in %s", recordType, domain, zone)
+		if _, err := client.Records.Delete(zone, domain, recordType); err != nil {
+			return err
+		}
+
+		if _, err := client.Records.Create(r); err != nil {
+			return err
+		}
 	}
 	return recordToResourceData(d, r)
 }
