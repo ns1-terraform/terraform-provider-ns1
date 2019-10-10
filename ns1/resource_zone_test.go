@@ -92,7 +92,7 @@ func TestAccZone_updated(t *testing.T) {
 	})
 }
 
-func TestAccZone_primary(t *testing.T) {
+func TestAccZone_primary_to_secondary_to_normal(t *testing.T) {
 	var zone dns.Zone
 	zoneName := fmt.Sprintf(
 		"terraform-test-%s.io",
@@ -100,37 +100,70 @@ func TestAccZone_primary(t *testing.T) {
 	)
 	// sorted by IP please
 	expected := []*dns.ZoneSecondaryServer{
-		&dns.ZoneSecondaryServer{NetworkIDs: []int{0}, IP: "2.2.2.2", Port: 53, Notify: false},
-		&dns.ZoneSecondaryServer{NetworkIDs: []int{0}, IP: "3.3.3.3", Port: 5353, Notify: true},
+		&dns.ZoneSecondaryServer{
+			NetworkIDs: []int{0},
+			IP:         "2.2.2.2",
+			Port:       53,
+			Notify:     false,
+		},
+		&dns.ZoneSecondaryServer{
+			NetworkIDs: []int{0},
+			IP:         "3.3.3.3",
+			Port:       5353,
+			Notify:     true,
+		},
 	}
+	expectedOtherPorts := []int{53, 53}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckZoneDestroy,
 		Steps: []resource.TestStep{
+			// Start with a Primary Zone
 			{
 				Config: testAccZonePrimary(zoneName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
 					testAccCheckZoneName(&zone, zoneName),
-					testAccCheckZoneSecondary(t, &zone, 0, expected[0]),
-					testAccCheckZoneSecondary(t, &zone, 1, expected[1]),
+					testAccCheckZoneSecondaries(t, &zone, 0, expected[0]),
+					testAccCheckZoneSecondaries(t, &zone, 1, expected[1]),
+					testAccCheckZoneNotSecondary(&zone),
 					testAccCheckZoneDNSSEC(&zone, false),
 				),
 			},
+			// Check import
 			{
 				ResourceName:      "ns1_zone.it",
 				ImportState:       true,
 				ImportStateId:     zoneName,
 				ImportStateVerify: true,
 			},
+			// should make the zone secondary
+			{
+				Config: testAccZoneSecondary(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					resource.TestCheckResourceAttr("ns1_zone.it", "primary", "1.1.1.1"),
+					resource.TestCheckResourceAttr(
+						"ns1_zone.it", "additional_primaries.0", "2.2.2.2",
+					),
+					resource.TestCheckResourceAttr(
+						"ns1_zone.it", "additional_primaries.1", "3.3.3.3",
+					),
+					testAccCheckOtherPorts(&zone, expectedOtherPorts),
+					testAccCheckZoneNotPrimary(&zone),
+					testAccCheckZoneDNSSEC(&zone, false),
+				),
+			},
 			// should correctly clear zone.Primary
 			{
-				Config: testAccZonePrimaryUpdated(zoneName),
+				Config: testAccZoneBasic(zoneName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
 					testAccCheckZoneName(&zone, zoneName),
 					testAccCheckZoneNotPrimary(&zone),
+					testAccCheckZoneNotSecondary(&zone),
 					testAccCheckZoneDNSSEC(&zone, false),
 				),
 			},
@@ -138,18 +171,34 @@ func TestAccZone_primary(t *testing.T) {
 	})
 }
 
-func TestAccZone_secondary(t *testing.T) {
+func TestAccZone_secondary_to_primary_to_normal(t *testing.T) {
 	var zone dns.Zone
 	zoneName := fmt.Sprintf(
 		"terraform-test-%s.io",
 		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
 	)
+	// sorted by IP please
+	expected := []*dns.ZoneSecondaryServer{
+		&dns.ZoneSecondaryServer{
+			NetworkIDs: []int{0},
+			IP:         "2.2.2.2",
+			Port:       53,
+			Notify:     false,
+		},
+		&dns.ZoneSecondaryServer{
+			NetworkIDs: []int{0},
+			IP:         "3.3.3.3",
+			Port:       5353,
+			Notify:     true,
+		},
+	}
 	expectedOtherPorts := []int{53, 53}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckZoneDestroy,
 		Steps: []resource.TestStep{
+			// Start with a secondary zone
 			{
 				Config: testAccZoneSecondary(zoneName),
 				Check: resource.ComposeTestCheckFunc(
@@ -163,11 +212,35 @@ func TestAccZone_secondary(t *testing.T) {
 					testAccCheckZoneDNSSEC(&zone, false),
 				),
 			},
+			// Check import
 			{
 				ResourceName:      "ns1_zone.it",
 				ImportState:       true,
 				ImportStateId:     zoneName,
 				ImportStateVerify: true,
+			},
+			// should make the zone primary
+			{
+				Config: testAccZonePrimary(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneSecondaries(t, &zone, 0, expected[0]),
+					testAccCheckZoneSecondaries(t, &zone, 1, expected[1]),
+					testAccCheckZoneNotSecondary(&zone),
+					testAccCheckZoneDNSSEC(&zone, false),
+				),
+			},
+			// should correctly set zone.Primary disabled
+			{
+				Config: testAccZoneBasic(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneNotPrimary(&zone),
+					testAccCheckZoneNotSecondary(&zone),
+					testAccCheckZoneDNSSEC(&zone, false),
+				),
 			},
 		},
 	})
@@ -388,6 +461,18 @@ func testAccCheckZoneNotPrimary(z *dns.Zone) resource.TestCheckFunc {
 	}
 }
 
+func testAccCheckZoneNotSecondary(z *dns.Zone) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if z.Secondary != nil {
+			// Note that other fields are not cleared. We just toggle "enabled"
+			if z.Secondary.Enabled != false {
+				return fmt.Errorf("Secondary.Enabled: got: true want: false")
+			}
+		}
+		return nil
+	}
+}
+
 func testAccCheckZoneDNSSEC(zone *dns.Zone, expected bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if *zone.DNSSEC != expected {
@@ -431,14 +516,6 @@ func testAccZonePrimary(zoneName string) string {
     notify   = true
     port     = 5353
   }
-}
-`, zoneName)
-}
-
-func testAccZonePrimaryUpdated(zoneName string) string {
-	return fmt.Sprintf(`resource "ns1_zone" "it" {
-  zone   = "%s"
-  dnssec = false
 }
 `, zoneName)
 }
