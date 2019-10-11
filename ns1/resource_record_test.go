@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"github.com/stretchr/testify/assert"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -34,7 +35,9 @@ func TestAccRecord_basic(t *testing.T) {
 					testAccCheckRecordUseClientSubnet(&record, true),
 					testAccCheckRecordRegionName(&record, []string{"cal"}),
 					// testAccCheckRecordAnswerMetaWeight(&record, 10),
-					testAccCheckRecordAnswerRdata(&record, 0, fmt.Sprintf("test1.%s", zoneName)),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{fmt.Sprintf("test1.%s", zoneName)},
+					),
 				),
 			},
 			{
@@ -67,7 +70,9 @@ func TestAccRecord_updated(t *testing.T) {
 					testAccCheckRecordUseClientSubnet(&record, true),
 					testAccCheckRecordRegionName(&record, []string{"cal"}),
 					// testAccCheckRecordAnswerMetaWeight(&record, 10),
-					testAccCheckRecordAnswerRdata(&record, 0, fmt.Sprintf("test1.%s", zoneName)),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{fmt.Sprintf("test1.%s", zoneName)},
+					),
 				),
 			},
 			{
@@ -79,7 +84,9 @@ func TestAccRecord_updated(t *testing.T) {
 					testAccCheckRecordUseClientSubnet(&record, false),
 					testAccCheckRecordRegionName(&record, []string{"ny", "wa"}),
 					// testAccCheckRecordAnswerMetaWeight(&record, 5),
-					testAccCheckRecordAnswerRdata(&record, 0, fmt.Sprintf("test2.%s", zoneName)),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{fmt.Sprintf("test2.%s", zoneName)},
+					),
 				),
 			},
 			{
@@ -121,6 +128,41 @@ func TestAccRecord_meta(t *testing.T) {
 	})
 }
 
+func TestAccRecord_CAA(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordCAA(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.caa", &record),
+					testAccCheckRecordDomain(&record, zoneName),
+					testAccCheckRecordTTL(&record, 3600),
+					testAccCheckRecordUseClientSubnet(&record, true),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"0", "issue", "letsencrypt.org"},
+					),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 1, []string{"0", "issuewild", ";"},
+					),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.it",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/CAA", zoneName),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccRecord_SPF(t *testing.T) {
 	var record dns.Record
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
@@ -138,7 +180,9 @@ func TestAccRecord_SPF(t *testing.T) {
 					testAccCheckRecordDomain(&record, zoneName),
 					testAccCheckRecordTTL(&record, 86400),
 					testAccCheckRecordUseClientSubnet(&record, true),
-					testAccCheckRecordAnswerRdata(&record, 0, "v=DKIM1; k=rsa; p=XXXXXXXX"),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"v=DKIM1; k=rsa; p=XXXXXXXX"},
+					),
 				),
 			},
 			{
@@ -169,10 +213,12 @@ func TestAccRecord_SRV(t *testing.T) {
 					testAccCheckRecordDomain(&record, domainName),
 					testAccCheckRecordTTL(&record, 86400),
 					testAccCheckRecordUseClientSubnet(&record, true),
-					testAccCheckRecordAnswerRdata(&record, 0, "10"),
-					testAccCheckRecordAnswerRdata(&record, 1, "0"),
-					testAccCheckRecordAnswerRdata(&record, 2, "2380"),
-					testAccCheckRecordAnswerRdata(&record, 3, fmt.Sprintf("node-1.%s", zoneName)),
+					testAccCheckRecordAnswerRdata(
+						t,
+						&record,
+						0,
+						[]string{"10", "0", "2380", fmt.Sprintf("node-1.%s", zoneName)},
+					),
 				),
 			},
 			{
@@ -317,13 +363,12 @@ func testAccCheckRecordAnswerMetaIPPrefixes(r *dns.Record, expected []string) re
 	}
 }
 
-func testAccCheckRecordAnswerRdata(r *dns.Record, idx int, expected string) resource.TestCheckFunc {
+func testAccCheckRecordAnswerRdata(
+	t *testing.T, r *dns.Record, answerIdx int, expected []string,
+) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		recordAnswer := r.Answers[0]
-		recordAnswerString := recordAnswer.Rdata[idx]
-		if recordAnswerString != expected {
-			return fmt.Errorf("Answers[0].Rdata[%d]: got: %#v want: %#v", idx, recordAnswerString, expected)
-		}
+		recordAnswerRdata := r.Answers[answerIdx].Rdata
+		assert.ElementsMatch(t, recordAnswerRdata, expected)
 		return nil
 	}
 }
@@ -447,6 +492,26 @@ resource "ns1_record" "it" {
       weight = 5
       ip_prefixes = "1.1.1.1/32,2.2.2.2/32"
     }
+  }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordCAA(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "caa" {
+  zone     = "${ns1_zone.test.zone}"
+  domain   = "${ns1_zone.test.zone}"
+  type     = "CAA"
+  answers {
+    answer = "0 issue letsencrypt.org"
+  }
+  answers {
+    answer = "0 issuewild ;"
   }
 }
 
