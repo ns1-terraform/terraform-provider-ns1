@@ -385,7 +385,7 @@ func RecordCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	if _, err := client.Records.Create(r); err != nil {
-		if !d.Get("allow_overwrite").(bool) && err.Error() != "record already exists" {
+		if !d.Get("allow_overwrite").(bool) || err.Error() != "record already exists" {
 			return err
 		}
 
