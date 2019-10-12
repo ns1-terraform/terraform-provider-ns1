@@ -2,7 +2,6 @@ package ns1
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform/helper/customdiff"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -73,8 +72,11 @@ func resourceZone() *schema.Resource {
 				ConflictsWith: []string{"secondaries"},
 			},
 			"dns_servers": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeList,
 				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"hostmaster": {
 				Type:     schema.TypeString,
@@ -154,7 +156,7 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	if z.DNSSEC != nil {
 		d.Set("dnssec", *z.DNSSEC)
 	}
-	d.Set("dns_servers", strings.Join(z.DNSServers[:], ","))
+	d.Set("dns_servers", z.DNSServers[:])
 	if z.Secondary != nil && z.Secondary.Enabled {
 		d.Set("primary", z.Secondary.PrimaryIP)
 		d.Set("additional_primaries", z.Secondary.OtherIPs)
