@@ -39,6 +39,7 @@ func TestAccZone_basic(t *testing.T) {
 					testAccCheckZoneNxTTL(&zone, 3600),
 					testAccCheckZoneNotPrimary(&zone),
 					testAccCheckZoneDNSSEC(&zone, false),
+					testAccCheckNSRecord(&zone, true),
 				),
 			},
 		},
@@ -283,6 +284,29 @@ func TestAccZone_dnssec(t *testing.T) {
 	})
 }
 
+func TestAccZone_disable_autogenerate_ns_record(t *testing.T) {
+	var zone dns.Zone
+	zoneName := fmt.Sprintf(
+		"terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccZoneDisableAutoGenerateNSRecord(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckNSRecord(&zone, false),
+				),
+			},
+		},
+	})
+}
+
 // A Client instance we can use outside of a TestStep
 func sharedClient() (*ns1.Client, error) {
 	var ignoreSSL bool
@@ -362,6 +386,43 @@ func testAccCheckZoneExists(n string, zone *dns.Zone) resource.TestCheckFunc {
 		}
 
 		*zone = *foundZone
+
+		return nil
+	}
+}
+
+func testAccCheckNSRecord(zone *dns.Zone, expected bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[zone.Zone]
+
+		if !ok {
+			return fmt.Errorf("Not found: %s", zone.Zone)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("NoID is set")
+		}
+
+		client := testAccProvider.Meta().(*ns1.Client)
+
+		p := rs.Primary
+
+		if expected != p.Attributes["autogenerate_ns_record"] {
+			return fmt.Errorf("Discrepancy between expectation and configuration")
+		}
+
+		foundRecord, _, err := client.Records.Get(p.Attributes["zone"], p.Attributes["zone"], "NS")
+		if p.Attributes["autogenerate_ns_record"] {
+			if err != nil {
+				return fmt.Errorf("NS Record not found (autogenerate_ns_record set to true)")
+			}
+
+			if foundRecord.Domain != p.Attributes["zone"] {
+				return fmt.Errorf("NS Record not found (autogenerate_ns_record set to true)")
+			}
+		} else if err == nil {
+			return fmt.Errorf("NS Record found (autogenerate_ns_record set to false)")
+		}
 
 		return nil
 	}
@@ -542,6 +603,14 @@ func testAccZoneDNSSECUpdated(zoneName string) string {
 	return fmt.Sprintf(`resource "ns1_zone" "it" {
   zone   = "%s"
   dnssec = false
+}
+`, zoneName)
+}
+
+func testAccZoneDisableAutoGenerateNSRecord(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone                   = "%s"
+  autogenerate_ns_record = false
 }
 `, zoneName)
 }
