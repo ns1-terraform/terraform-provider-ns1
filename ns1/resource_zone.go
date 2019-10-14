@@ -99,12 +99,12 @@ func resourceZone() *schema.Resource {
 						"notify": {
 							Type:     schema.TypeBool,
 							Optional: true,
-							Default:  false,
+							Computed: true,
 						},
 						"port": {
 							Type:         schema.TypeInt,
 							Optional:     true,
-							Default:      53,
+							Computed:     true,
 							ValidateFunc: validation.IntBetween(1, 65535),
 						},
 						"networks": &schema.Schema{
