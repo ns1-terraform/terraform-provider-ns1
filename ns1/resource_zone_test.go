@@ -39,7 +39,7 @@ func TestAccZone_basic(t *testing.T) {
 					testAccCheckZoneNxTTL(&zone, 3600),
 					testAccCheckZoneNotPrimary(&zone),
 					testAccCheckZoneDNSSEC(&zone, false),
-					testAccCheckNSRecord(&zone, true),
+					testAccCheckNSRecord("ns1_zone.it", true),
 				),
 			},
 		},
@@ -300,7 +300,7 @@ func TestAccZone_disable_autogenerate_ns_record(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
 					testAccCheckZoneName(&zone, zoneName),
-					testAccCheckNSRecord(&zone, false),
+					testAccCheckNSRecord("ns1_zone.it", false),
 				),
 			},
 		},
@@ -368,7 +368,7 @@ func testAccCheckZoneExists(n string, zone *dns.Zone) resource.TestCheckFunc {
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("NoID is set")
+			return fmt.Errorf("No ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ns1.Client)
@@ -391,28 +391,33 @@ func testAccCheckZoneExists(n string, zone *dns.Zone) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckNSRecord(zone *dns.Zone, expected bool) resource.TestCheckFunc {
+func testAccCheckNSRecord(n string, expected bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[zone.Zone]
+		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", zone.Zone)
+			return fmt.Errorf("Not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("NoID is set")
+			return fmt.Errorf("No ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ns1.Client)
 
 		p := rs.Primary
 
-		if expected != p.Attributes["autogenerate_ns_record"] {
+		autogenerate_ns_record, err := strconv.ParseBool(p.Attributes["autogenerate_ns_record"])
+		if err != nil {
+			return err
+		}
+
+		if expected != autogenerate_ns_record {
 			return fmt.Errorf("Discrepancy between expectation and configuration")
 		}
 
 		foundRecord, _, err := client.Records.Get(p.Attributes["zone"], p.Attributes["zone"], "NS")
-		if p.Attributes["autogenerate_ns_record"] {
+		if autogenerate_ns_record {
 			if err != nil {
 				return fmt.Errorf("NS Record not found (autogenerate_ns_record set to true)")
 			}
