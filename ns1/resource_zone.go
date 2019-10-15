@@ -2,6 +2,7 @@ package ns1
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/customdiff"
@@ -119,6 +120,11 @@ func resourceZone() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Computed: true,
+			},
+			"autogenerate_ns_record": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
 			},
 		},
 		Create:   zoneCreate,
@@ -283,6 +289,12 @@ func zoneCreate(d *schema.ResourceData, meta interface{}) error {
 	resourceDataToZone(z, d)
 	if _, err := client.Zones.Create(z); err != nil {
 		return err
+	}
+	if !d.Get("autogenerate_ns_record").(bool) {
+		log.Printf("autogenerate_ns_record set to false: deleting NS record for zone %s", z.Zone)
+		if _, err := client.Records.Delete(z.Zone, z.Zone, "NS"); err != nil {
+			return err
+		}
 	}
 	if err := resourceZoneToResourceData(d, z); err != nil {
 		return err
