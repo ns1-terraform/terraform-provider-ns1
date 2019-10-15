@@ -1,4 +1,4 @@
-## 1.5.4 (Unreleased)
+## 1.6.0 (Unreleased)
 
 BUG FIXES:
 * Pick up a divide by zero fix in the SDK, when rate limiting. Should wait around when hitting limits rather
