@@ -1,4 +1,21 @@
 ## 1.5.4 (Unreleased)
+
+BUG FIXES:
+* Pick up a divide by zero fix in the SDK, when rate limiting. Should wait around when hitting limits rather
+  than falling over, and shouldn't require limiting parallelism to avoid 429 errors. [GH-74]
+ * We were explicitly sending defaults for `port` and `notify` fields in `secondaries`, now they are implicit.
+   Sending the default `port` prevented using IP ranges. [GH-82]
+ 
+ENHANCEMENTS:
+* Allow secondary zone -> primary zone in-place. Old behavior was to force a new resource (DELETE/PUT) on any
+  change to secondary. Now the only one that requires a new resource is when a zone _becomes_ a secondary. See
+  the note in docs. [GH-75]
+* Support for CAA records. [GH-78]
+  
+DEPRECATION:
+* We've bumped the CI tests to run under Go 1.12. Provider still works with 1.11, but we're developing on and
+  targeting 1.12+ [GH-76]
+
 ## 1.5.3 (October 02, 2019)
 
 BUG FIXES:
