@@ -396,34 +396,44 @@ func testAccCheckNSRecord(n string, expected bool) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("resource not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
+			return fmt.Errorf("resource.Primary: no ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ns1.Client)
 
 		p := rs.Primary
 
-		autogenerate_ns_record, err := strconv.ParseBool(p.Attributes["autogenerate_ns_record"])
+		shouldAutogenerate, err := strconv.ParseBool(
+			p.Attributes["autogenerate_ns_record"],
+		)
 		if err != nil {
 			return err
 		}
 
-		if expected != autogenerate_ns_record {
-			return fmt.Errorf("Discrepancy between expectation and configuration")
+		if expected != shouldAutogenerate {
+			return fmt.Errorf(
+				"autogenerate_ns_record: want %t, got %t",
+				expected,
+				shouldAutogenerate,
+			)
 		}
 
-		foundRecord, _, err := client.Records.Get(p.Attributes["zone"], p.Attributes["zone"], "NS")
-		if autogenerate_ns_record {
+		foundRecord, _, err := client.Records.Get(
+			p.Attributes["zone"], p.Attributes["zone"], "NS",
+		)
+		if shouldAutogenerate {
 			if err != nil {
-				return fmt.Errorf("NS Record not found (autogenerate_ns_record set to true)")
+				return fmt.Errorf(
+					"NS Record not found (autogenerate_ns_record set to true)",
+				)
 			}
 
 			if foundRecord.Domain != p.Attributes["zone"] {
-				return fmt.Errorf("NS Record not found (autogenerate_ns_record set to true)")
+				return fmt.Errorf("NS Record found, but domain does not match")
 			}
 		} else if err == nil {
 			return fmt.Errorf("NS Record found (autogenerate_ns_record set to false)")
