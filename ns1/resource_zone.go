@@ -131,7 +131,7 @@ func resourceZone() *schema.Resource {
 		Read:     zoneRead,
 		Update:   zoneUpdate,
 		Delete:   zoneDelete,
-		Importer: &schema.ResourceImporter{State: zoneStateFunc},
+		Importer: &schema.ResourceImporter{State: zoneImportStateFunc},
 		CustomizeDiff: customdiff.All(
 			customdiff.ForceNewIfChange(
 				"primary",
@@ -337,8 +337,11 @@ func zoneUpdate(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func zoneStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func zoneImportStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	d.Set("zone", d.Id())
+	// It would be nicer to leave this unset, as it's not really applicable for
+	// imports, but if we don't set it to default, terraform finds a diff.
+	d.Set("autogenerate_ns_record", true)
 	return []*schema.ResourceData{d}, nil
 }
 
