@@ -166,9 +166,9 @@ The following arguments are supported:
   `us_state` should be comma separated strings, and changes in ordering will not
   lead to terraform detecting a change.
 
-Note: regions **must** be sorted lexically by their "name" field in the `.tf`
-file, otherwise Terraform will detect changes to the record when none actually
-exist.
+Note: regions **must** be sorted lexically by their "name" argument in the
+Terraform configuration file, otherwise Terraform will detect changes to the
+record when none actually exist.
 
 #### Meta
 
