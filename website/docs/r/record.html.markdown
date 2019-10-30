@@ -103,10 +103,8 @@ The following arguments are supported:
   is documented below.
 * `regions` - (Optional) One or more "regions" for the record. These are really
   just groupings based on metadata, and are called "Answer Groups" in the NS1 UI,
-  but remain `regions` here for legacy reasons. Regions must be sorted
-  alphanumerically by name, otherwise Terraform will detect changes to the
-  record when none actually exist.
-  [Regions](#regions-1) are documented below.
+  but remain `regions` here for legacy reasons. [Regions](#regions-1) are
+  documented below. Please note the ordering requirement!
 * `answers` - (Optional) One or more NS1 answers for the records' specified type.
   [Answers](#answers-1) are documented below.
 * `filters` - (Optional) One or more NS1 filters for the record(order matters).
@@ -167,6 +165,10 @@ The following arguments are supported:
   Note that `Meta` values for `country`, `ca_province`, `georegion`, and
   `us_state` should be comma separated strings, and changes in ordering will not
   lead to terraform detecting a change.
+
+Note: regions **must** be sorted lexically by their "name" field in the `.tf`
+file, otherwise Terraform will detect changes to the record when none actually
+exist.
 
 #### Meta
 
