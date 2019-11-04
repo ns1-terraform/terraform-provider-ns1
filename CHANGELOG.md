@@ -1,4 +1,13 @@
 ## 1.6.1 (Unreleased)
+
+BUG FIXES:
+* fix interaction with the `autogenerate_ns_record` flag that was making terraform think a clean resource was dirty
+
+ENHANCEMENT:
+* docs and example for using `autogenerate_ns_record`.
+* minor improvements to some error messages in tests.
+* improve docs around the ordering requirement for zone regions.
+
 ## 1.6.0 (October 16, 2019)
 
 BUG FIXES:
