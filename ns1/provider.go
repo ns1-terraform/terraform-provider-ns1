@@ -31,6 +31,12 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("NS1_IGNORE_SSL", nil),
 				Description: descriptions["ignore_ssl"],
 			},
+			"rate_limit_parallelism": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NS1_RATE_LIMIT_PARALLELISM", nil),
+				Description: descriptions["rate_limit_parallelism"],
+			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"ns1_zone":   dataSourceZone(),
@@ -73,6 +79,9 @@ func ns1Configure(d *schema.ResourceData) (interface{}, error) {
 	}
 	if v, ok := d.GetOk("ignore_ssl"); ok {
 		config.IgnoreSSL = v.(bool)
+	}
+	if v, ok := d.GetOk("rate_limit_parallelism"); ok {
+		config.RateLimitParallelism = v.(int)
 	}
 
 	return config.Client()

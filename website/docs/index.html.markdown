@@ -37,12 +37,21 @@ The following arguments are supported:
   be sourced from the `NS1_APIKEY` environment variable.
 * `version` - (Optional, but recommended if you don't like surprises) From
   output of `terraform init`.
+* `endpoint` - (Optional) NS1 API endpoint. For managed clients, this normally
+  should not be set.
+* `ignore_ssl` - (Optional) This normally does not need to be set.
+* `rate_limit_parallelism` - (Optional) Integer for parallelism amount
+  (terraform's default is 10). If set, uses an alternate strategy to handle
+  rate limiting from the NS1 API. Give this a try if you are processing a large
+  number of resource and running into `429` rate-limiting errors.
 
 ## Environment Variables
 
-The provider does check some environment variables:
+The provider does check some environment variables as an alternative to
+embedding in the config:
 
 * `NS1_APIKEY` - (string) Explained above.
-* `NS1_ENDPOINT` - (string) For managed clients, this normally should not be set.
-* `NS1_IGNORE_SSL` - (boolean) This normally does not need to be set. If set,
-  follows the convention of [strconv.ParseBool](https://golang.org/pkg/strconv/#ParseBool).
+* `NS1_ENDPOINT` - (string) Explained above.
+* `NS1_IGNORE_SSL` - (boolean) If set, follows the convention of
+  [strconv.ParseBool](https://golang.org/pkg/strconv/#ParseBool).
+* `NS1_RATE_LIMIT_PARALLELISM` - (int) Explained above.
