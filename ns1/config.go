@@ -18,9 +18,10 @@ import (
 
 // Config for NS1 API
 type Config struct {
-	Key       string
-	Endpoint  string
-	IgnoreSSL bool
+	Key                  string
+	Endpoint             string
+	IgnoreSSL            bool
+	RateLimitParallelism int
 }
 
 // Client returns a new NS1 client.
@@ -54,7 +55,11 @@ func (c *Config) Client() (*ns1.Client, error) {
 		client = ns1.NewClient(httpClient, decos...)
 	}
 
-	client.RateLimitStrategySleep()
+	if parallelism := c.RateLimitParallelism; parallelism > 0 {
+		client.RateLimitStrategyConcurrent(parallelism)
+	} else {
+		client.RateLimitStrategySleep()
+	}
 
 	log.Printf("[INFO] NS1 Client configured for Endpoint: %s", client.Endpoint.String())
 
