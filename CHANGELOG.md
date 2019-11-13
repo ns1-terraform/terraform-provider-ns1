@@ -3,10 +3,14 @@
 BUG FIXES:
 * fix interaction with the `autogenerate_ns_record` flag that was making terraform think a clean resource was dirty
 
-ENHANCEMENT:
+ENHANCEMENTS:
 * docs and example for using `autogenerate_ns_record`.
 * minor improvements to some error messages in tests.
 * improve docs around the ordering requirement for zone regions.
+* improve docs around provider arguments and environment variables.
+
+IMPROVEMENTS:
+* Add a configuration option to the provider to use an alternate strategy to avoid rate limit errors.
 
 ## 1.6.0 (October 16, 2019)
 
