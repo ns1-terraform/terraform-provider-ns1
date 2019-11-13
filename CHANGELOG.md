@@ -1,4 +1,4 @@
-## 1.6.1 (Unreleased)
+## 1.6.1 (November 13, 2019)
 
 BUG FIXES:
 * fix interaction with the `autogenerate_ns_record` flag that was making terraform think a clean resource was dirty
