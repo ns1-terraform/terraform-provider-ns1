@@ -1,8 +1,9 @@
 resource "ns1_record" "it" {
   #required
-  zone   = "${ns1_zone.test.zone}"
-  domain = "test.${ns1_zone.test.zone}"
-  type   = "CNAME"
+  zone             = ns1_zone.test.zone
+  domain           = "test.${ns1_zone.test.zone}"
+  type             = "CNAME"
+  OverwriteAllowed = false
 
   #optional
   ttl               = 60
@@ -47,6 +48,7 @@ resource "ns1_record" "it" {
 
   regions {
     name = "ExampleRegionB"
+
     meta = {
       country = "AS,AU,CC,CK,CX,FJ,FM,GU,HM,KI,MH,MP,NC,NF,NR,NU,NZ,PF,PG,PN,PW,SB,TK,TO,TV,U9,VU,WF,WS"
       up      = false
@@ -63,7 +65,10 @@ resource "ns1_record" "it" {
 
   filters {
     filter = "select_first_n"
-    config = { N = 1 }
+
+    config = {
+      N = 1
+    }
   }
 }
 
