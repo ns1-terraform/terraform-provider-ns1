@@ -377,6 +377,15 @@ func RecordCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	if _, err := client.Records.Create(r); err != nil {
+		if err == ns1.ErrRecordExists && d.Get("OverwriteAllowed").(bool) {
+			/*
+					If NS1 returns ErrRecordExists, and if the user has specified OverwriteAllowed
+					then we will call RecordUpdate() to update the existing record.  We do this rather
+					than call RecordDelete() and RecordCreate() because there is a risk of a nasty loop
+				    starting.
+			*/
+			return RecordUpdate(d, meta)
+		}
 		return err
 	}
 	return recordToResourceData(d, r)
