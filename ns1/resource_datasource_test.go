@@ -62,11 +62,11 @@ func testAccCheckDataSourceExists(n string, dataSource *data.Source) resource.Te
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("NoID is set")
+			return fmt.Errorf("noID is set")
 		}
 
 		client := testAccProvider.Meta().(*ns1.Client)
@@ -80,7 +80,7 @@ func testAccCheckDataSourceExists(n string, dataSource *data.Source) resource.Te
 		}
 
 		if foundSource.Name != p.Attributes["name"] {
-			return fmt.Errorf("Datasource not found")
+			return fmt.Errorf("datasource not found")
 		}
 
 		*dataSource = *foundSource
@@ -100,7 +100,7 @@ func testAccCheckDataSourceDestroy(s *terraform.State) error {
 		_, _, err := client.DataSources.Get(rs.Primary.Attributes["id"])
 
 		if err == nil {
-			return fmt.Errorf("Datasource still exists")
+			return fmt.Errorf("datasource still exists")
 		}
 	}
 
@@ -110,7 +110,7 @@ func testAccCheckDataSourceDestroy(s *terraform.State) error {
 func testAccCheckDataSourceName(dataSource *data.Source, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if dataSource.Name != expected {
-			return fmt.Errorf("Name: got: %#v want: %#v", dataSource.Name, expected)
+			return fmt.Errorf("dataSource.Name: got: %#v want: %#v", dataSource.Name, expected)
 		}
 
 		return nil
@@ -120,7 +120,7 @@ func testAccCheckDataSourceName(dataSource *data.Source, expected string) resour
 func testAccCheckDataSourceType(dataSource *data.Source, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if dataSource.Type != expected {
-			return fmt.Errorf("Type: got: %#v want: %#v", dataSource.Type, expected)
+			return fmt.Errorf("dataSource.Type: got: %#v want: %#v", dataSource.Type, expected)
 		}
 
 		return nil

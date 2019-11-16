@@ -63,15 +63,15 @@ func testAccCheckDataFeedExists(n string, dsrc string, dataFeed *data.Feed, t *t
 		ds, ok := s.RootModule().Resources[dsrc]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("NoID is set")
+			return fmt.Errorf("noID is set")
 		}
 
 		if ds.Primary.ID == "" {
-			return fmt.Errorf("NoID is set for the datasource")
+			return fmt.Errorf("noID is set for the datasource")
 		}
 
 		client := testAccProvider.Meta().(*ns1.Client)
@@ -114,7 +114,7 @@ func testAccCheckDataFeedDestroy(s *terraform.State) error {
 
 	df, _, _ := client.DataFeeds.Get(dataSourceID, dataFeedID)
 	if df != nil {
-		return fmt.Errorf("DataFeed still exists: %#v", df)
+		return fmt.Errorf("dataFeed still exists: %#v", df)
 	}
 
 	return nil
@@ -123,7 +123,7 @@ func testAccCheckDataFeedDestroy(s *terraform.State) error {
 func testAccCheckDataFeedName(dataFeed *data.Feed, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if dataFeed.Name != expected {
-			return fmt.Errorf("Name: got: %#v want: %#v", dataFeed.Name, expected)
+			return fmt.Errorf("dataFeed.Name: got: %#v want: %#v", dataFeed.Name, expected)
 		}
 
 		return nil
@@ -134,7 +134,7 @@ func testAccCheckDataFeedConfig(dataFeed *data.Feed, key, expected string) resou
 	return func(s *terraform.State) error {
 
 		if dataFeed.Config[key] != expected {
-			return fmt.Errorf("Config[%s]: got: %#v, want: %s", key, dataFeed.Config[key], expected)
+			return fmt.Errorf("dataFeed.Config[%s]: got: %#v, want: %s", key, dataFeed.Config[key], expected)
 		}
 
 		return nil

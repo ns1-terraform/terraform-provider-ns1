@@ -364,11 +364,11 @@ func testAccCheckZoneExists(n string, zone *dns.Zone) resource.TestCheckFunc {
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
+			return fmt.Errorf("no ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ns1.Client)
@@ -382,7 +382,7 @@ func testAccCheckZoneExists(n string, zone *dns.Zone) resource.TestCheckFunc {
 		}
 
 		if foundZone.ID != p.Attributes["id"] {
-			return fmt.Errorf("Zone not found")
+			return fmt.Errorf("zone not found")
 		}
 
 		*zone = *foundZone
@@ -433,10 +433,10 @@ func testAccCheckNSRecord(n string, expected bool) resource.TestCheckFunc {
 			}
 
 			if foundRecord.Domain != p.Attributes["zone"] {
-				return fmt.Errorf("NS Record found, but domain does not match")
+				return fmt.Errorf("an NS Record found, but domain does not match")
 			}
 		} else if err == nil {
-			return fmt.Errorf("NS Record found (autogenerate_ns_record set to false)")
+			return fmt.Errorf("an NS Record found (autogenerate_ns_record set to false)")
 		}
 
 		return nil
@@ -454,7 +454,7 @@ func testAccCheckZoneDestroy(s *terraform.State) error {
 		zone, _, err := client.Zones.Get(rs.Primary.Attributes["zone"])
 
 		if err == nil {
-			return fmt.Errorf("Zone still exists: %#v: %#v", err, zone)
+			return fmt.Errorf("zone still exists: %#v: %#v", err, zone)
 		}
 	}
 
@@ -464,7 +464,7 @@ func testAccCheckZoneDestroy(s *terraform.State) error {
 func testAccCheckZoneName(zone *dns.Zone, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if zone.Zone != expected {
-			return fmt.Errorf("Zone: got: %s want: %s", zone.Zone, expected)
+			return fmt.Errorf("zone: got: %s want: %s", zone.Zone, expected)
 		}
 		return nil
 	}
@@ -473,7 +473,7 @@ func testAccCheckZoneName(zone *dns.Zone, expected string) resource.TestCheckFun
 func testAccCheckZoneTTL(zone *dns.Zone, expected int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if zone.TTL != expected {
-			return fmt.Errorf("TTL: got: %d want: %d", zone.TTL, expected)
+			return fmt.Errorf("zone.TTL: got: %d want: %d", zone.TTL, expected)
 		}
 		return nil
 	}
@@ -481,7 +481,7 @@ func testAccCheckZoneTTL(zone *dns.Zone, expected int) resource.TestCheckFunc {
 func testAccCheckZoneRefresh(zone *dns.Zone, expected int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if zone.Refresh != expected {
-			return fmt.Errorf("Refresh: got: %d want: %d", zone.Refresh, expected)
+			return fmt.Errorf("zone.Refresh: got: %d want: %d", zone.Refresh, expected)
 		}
 		return nil
 	}
@@ -489,7 +489,7 @@ func testAccCheckZoneRefresh(zone *dns.Zone, expected int) resource.TestCheckFun
 func testAccCheckZoneRetry(zone *dns.Zone, expected int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if zone.Retry != expected {
-			return fmt.Errorf("Retry: got: %d want: %d", zone.Retry, expected)
+			return fmt.Errorf("zone.Retry: got: %d want: %d", zone.Retry, expected)
 		}
 		return nil
 	}
@@ -497,7 +497,7 @@ func testAccCheckZoneRetry(zone *dns.Zone, expected int) resource.TestCheckFunc 
 func testAccCheckZoneExpiry(zone *dns.Zone, expected int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if zone.Expiry != expected {
-			return fmt.Errorf("Expiry: got: %d want: %d", zone.Expiry, expected)
+			return fmt.Errorf("zone.Expiry: got: %d want: %d", zone.Expiry, expected)
 		}
 		return nil
 	}
@@ -505,7 +505,7 @@ func testAccCheckZoneExpiry(zone *dns.Zone, expected int) resource.TestCheckFunc
 func testAccCheckZoneNxTTL(zone *dns.Zone, expected int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if zone.NxTTL != expected {
-			return fmt.Errorf("NxTTL: got: %d want: %d", zone.NxTTL, expected)
+			return fmt.Errorf("zone.NxTTL: got: %d want: %d", zone.NxTTL, expected)
 		}
 		return nil
 	}
@@ -528,10 +528,10 @@ func testAccCheckOtherPorts(zone *dns.Zone, expected []int) resource.TestCheckFu
 func testAccCheckZoneNotPrimary(z *dns.Zone) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if z.Primary.Enabled != false {
-			return fmt.Errorf("Primary.Enabled: got: true want: false")
+			return fmt.Errorf("z.Primary.Enabled: got: true want: false")
 		}
 		if len(z.Primary.Secondaries) != 0 {
-			return fmt.Errorf("Secondaries: got: len(%d) want: len(0)", len(z.Primary.Secondaries))
+			return fmt.Errorf("secondaries: got: len(%d) want: len(0)", len(z.Primary.Secondaries))
 		}
 		return nil
 	}
@@ -542,7 +542,7 @@ func testAccCheckZoneNotSecondary(z *dns.Zone) resource.TestCheckFunc {
 		if z.Secondary != nil {
 			// Note that other fields are not cleared. We just toggle "enabled"
 			if z.Secondary.Enabled != false {
-				return fmt.Errorf("Secondary.Enabled: got: true want: false")
+				return fmt.Errorf("z.Secondary.Enabled: got: true want: false")
 			}
 		}
 		return nil
