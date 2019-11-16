@@ -5,6 +5,13 @@ PKG_NAME=ns1
 
 default: build
 
+clean:
+	@if [[ -f $(GOPATH)/bin/terraform-provider-ns1 ]]; then \
+		rm $(GOPATH)/bin/terraform-provider-ns1; \
+	else \
+		echo "nothing to clean."; \
+	fi
+
 build: fmtcheck
 	go install
 
