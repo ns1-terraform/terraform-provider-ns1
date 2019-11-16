@@ -414,7 +414,7 @@ func RecordUpdate(d *schema.ResourceData, meta interface{}) error {
 			/*
 				If NS1 returns ErrRecordMissing, and if the user has specified OverwriteAllowed
 				then we will call RecordCreate and create a new record.
-			 */
+			*/
 			return RecordCreate(d, meta)
 		}
 		return err
