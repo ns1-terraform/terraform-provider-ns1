@@ -235,11 +235,11 @@ func testAccCheckRecordExists(n string, record *dns.Record) resource.TestCheckFu
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %v", n)
+			return fmt.Errorf("not found: %v", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("NoID is set")
+			return fmt.Errorf("noID is set")
 		}
 
 		client := testAccProvider.Meta().(*ns1.Client)
@@ -248,11 +248,11 @@ func testAccCheckRecordExists(n string, record *dns.Record) resource.TestCheckFu
 
 		foundRecord, _, err := client.Records.Get(p.Attributes["zone"], p.Attributes["domain"], p.Attributes["type"])
 		if err != nil {
-			return fmt.Errorf("Record not found")
+			return fmt.Errorf("record not found")
 		}
 
 		if foundRecord.Domain != p.Attributes["domain"] {
-			return fmt.Errorf("Record not found")
+			return fmt.Errorf("record not found")
 		}
 
 		*record = *foundRecord
@@ -282,7 +282,7 @@ func testAccCheckRecordDestroy(s *terraform.State) error {
 
 	foundRecord, _, err := client.Records.Get(recordZone, recordDomain, recordType)
 	if err != ns1.ErrRecordMissing {
-		return fmt.Errorf("Record still exists: %#v %#v", foundRecord, err)
+		return fmt.Errorf("record still exists: %#v %#v", foundRecord, err)
 	}
 
 	return nil
@@ -291,7 +291,7 @@ func testAccCheckRecordDestroy(s *terraform.State) error {
 func testAccCheckRecordDomain(r *dns.Record, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if r.Domain != expected {
-			return fmt.Errorf("Domain: got: %#v want: %#v", r.Domain, expected)
+			return fmt.Errorf("r.Domain: got: %#v want: %#v", r.Domain, expected)
 		}
 		return nil
 	}
@@ -300,7 +300,7 @@ func testAccCheckRecordDomain(r *dns.Record, expected string) resource.TestCheck
 func testAccCheckRecordTTL(r *dns.Record, expected int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if r.TTL != expected {
-			return fmt.Errorf("TTL: got: %#v want: %#v", r.TTL, expected)
+			return fmt.Errorf("r.TTL: got: %#v want: %#v", r.TTL, expected)
 		}
 		return nil
 	}
@@ -327,7 +327,7 @@ func testAccCheckRecordRegionName(r *dns.Record, expected []string) resource.Tes
 		sort.Strings(regions)
 		sort.Strings(expected)
 		if !reflect.DeepEqual(regions, expected) {
-			return fmt.Errorf("Regions: got: %#v want: %#v", regions, expected)
+			return fmt.Errorf("regions: got: %#v want: %#v", regions, expected)
 		}
 		return nil
 	}
@@ -339,7 +339,7 @@ func testAccCheckRecordAnswerMetaWeight(r *dns.Record, expected float64) resourc
 		recordMetas := recordAnswer.Meta
 		weight := recordMetas.Weight.(float64)
 		if weight != expected {
-			return fmt.Errorf("Answers[0].Meta.Weight: got: %#v want: %#v", weight, expected)
+			return fmt.Errorf("r.Answers[0].Meta.Weight: got: %#v want: %#v", weight, expected)
 		}
 		return nil
 	}

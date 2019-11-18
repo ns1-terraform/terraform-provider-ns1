@@ -49,7 +49,7 @@ func testAccCheckUserDestroy(s *terraform.State) error {
 
 		user, _, err := client.Users.Get(rs.Primary.Attributes["id"])
 		if err == nil {
-			return fmt.Errorf("User still exists: %#v: %#v", err, user.Name)
+			return fmt.Errorf("user still exists: %#v: %#v", err, user.Name)
 		}
 	}
 
@@ -60,11 +60,11 @@ func testAccCheckUserExists(n string, user *account.User) resource.TestCheckFunc
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("Not found: %s", n)
+			return fmt.Errorf("not found: %s", n)
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
+			return fmt.Errorf("no ID is set")
 		}
 
 		client := testAccProvider.Meta().(*ns1.Client)
@@ -75,7 +75,7 @@ func testAccCheckUserExists(n string, user *account.User) resource.TestCheckFunc
 		}
 
 		if foundUser.Username != rs.Primary.ID {
-			return fmt.Errorf("User not found (%#v != %s)", foundUser, rs.Primary.ID)
+			return fmt.Errorf("user not found (%#v != %s)", foundUser, rs.Primary.ID)
 		}
 
 		*user = *foundUser

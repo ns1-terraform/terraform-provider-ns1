@@ -101,28 +101,28 @@ func testAccCheckDataSourceDNSSECDelegation(
 ) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if d.Delegation.TTL != 3600 {
-			return fmt.Errorf("Delegation.TTL want 3600, got %d", d.Delegation.TTL)
+			return fmt.Errorf("d.Delegation.TTL want 3600, got %d", d.Delegation.TTL)
 		}
 
 		if len(d.Delegation.DNSKey) != 1 {
 			return fmt.Errorf(
-				"Delgation.DNSKey length: want 1, got %d", len(d.Delegation.DNSKey),
+				"d.Delgation.DNSKey length: want 1, got %d", len(d.Delegation.DNSKey),
 			)
 		}
 		for i := range d.Delegation.DNSKey {
 			if err := testAccCheckDNSKey(d.Delegation.DNSKey[i]); err != nil {
-				return fmt.Errorf("Delegation.DNSKey[%d]: %s", i, err)
+				return fmt.Errorf("d.Delegation.DNSKey[%d]: %s", i, err)
 			}
 		}
 
 		if len(d.Delegation.DS) != 1 {
 			return fmt.Errorf(
-				"Delegation.DS length: want 1, got %d", len(d.Delegation.DS),
+				"d.Delegation.DS length: want 1, got %d", len(d.Delegation.DS),
 			)
 		}
 		for i := range d.Delegation.DS {
 			if err := testAccCheckDNSKey(d.Delegation.DS[i]); err != nil {
-				return fmt.Errorf("Delegation.DS[%d]: %s", i, err)
+				return fmt.Errorf("d.Delegation.DS[%d]: %s", i, err)
 			}
 		}
 
@@ -132,16 +132,16 @@ func testAccCheckDataSourceDNSSECDelegation(
 
 func testAccCheckDNSKey(key *dns.Key) error {
 	if key.Flags == "" {
-		return fmt.Errorf("Flags is empty")
+		return fmt.Errorf("flags is empty")
 	}
 	if key.Protocol == "" {
-		return fmt.Errorf("Protocol is empty")
+		return fmt.Errorf("protocol is empty")
 	}
 	if key.Algorithm == "" {
-		return fmt.Errorf("Algorithm is empty")
+		return fmt.Errorf("algorithm is empty")
 	}
 	if key.PublicKey == "" {
-		return fmt.Errorf("PublicKey is empty")
+		return fmt.Errorf("publicKey is empty")
 	}
 	return nil
 }

@@ -99,11 +99,11 @@ func testAccCheckNotifyListState(key, value string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources["ns1_notifylist.test"]
 		if !ok {
-			return fmt.Errorf("Not found: %s", "ns1_notifylist.test")
+			return fmt.Errorf("not found: %s", "ns1_notifylist.test")
 		}
 
 		if rs.Primary.ID == "" {
-			return fmt.Errorf("No ID is set")
+			return fmt.Errorf("no ID is set")
 		}
 
 		p := rs.Primary
@@ -121,7 +121,7 @@ func testAccCheckNotifyListExists(n string, nl *monitor.NotifyList) resource.Tes
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("Resource not found: %v", n)
+			return fmt.Errorf("resource not found: %v", n)
 		}
 
 		id := rs.Primary.ID
@@ -138,7 +138,7 @@ func testAccCheckNotifyListExists(n string, nl *monitor.NotifyList) resource.Tes
 		}
 
 		if foundNl.ID != id {
-			return fmt.Errorf("Notify List not found want: %#v, got %#v", id, foundNl)
+			return fmt.Errorf("notify List not found want: %#v, got %#v", id, foundNl)
 		}
 
 		*nl = *foundNl
@@ -158,7 +158,7 @@ func testAccCheckNotifyListDestroy(s *terraform.State) error {
 		nl, _, err := client.Notifications.Get(rs.Primary.Attributes["id"])
 
 		if err == nil {
-			return fmt.Errorf("Notify List still exists %#v: %#v", err, nl)
+			return fmt.Errorf("notify List still exists %#v: %#v", err, nl)
 		}
 	}
 
@@ -168,7 +168,7 @@ func testAccCheckNotifyListDestroy(s *terraform.State) error {
 func testAccCheckNotifyListName(nl *monitor.NotifyList, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if nl.Name != expected {
-			return fmt.Errorf("Name: got: %#v want: %#v", nl.Name, expected)
+			return fmt.Errorf("nl.Name: got: %#v want: %#v", nl.Name, expected)
 		}
 		return nil
 	}
