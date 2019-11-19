@@ -40,14 +40,16 @@ func recordResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Required
 			"zone": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:      schema.TypeString,
+				Required:  true,
+				ForceNew:  true,
+				StateFunc: normalizeFQDN,
 			},
 			"domain": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:      schema.TypeString,
+				Required:  true,
+				ForceNew:  true,
+				StateFunc: normalizeFQDN,
 			},
 			"type": {
 				Type:         schema.TypeString,
@@ -259,6 +261,8 @@ func answerToMap(a dns.Answer) map[string]interface{} {
 
 func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 	r.ID = d.Id()
+	r.Domain = normalizeFQDN(d.Get("domain"))
+	r.Zone = normalizeFQDN(d.Get("zone"))
 	log.Printf("answers from template: %+v, %T\n", d.Get("answers"), d.Get("answers"))
 
 	if shortAnswers := d.Get("short_answers").([]interface{}); len(shortAnswers) > 0 {
@@ -451,4 +455,16 @@ func regionsMetaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 	}
 
 	return false
+}
+
+func normalizeFQDN(val interface{}) string {
+	inputString := val.(string)
+	// remove any leading or trailing dots
+	if strings.HasSuffix(inputString, ".") {
+		inputString = inputString[0 : len(inputString) - 1]
+	}
+	if strings.HasPrefix(inputString, "."){
+		inputString = inputString[1 : len(inputString)]
+	}
+	return inputString
 }
