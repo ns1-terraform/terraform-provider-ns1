@@ -33,6 +33,7 @@ var recordTypeStringEnum = NewStringEnum([]string{
 	"SPF",
 	"SRV",
 	"TXT",
+	"URLFWD",
 })
 
 func recordResource() *schema.Resource {
@@ -281,6 +282,9 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			switch d.Get("type") {
 			case "TXT", "SPF":
 				a = dns.NewTXTAnswer(v)
+			case "URLFWD":
+				arr := strings.Split(v, " ")
+				a = dns.NewURLFWDAnswer(arr[0], arr[1], arr[2], arr[3], arr[4])
 			default:
 				a = dns.NewAnswer(strings.Split(v, " "))
 			}
