@@ -6,6 +6,6 @@ require (
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	gopkg.in/ns1/ns1-go.v2 v2.0.0-20191029201448-da571caa8ebc
-	gopkg.in/yaml.v2 v2.2.5 // indirect
+	gopkg.in/ns1/ns1-go.v2 v2.0.0-20191126161805-25b9eac84517
+	gopkg.in/yaml.v2 v2.2.7 // indirect
 )

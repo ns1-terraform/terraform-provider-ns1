@@ -231,6 +231,41 @@ func TestAccRecord_SRV(t *testing.T) {
 	})
 }
 
+func TestAccRecord_URLFWD(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("fwd.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordURLFWD(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.urlfwd", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 3600),
+					testAccCheckRecordAnswerRdata(
+						t,
+						&record,
+						0,
+						[]string{"/", "https://example.com", "301", "2", "0"},
+					),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.it",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/URLFWD", zoneName, domainName),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckRecordExists(n string, record *dns.Record) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -550,6 +585,23 @@ resource "ns1_record" "srv" {
   use_client_subnet = "true"
   answers {
     answer = "10 0 2380 node-1.${ns1_zone.test.zone}"
+  }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordURLFWD(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "urlfwd" {
+  zone     = "${ns1_zone.test.zone}"
+  domain   = "fwd.${ns1_zone.test.zone}"
+  type     = "URLFWD"
+  answers {
+    answer = "/ https://example.com 301 2 0"
   }
 }
 
