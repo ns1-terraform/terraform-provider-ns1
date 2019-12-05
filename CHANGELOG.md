@@ -1,17 +1,22 @@
 ## 1.6.2 (Unreleased)
+
+ENHANCEMENTS:
+* Support URLFWD records [GH-96]
+* Add a "clean" rule to Makefile [GH-89]
+
 ## 1.6.1 (November 13, 2019)
 
 BUG FIXES:
-* fix interaction with the `autogenerate_ns_record` flag that was making terraform think a clean resource was dirty
+* fix interaction with the `autogenerate_ns_record` flag that was making terraform think a clean resource was dirty [GH-85]
 
 ENHANCEMENTS:
-* docs and example for using `autogenerate_ns_record`.
+* docs and example for using `autogenerate_ns_record`. [GH-83]
 * minor improvements to some error messages in tests.
 * improve docs around the ordering requirement for zone regions.
 * improve docs around provider arguments and environment variables.
 
 IMPROVEMENTS:
-* Add a configuration option to the provider to use an alternate strategy to avoid rate limit errors.
+* Add a configuration option to the provider to use an alternate strategy to avoid rate limit errors. [GH-88]
 
 ## 1.6.0 (October 16, 2019)
 
