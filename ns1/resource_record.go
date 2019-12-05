@@ -33,6 +33,7 @@ var recordTypeStringEnum = NewStringEnum([]string{
 	"SPF",
 	"SRV",
 	"TXT",
+	"URLFWD",
 })
 
 func recordResource() *schema.Resource {
