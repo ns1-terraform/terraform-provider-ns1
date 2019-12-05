@@ -1,22 +1,22 @@
-## 1.6.2 (Unreleased)
+## 1.6.2 (December 05, 2019)
 
 ENHANCEMENTS:
-* Support URLFWD records [GH-96]
-* Add a "clean" rule to Makefile [GH-89]
+* Support URLFWD records ([#96](https://github.com/terraform-providers/terraform-provider-ns1/issues/96))
+* Add a "clean" rule to Makefile ([#89](https://github.com/terraform-providers/terraform-provider-ns1/issues/89))
 
 ## 1.6.1 (November 13, 2019)
 
 BUG FIXES:
-* fix interaction with the `autogenerate_ns_record` flag that was making terraform think a clean resource was dirty [GH-85]
+* fix interaction with the `autogenerate_ns_record` flag that was making terraform think a clean resource was dirty ([#85](https://github.com/terraform-providers/terraform-provider-ns1/issues/85))
 
 ENHANCEMENTS:
-* docs and example for using `autogenerate_ns_record`. [GH-83]
+* docs and example for using `autogenerate_ns_record`. ([#83](https://github.com/terraform-providers/terraform-provider-ns1/issues/83))
 * minor improvements to some error messages in tests.
 * improve docs around the ordering requirement for zone regions.
 * improve docs around provider arguments and environment variables.
 
 IMPROVEMENTS:
-* Add a configuration option to the provider to use an alternate strategy to avoid rate limit errors. [GH-88]
+* Add a configuration option to the provider to use an alternate strategy to avoid rate limit errors. ([#88](https://github.com/terraform-providers/terraform-provider-ns1/issues/88))
 
 ## 1.6.0 (October 16, 2019)
 
