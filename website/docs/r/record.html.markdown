@@ -86,20 +86,21 @@ resource "ns1_record" "www" {
   }
 }
 
-# Some other non-NS1 provider that returns a zone with a trailing dot.
+# Some other non-NS1 provider that returns a zone with a trailing dot and a domain with a leading dot.
 resource "external_source" "baz" {
-  zone = "terraform.example.io."
+  zone      = "terraform.example.io."
+  domain    = ".www.terraform.example.io"
 }
 
 # Basic record showing how to clean a zone or domain field that comes from
 # another non-NS1 resource. DNS names often end in '.' characters to signify
-# the root of the DNS tree, but the NS1 API does not support this.
+# the root of the DNS tree, but the NS1 provider does not support this.
 #
 # In other cases, a domain or zone may be passed in with a preceding dot ('.')
 # character which would likewise lead the system to fail.
 resource "ns1_record" "external" {
   zone   = replace("${external_source.zone}", "/(^\\.)|(\\.$)/", "")
-  domain = replace("www.${external_source.zone}", "/(^\\.)|(\\.$)/", "")
+  domain = replace("${external_source.domain}", "/(^\\.)|(\\.$)/", "")
   type   = "CNAME"
 }
 
