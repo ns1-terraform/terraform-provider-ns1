@@ -3,6 +3,7 @@ package ns1
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"sort"
 	"testing"
 
@@ -261,6 +262,32 @@ func TestAccRecord_URLFWD(t *testing.T) {
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/URLFWD", zoneName, domainName),
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccRecord_validationError(t *testing.T) {
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordInvalid(rString),
+				/* The error block should look like this:
+
+				config is invalid: 4 problems:
+
+					- zone has an invalid leading ".", got: .terraform-test-e677cntkkar21ak.io.
+					- zone has an invalid trailing ".", got: .terraform-test-e677cntkkar21ak.io.
+					- domain has an invalid leading ".", got: .test.terraform-test-e677cntkkar21ak.io.
+					- domain has an invalid trailing ".", got: .test.terraform-test-e677cntkkar21ak.io.
+
+				*/
+				ExpectError: regexp.MustCompile(`config is invalid: 4 problems:\n\n(\s*- (zone|domain) has an invalid (leading|trailing) \"\.\", got: .*){4}`),
 			},
 		},
 	})
@@ -611,6 +638,18 @@ resource "ns1_zone" "test" {
 `, rString)
 }
 
+// zone and domain have leading and trailing dots and should fail validation.
+func testAccRecordInvalid(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+  zone              = ".terraform-test-%s.io."
+  domain            = ".test.terraform-test-%s.io."
+  type              = "CNAME"
+  ttl               = 60
+}
+`, rString, rString)
+}
+
 func TestRegionsMetaDiffSuppress(t *testing.T) {
 	metaKeys := []string{"georegion", "country", "us_state", "ca_province"}
 
@@ -636,5 +675,42 @@ func TestRegionsMetaDiffSuppress(t *testing.T) {
 
 	if regionsMetaDiffSuppress("somepath.ignorekey", "val2,val1", "val1,val2", nil) {
 		t.Errorf("is processing non-related meta keys")
+	}
+}
+
+func TestValidateFQDN(t *testing.T) {
+	tests := []struct {
+		name    string
+		in      interface{}
+		expErrs int
+	}{
+		{
+			"valid",
+			"terraform-test-zone.io",
+			0,
+		},
+		{
+			"invalid - leading .",
+			".terraform-test-zone.io",
+			1,
+		},
+		{
+			"invalid - trailing .",
+			"terraform-test-zone.io.",
+			1,
+		},
+		{
+			"invalid - leading and trailing .",
+			".terraform-test-zone.io.",
+			2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			outWarns, outErrs := validateFQDN(tt.in, "")
+			assert.Equal(t, tt.expErrs, len(outErrs))
+			assert.Equal(t, 0, len(outWarns))
+		})
 	}
 }
