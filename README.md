@@ -194,6 +194,11 @@ otherwise terraform will detect changes to the record when none actually exist.
 
 A record _requires_ a [Zone](#zone)
 
+The **zone** and **domain** fields should not have any leading or trailing dots (".").
+If the value is coming from another resource with a leading or trailing dot, it should be cleaned:
+
+`zone = replace(".terraform-test-zone.io.", "/(^\\.)|(\\.$)/", "")`
+
 _Example_
 ```hcl
 resource "ns1_record" "it" {

@@ -41,14 +41,16 @@ func recordResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Required
 			"zone": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validateFQDN,
 			},
 			"domain": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validateFQDN,
 			},
 			"type": {
 				Type:         schema.TypeString,
@@ -452,4 +454,19 @@ func regionsMetaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 	}
 
 	return false
+}
+
+// validateFQDN verifies that an FQDN doesn't have leading or trailing dots.
+func validateFQDN(val interface{}, key string) (warns []string, errs []error) {
+	v := val.(string)
+
+	if strings.HasPrefix(v, ".") {
+		errs = append(errs, fmt.Errorf("%s has an invalid leading \".\", got: %s", key, v))
+	}
+
+	if strings.HasSuffix(v, ".") {
+		errs = append(errs, fmt.Errorf("%s has an invalid trailing \".\", got: %s", key, v))
+	}
+
+	return warns, errs
 }
