@@ -85,6 +85,25 @@ resource "ns1_record" "www" {
     }
   }
 }
+
+# Some other non-NS1 provider that returns a zone with a trailing dot and a domain with a leading dot.
+resource "external_source" "baz" {
+  zone      = "terraform.example.io."
+  domain    = ".www.terraform.example.io"
+}
+
+# Basic record showing how to clean a zone or domain field that comes from
+# another non-NS1 resource. DNS names often end in '.' characters to signify
+# the root of the DNS tree, but the NS1 provider does not support this.
+#
+# In other cases, a domain or zone may be passed in with a preceding dot ('.')
+# character which would likewise lead the system to fail.
+resource "ns1_record" "external" {
+  zone   = replace("${external_source.zone}", "/(^\\.)|(\\.$)/", "")
+  domain = replace("${external_source.domain}", "/(^\\.)|(\\.$)/", "")
+  type   = "CNAME"
+}
+
 ```
 
 ## Argument Reference
@@ -92,12 +111,9 @@ resource "ns1_record" "www" {
 The following arguments are supported:
 
 * `zone` - (Required) The zone the record belongs to.
-Cannot have leading or trailing dots (".") and can be cleaned with:
-```
-zone = replace(".terraform-test-zone.io.", "/(^\\.)|(\\.$)/", "")
-```
+Cannot have leading or trailing dots (".") - see the example above.
 * `domain` - (Required) The records' domain.
-Cannot have leading or trailing dots and can be cleaned similarly to `zone`.
+Cannot have leading or trailing dots - see the example above.
 * `type` - (Required) The records' RR type.
 * `ttl` - (Optional) The records' time to live.
 * `link` - (Optional) The target record to link to. This means this record is a
@@ -192,6 +208,14 @@ import to ensure that everything is properly escaped and evaluated.
 
 See [NS1 API](https://ns1.com/api#get-available-metadata-fields) for the most
 up-to-date list of available `meta` fields.
+
+
+#### FQDN Formatting
+Different providers may have different requirements for FQDN formatting.
+A common thing is to return or require a trailing dot, e.g. foo.com.
+The NS1 provider does not require or support trailing or leading dots, 
+so depending on what resources you are connecting, a little bit of replacement might be needed.
+See the example above.
 
 ## Attributes Reference
 
