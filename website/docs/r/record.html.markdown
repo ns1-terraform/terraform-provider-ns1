@@ -92,12 +92,7 @@ resource "ns1_record" "www" {
 The following arguments are supported:
 
 * `zone` - (Required) The zone the record belongs to.
-Cannot have leading or trailing dots (".") and can be cleaned with:
-```
-zone = replace(".terraform-test-zone.io.", "/(^\\.)|(\\.$)/", "")
-```
 * `domain` - (Required) The records' domain.
-Cannot have leading or trailing dots and can be cleaned similarly to `zone`.
 * `type` - (Required) The records' RR type.
 * `ttl` - (Optional) The records' time to live.
 * `link` - (Optional) The target record to link to. This means this record is a
