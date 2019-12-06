@@ -192,12 +192,7 @@ more details and examples.
 Note that regions should be sorted by name in the record's regions list,
 otherwise terraform will detect changes to the record when none actually exist.
 
-A record _requires_ a [Zone](#zone)
-
-The **zone** and **domain** fields should not have any leading or trailing dots (".").
-If the value is coming from another resource with a leading or trailing dot, it should be cleaned:
-
-`zone = replace(".terraform-test-zone.io.", "/(^\\.)|(\\.$)/", "")`
+A record _requires_ a [Zone](#zone) and the **zone** and **domain** fields should not have any leading or trailing dots (".").
 
 _Example_
 ```hcl
