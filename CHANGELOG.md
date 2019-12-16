@@ -1,7 +1,7 @@
 ## 1.6.3 (Unreleased)
 
 IMPROVEMENTS:
-* Add validation to the zone and domain fields on a record to more clearly indicate invalid inputs containing leading or trailing dots [97](https://github.com/terraform-providers/terraform-provider-ns1/pull/97)
+* Add validation to the zone and domain fields on a record to more clearly indicate invalid inputs containing leading or trailing dots ([#97](https://github.com/terraform-providers/terraform-provider-ns1/pull/97))
 
 ## 1.6.2 (December 05, 2019)
 
