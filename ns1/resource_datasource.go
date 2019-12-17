@@ -58,9 +58,9 @@ func DataSourceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	s, _, err := client.DataSources.Get(d.Id())
 	if err != nil {
-		// No custom error type is currently defined in the SDK for a data feed.
+		// No custom error type is currently defined in the SDK for a data source.
 		if strings.Contains(err.Error(), "source not found") {
-			log.Printf("[DEBUG] NS1 data feed (%s) not found", d.Id())
+			log.Printf("[DEBUG] NS1 data source (%s) not found", d.Id())
 			d.SetId("")
 			return nil
 		}
