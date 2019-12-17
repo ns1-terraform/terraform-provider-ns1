@@ -2,6 +2,7 @@ package ns1
 
 import (
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -57,6 +58,34 @@ func TestAccDataFeed_updated(t *testing.T) {
 	})
 }
 
+func TestAccDataFeed_ManualDelete(t *testing.T) {
+	var dataFeed data.Feed
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckDataFeedDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataFeedBasic,
+				Check:  testAccCheckDataFeedExists("ns1_datafeed.foobar", "ns1_datasource.api", &dataFeed, t),
+			},
+			// Simulate a manual deletion of the data feed and verify that the plan has a diff.
+			{
+				PreConfig:          testAccManualDeleteDataFeed(&dataFeed),
+				Config:             testAccDataFeedBasic,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// Then re-create and make sure it is there again.
+			{
+				Config: testAccDataFeedBasic,
+				Check:  testAccCheckDataFeedExists("ns1_datafeed.foobar", "ns1_datasource.api", &dataFeed, t),
+			},
+		},
+	})
+}
+
 func testAccCheckDataFeedExists(n string, dsrc string, dataFeed *data.Feed, t *testing.T) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -90,6 +119,9 @@ func testAccCheckDataFeedExists(n string, dsrc string, dataFeed *data.Feed, t *t
 		}
 
 		*dataFeed = *foundFeed
+
+		// SourceID doesn't come back in the data feed.
+		dataFeed.SourceID = ds.Primary.Attributes["id"]
 
 		return nil
 	}
@@ -138,6 +170,18 @@ func testAccCheckDataFeedConfig(dataFeed *data.Feed, key, expected string) resou
 		}
 
 		return nil
+	}
+}
+
+// Simulate a manual deletion of a data feed.
+func testAccManualDeleteDataFeed(dataFeed *data.Feed) func() {
+	return func() {
+		client := testAccProvider.Meta().(*ns1.Client)
+		_, err := client.DataFeeds.Delete(dataFeed.SourceID, dataFeed.ID)
+		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
+		if err != nil {
+			log.Printf("failed to delete data feed: %v", err)
+		}
 	}
 }
 

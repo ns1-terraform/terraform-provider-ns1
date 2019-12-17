@@ -1,6 +1,9 @@
 package ns1
 
 import (
+	"log"
+	"strings"
+
 	"github.com/hashicorp/terraform/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -94,6 +97,13 @@ func UserRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	u, _, err := client.Users.Get(d.Id())
 	if err != nil {
+		// No custom error type is currently defined in the SDK for a non-existent user.
+		if strings.Contains(err.Error(), "User not found") {
+			log.Printf("[DEBUG] NS1 user (%s) not found", d.Id())
+			d.SetId("")
+			return nil
+		}
+
 		return err
 	}
 	return userToResourceData(d, u)

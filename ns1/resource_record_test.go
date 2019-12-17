@@ -2,9 +2,11 @@ package ns1
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"regexp"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -239,7 +241,7 @@ func TestAccRecord_URLFWD(t *testing.T) {
 	domainName := fmt.Sprintf("fwd.%s", zoneName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheck(t); testAccURLFWDPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRecordDestroy,
 		Steps: []resource.TestStep{
@@ -291,6 +293,71 @@ func TestAccRecord_validationError(t *testing.T) {
 			},
 		},
 	})
+}
+
+// Verifies that a record is re-created correctly if it is manually deleted.
+func TestAccRecord_ManualDelete(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("test.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordBasic(rString),
+				Check:  testAccCheckRecordExists("ns1_record.it", &record),
+			},
+			// Simulate a manual deletion of the record and verify that the plan has a diff.
+			{
+				PreConfig:          testAccManualDeleteRecord(zoneName, domainName, "CNAME"),
+				Config:             testAccRecordBasic(rString),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// Then re-create and make sure it is there again.
+			{
+				Config: testAccRecordBasic(rString),
+				Check:  testAccCheckRecordExists("ns1_record.it", &record),
+			},
+		},
+	})
+}
+
+// See if URLFWD permission exist by trying to create a record with it.
+func testAccURLFWDPreCheck(t *testing.T) {
+	client, err := sharedClient()
+	if err != nil {
+		log.Fatalf("failed to get shared client: %s", err)
+	}
+
+	name := fmt.Sprintf("terraform-urlfwd-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+
+	_, err = client.Zones.Create(&dns.Zone{Zone: name})
+	if err != nil {
+		t.Fatalf("failed to create test zone %s: %s", name, err)
+	}
+
+	record := dns.NewRecord(name, fmt.Sprintf("domain.%s", name), "URLFWD")
+	record.Answers = []*dns.Answer{{Rdata: []string{"/", "https://example.com", "301", "2", "0"}}}
+
+	_, err = client.Records.Create(record)
+	if err != nil {
+		if strings.Contains(err.Error(), "400 URLFWD records are not enabled") {
+			t.Skipf("account not authorized for URLFWD records, skipping test")
+			return
+		}
+
+		t.Fatalf("failed to create test record %s: %s", name, err)
+	}
+
+	_, err = client.Zones.Delete(record.Zone)
+	if err != nil {
+		t.Fatalf("failed to delete test record %s", name)
+	}
 }
 
 func testAccCheckRecordExists(n string, record *dns.Record) resource.TestCheckFunc {
@@ -432,6 +499,18 @@ func testAccCheckRecordAnswerRdata(
 		recordAnswerRdata := r.Answers[answerIdx].Rdata
 		assert.ElementsMatch(t, recordAnswerRdata, expected)
 		return nil
+	}
+}
+
+// Simulate a manual deletion of a record.
+func testAccManualDeleteRecord(zone, domain, recordType string) func() {
+	return func() {
+		client := testAccProvider.Meta().(*ns1.Client)
+		_, err := client.Records.Delete(zone, domain, recordType)
+		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
+		if err != nil {
+			log.Printf("failed to delete record: %v", err)
+		}
 	}
 }
 

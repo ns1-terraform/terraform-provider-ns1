@@ -2,6 +2,7 @@ package ns1
 
 import (
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -95,6 +96,34 @@ func TestAccNotifyList_types(t *testing.T) {
 	})
 }
 
+func TestAccNotifyList_ManualDelete(t *testing.T) {
+	var nl monitor.NotifyList
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNotifyListDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNotifyListBasic,
+				Check:  testAccCheckNotifyListExists("ns1_notifylist.test", &nl),
+			},
+			// Simulate a manual deletion of the notify list and verify that the plan has a diff.
+			{
+				PreConfig:          testAccManualDeleteNotifyList(&nl),
+				Config:             testAccNotifyListBasic,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// Then re-create and make sure it is there again.
+			{
+				Config: testAccNotifyListBasic,
+				Check:  testAccCheckNotifyListExists("ns1_notifylist.test", &nl),
+			},
+		},
+	})
+}
+
 func testAccCheckNotifyListState(key, value string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources["ns1_notifylist.test"]
@@ -171,6 +200,18 @@ func testAccCheckNotifyListName(nl *monitor.NotifyList, expected string) resourc
 			return fmt.Errorf("nl.Name: got: %#v want: %#v", nl.Name, expected)
 		}
 		return nil
+	}
+}
+
+// Simulate a manual deletion of a notify list.
+func testAccManualDeleteNotifyList(nl *monitor.NotifyList) func() {
+	return func() {
+		client := testAccProvider.Meta().(*ns1.Client)
+		_, err := client.Notifications.Delete(nl.ID)
+		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
+		if err != nil {
+			log.Printf("failed to delete notify list: %v", err)
+		}
 	}
 }
 

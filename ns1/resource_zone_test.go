@@ -307,6 +307,38 @@ func TestAccZone_disable_autogenerate_ns_record(t *testing.T) {
 	})
 }
 
+func TestAccZone_ManualDelete(t *testing.T) {
+	var zone dns.Zone
+	zoneName := fmt.Sprintf(
+		"terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccZoneBasic(zoneName),
+				Check:  testAccCheckZoneExists("ns1_zone.it", &zone),
+			},
+			// Simulate a manual deletion of the zone and verify that the plan has a diff.
+			{
+				PreConfig:          testAccManualDeleteZone(zoneName),
+				Config:             testAccZoneBasic(zoneName),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// Then re-create and make sure it is there again.
+			{
+				Config: testAccZoneBasic(zoneName),
+				Check:  testAccCheckZoneExists("ns1_zone.it", &zone),
+			},
+		},
+	})
+}
+
 // A Client instance we can use outside of a TestStep
 func sharedClient() (*ns1.Client, error) {
 	var ignoreSSL bool
@@ -555,6 +587,18 @@ func testAccCheckZoneDNSSEC(zone *dns.Zone, expected bool) resource.TestCheckFun
 			return fmt.Errorf("DNSSEC: got: %t want: %t", *zone.DNSSEC, expected)
 		}
 		return nil
+	}
+}
+
+// Simulate a manual deletion of a zone.
+func testAccManualDeleteZone(zone string) func() {
+	return func() {
+		client := testAccProvider.Meta().(*ns1.Client)
+		_, err := client.Zones.Delete(zone)
+		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
+		if err != nil {
+			log.Printf("failed to delete zone: %v", err)
+		}
 	}
 }
 

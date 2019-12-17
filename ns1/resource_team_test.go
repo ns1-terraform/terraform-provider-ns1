@@ -2,6 +2,7 @@ package ns1
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"testing"
 
@@ -62,6 +63,35 @@ func TestAccTeam_updated(t *testing.T) {
 					testAccCheckTeamDNSPermissionZones(&team, "zones_deny", []string{}),
 					testAccCheckTeamDataPermission(&team, "manage_datasources", false),
 				),
+			},
+		},
+	})
+}
+
+// Verifies that a team is re-created correctly if it is manually deleted.
+func TestAccTeam_ManualDelete(t *testing.T) {
+	var team account.Team
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckTeamDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccTeamBasic,
+				Check:  testAccCheckTeamExists("ns1_team.foobar", &team),
+			},
+			// Simulate a manual deletion of the team and verify that the plan has a diff.
+			{
+				PreConfig:          testAccManualDeleteTeam(&team),
+				Config:             testAccTeamBasic,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// Then re-create and make sure it is there again.
+			{
+				Config: testAccTeamBasic,
+				Check:  testAccCheckTeamExists("ns1_team.foobar", &team),
 			},
 		},
 	})
@@ -183,6 +213,18 @@ func testAccCheckTeamDNSPermissionZones(team *account.Team, perm string, expecte
 		}
 
 		return nil
+	}
+}
+
+// Simulate a manual deletion of a team.
+func testAccManualDeleteTeam(team *account.Team) func() {
+	return func() {
+		client := testAccProvider.Meta().(*ns1.Client)
+		_, err := client.Teams.Delete(team.ID)
+		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
+		if err != nil {
+			log.Printf("failed to delete team: %v", err)
+		}
 	}
 }
 
