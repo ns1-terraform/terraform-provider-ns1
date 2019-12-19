@@ -71,6 +71,383 @@ func TestAccUser_ManualDelete(t *testing.T) {
 	})
 }
 
+func TestAccUser_permissions(t *testing.T) {
+	var user account.User
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	name := fmt.Sprintf("terraform acc test user %s", rString)
+	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccUserPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+				),
+			},
+			{
+				Config: testAccUserPermissionsOnTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+				),
+			},
+			{
+				Config: testAccUserPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					// The user should still have this permission, it would have inherited it from the team.
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: testAccUserPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					// But if an apply is ran again, the permission will be removed.
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccUser_permissions_empty_team(t *testing.T) {
+	var user account.User
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	name := fmt.Sprintf("terraform acc test user %s", rString)
+	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccUserPermissionsOnTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+				),
+			},
+			// Strange Terraform behavior causes explicitly settings a users team to []
+			// to behave differently than removing the block entirely, so test for this as well.
+			{
+				Config: testAccUserPermissionsEmptyTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: testAccUserPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					// But if an apply is ran again, the permission will be removed.
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+				),
+			},
+		},
+	})
+}
+
+// Edge cases exist with starting a user on a team vs. on no team, so test for this as well.
+func TestAccUser_permissions_start_no_team(t *testing.T) {
+	var user account.User
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	name := fmt.Sprintf("terraform acc test user %s", rString)
+	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccUserPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+				),
+			},
+			{
+				Config: testAccUserPermissionsOnTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+				),
+			},
+			{
+				Config: testAccUserPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					// The user should still have this permission, it would have inherited it from the team.
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: testAccUserPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					// But if an apply is ran again, the permission will be removed.
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+				),
+			},
+		},
+	})
+}
+
+// Case when a user starts on a single team and is added to another team.
+func TestAccUser_permissions_multiple_teams(t *testing.T) {
+	var user account.User
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	name := fmt.Sprintf("terraform acc test user %s", rString)
+	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccUserPermissionsOnTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+				),
+			},
+			{
+				Config: testAccUserPermissionsOnTwoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "true"),
+				),
+			},
+			{
+				Config: testAccUserPermissionsOnTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+				),
+			},
+			{
+				Config: testAccUserPermissionsEmptyTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					// The user should still have this permission, it would have inherited it from the team.
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: testAccUserPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					// But if an apply is ran again, the permission will be removed.
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+				),
+			},
+		},
+	})
+}
+
+// Case when a user starts on no teams and is added to multiple teams at once.
+func TestAccUser_permissions_multiple_teams_start_no_team(t *testing.T) {
+	var user account.User
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	name := fmt.Sprintf("terraform acc test user %s", rString)
+	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccUserPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+				),
+			},
+			{
+				Config: testAccUserPermissionsOnTwoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "true"),
+				),
+			},
+			{
+				Config: testAccUserPermissionsOnTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+				),
+			},
+			{
+				Config: testAccUserPermissionsEmptyTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					// The user should still have this permission, it would have inherited it from the team.
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: testAccUserPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					// But if an apply is ran again, the permission will be removed.
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+				),
+			},
+		},
+	})
+}
+
+// Case when a user is on a team and that team updates it's permissions.
+// This test is currently failing, as this is not implemented yet - this doesn't
+// actually cause any issues because it's just Terraforms state that doesn't have the
+// new permission values yet, the backend does, and when `terraform refresh` is ran,
+// the state will be updated appropriately.
+// The test is left here for documentation purposes.
+/*
+func TestAccUser_permissions_team_update(t *testing.T) {
+	var user account.User
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	name := fmt.Sprintf("terraform acc test user %s", rString)
+	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccUserPermissionsOnTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+				),
+			},
+			{
+				Config: testAccUserPermissionsTeamUpdate(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "true"),
+				),
+			},
+		},
+	})
+}
+
+func testAccUserPermissionsTeamUpdate(rString string) string {
+	return fmt.Sprintf(`resource "ns1_team" "t" {
+  name = "terraform acc test team %s"
+  account_manage_account_settings = true
+  account_manage_apikeys = true
+}
+
+resource "ns1_user" "u" {
+  name = "terraform acc test user %s"
+  username = "tf_acc_test_user_%s"
+  email = "tf_acc_test_ns1@hashicorp.com"
+
+  teams = ["${ns1_team.t.id}"]
+
+  notify = {
+  	billing = false
+  }
+}
+`, rString, rString, rString)
+}
+*/
+
 func testAccCheckUserDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ns1.Client)
 
@@ -143,4 +520,88 @@ resource "ns1_user" "u" {
   }
 }
 `, rString, rString, rString)
+}
+
+func testAccUserPermissionsOnTeam(rString string) string {
+	return fmt.Sprintf(`resource "ns1_team" "t" {
+  name = "terraform acc test team %s"
+  account_manage_account_settings = true
+}
+
+resource "ns1_user" "u" {
+  name = "terraform acc test user %s"
+  username = "tf_acc_test_user_%s"
+  email = "tf_acc_test_ns1@hashicorp.com"
+
+  teams = ["${ns1_team.t.id}"]
+
+  notify = {
+  	billing = false
+  }
+}
+`, rString, rString, rString)
+}
+
+func testAccUserPermissionsNoTeam(rString string) string {
+	return fmt.Sprintf(`resource "ns1_team" "t" {
+  name = "terraform acc test team %s"
+  account_manage_account_settings = true
+}
+
+resource "ns1_user" "u" {
+  name = "terraform acc test user %s"
+  username = "tf_acc_test_user_%s"
+  email = "tf_acc_test_ns1@hashicorp.com"
+
+  notify = {
+  	billing = false
+  }
+}
+`, rString, rString, rString)
+}
+
+// Explicitly sets the users team to []
+func testAccUserPermissionsEmptyTeam(rString string) string {
+	return fmt.Sprintf(`resource "ns1_team" "t" {
+  name = "terraform acc test team %s"
+  account_manage_account_settings = true
+}
+
+resource "ns1_user" "u" {
+  name = "terraform acc test user %s"
+  username = "tf_acc_test_user_%s"
+  email = "tf_acc_test_ns1@hashicorp.com"
+
+  teams = []
+
+  notify = {
+  	billing = false
+  }
+}
+`, rString, rString, rString)
+}
+
+func testAccUserPermissionsOnTwoTeam(rString string) string {
+	return fmt.Sprintf(`resource "ns1_team" "t" {
+  name = "terraform acc test team %s"
+  account_manage_account_settings = true
+}
+
+resource "ns1_team" "t2" {
+  name = "terraform acc test team %s-2"
+  account_manage_apikeys = true
+}
+
+resource "ns1_user" "u" {
+  name = "terraform acc test user %s"
+  username = "tf_acc_test_user_%s"
+  email = "tf_acc_test_ns1@hashicorp.com"
+
+  teams = ["${ns1_team.t.id}","${ns1_team.t2.id}"]
+
+  notify = {
+  	billing = false
+  }
+}
+`, rString, rString, rString, rString)
 }

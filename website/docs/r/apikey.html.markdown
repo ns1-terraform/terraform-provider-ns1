@@ -27,13 +27,20 @@ resource "ns1_apikey" "example" {
 }
 ```
 
+## Permissions
+An API key will inherit permissions from the teams it is assigned to.
+When a key is removed from all teams completely, it will inherit whatever permissions it had previously.
+If a key is removed from all it's teams, it will probably be necessary to run `terraform apply` a second time
+to update the keys permissions from it's old team permissions to new key-specific permissions.
+See [the NS1 API docs](https://ns1.com/api#getget-all-account-users) for an overview of permission semantics.
+
 ## Argument Reference
 
 The following arguments are supported:
 
 * `name` - (Required) The free form name of the apikey.
 * `key` - (Required) The apikeys authentication token.
-* `teams` - (Required) The teams that the apikey belongs to.
+* `teams` - (Optional) The teams that the apikey belongs to.
 * `dns_view_zones` - (Optional) Whether the apikey can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the apikey can modify the accounts zones.
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.

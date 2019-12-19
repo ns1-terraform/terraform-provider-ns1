@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 
@@ -15,6 +16,7 @@ import (
 
 func TestAccTeam_basic(t *testing.T) {
 	var team account.Team
+	n := fmt.Sprintf("terraform test team %s", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -22,10 +24,10 @@ func TestAccTeam_basic(t *testing.T) {
 		CheckDestroy: testAccCheckTeamDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccTeamBasic,
+				Config: fmt.Sprintf(testAccTeamBasic, n),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTeamExists("ns1_team.foobar", &team),
-					testAccCheckTeamName(&team, "terraform test"),
+					testAccCheckTeamName(&team, n),
 					testAccCheckTeamDNSPermission(&team, "view_zones", true),
 					testAccCheckTeamDNSPermission(&team, "zones_allow_by_default", true),
 					testAccCheckTeamDNSPermissionZones(&team, "zones_allow", []string{"mytest.zone"}),
@@ -39,6 +41,7 @@ func TestAccTeam_basic(t *testing.T) {
 
 func TestAccTeam_updated(t *testing.T) {
 	var team account.Team
+	n := fmt.Sprintf("terraform test team %s", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -46,17 +49,17 @@ func TestAccTeam_updated(t *testing.T) {
 		CheckDestroy: testAccCheckTeamDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccTeamBasic,
+				Config: fmt.Sprintf(testAccTeamBasic, n),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTeamExists("ns1_team.foobar", &team),
-					testAccCheckTeamName(&team, "terraform test"),
+					testAccCheckTeamName(&team, n),
 				),
 			},
 			{
-				Config: testAccTeamUpdated,
+				Config: fmt.Sprintf(testAccTeamUpdated, n),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTeamExists("ns1_team.foobar", &team),
-					testAccCheckTeamName(&team, "terraform test updated"),
+					testAccCheckTeamName(&team, fmt.Sprintf("%s updated", n)),
 					testAccCheckTeamDNSPermission(&team, "view_zones", true),
 					testAccCheckTeamDNSPermission(&team, "zones_allow_by_default", true),
 					testAccCheckTeamDNSPermissionZones(&team, "zones_allow", []string{}),
@@ -230,7 +233,7 @@ func testAccManualDeleteTeam(team *account.Team) func() {
 
 const testAccTeamBasic = `
 resource "ns1_team" "foobar" {
-  name = "terraform test"
+  name = "%s"
 
   dns_view_zones = true
   dns_zones_allow_by_default = true
@@ -242,7 +245,7 @@ resource "ns1_team" "foobar" {
 
 const testAccTeamUpdated = `
 resource "ns1_team" "foobar" {
-  name = "terraform test updated"
+  name = "%s updated"
 
   dns_view_zones = true
   dns_zones_allow_by_default = true

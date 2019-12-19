@@ -7,16 +7,22 @@ import (
 
 func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["dns_view_zones"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dns_manage_zones"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dns_zones_allow_by_default"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dns_zones_deny"] = &schema.Schema{
 		Type:     schema.TypeList,
@@ -29,62 +35,124 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 		Elem:     &schema.Schema{Type: schema.TypeString},
 	}
 	s["data_push_to_datafeeds"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["data_manage_datasources"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["data_manage_datafeeds"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_manage_users"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_manage_payment_methods"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_manage_plan"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_manage_teams"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_manage_apikeys"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_manage_account_settings"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_view_activity_log"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_view_invoices"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["monitoring_manage_lists"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["monitoring_manage_jobs"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["monitoring_view_jobs"] = &schema.Schema{
-		Type:     schema.TypeBool,
-		Optional: true,
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	return s
+}
+
+// If a user or API key is part of a team then this suppresses the diff on the permissions,
+// since it will inherit the permissions of the teams it is on.
+func suppressPermissionDiff(k, old, new string, d *schema.ResourceData) bool {
+	// Don't want to suppress the diff if the key has no value -- e.g. the first time this is ran
+	// otherwise Terraform complains about nil values.
+	if old == "" {
+		return false
+	}
+
+	oldTeams, newTeams := d.GetChange("teams")
+
+	// Check for both old and new team values - if either of them is set,
+	// (e.g. if a user is either being added to a team or removed from one),
+	// then ignore diffs on the permission keys.
+	if teamsRaw, ok := oldTeams.([]interface{}); ok {
+		if len(teamsRaw) > 0 {
+			return true
+		}
+	}
+
+	// For some reason, removing a user from a team by completely
+	// deleting the teams block from the config will not show up here,
+	// the old value will still be in newTeams, so there is no way to know
+	// that a user isn't part of any teams anymore. So `terraform apply`
+	// has to be ran again to update the users permissions.
+	if teamsRaw, ok := newTeams.([]interface{}); ok {
+		if len(teamsRaw) > 0 {
+			return true
+		}
+	}
+
+	return false
 }
 
 func permissionsToResourceData(d *schema.ResourceData, permissions account.PermissionsMap) {

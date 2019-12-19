@@ -70,6 +70,18 @@ func ApikeyCreate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := client.APIKeys.Create(&k); err != nil {
 		return err
 	}
+
+	// If a key is assigned to at least one team, then it's permissions need to be refreshed
+	// because the current key permissions in Terraform state will be out of date.
+	if len(k.TeamIDs) > 0 {
+		updatedKey, _, err := client.APIKeys.Get(k.ID)
+		if err != nil {
+			return err
+		}
+
+		return apikeyToResourceData(d, updatedKey)
+	}
+
 	return apikeyToResourceData(d, &k)
 }
 
@@ -103,11 +115,25 @@ func ApikeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	k := account.APIKey{
 		ID: d.Id(),
 	}
+
 	if err := resourceDataToApikey(&k, d); err != nil {
 		return err
 	}
+
 	if _, err := client.APIKeys.Update(&k); err != nil {
 		return err
 	}
+
+	// If a key's teams have changed then the permissions on the key need to be refreshed
+	// because the current key permissions in Terraform state will be out of date.
+	if d.HasChange("teams") {
+		updatedKey, _, err := client.APIKeys.Get(d.Id())
+		if err != nil {
+			return err
+		}
+
+		return apikeyToResourceData(d, updatedKey)
+	}
+
 	return apikeyToResourceData(d, &k)
 }
