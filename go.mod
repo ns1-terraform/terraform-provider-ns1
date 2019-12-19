@@ -9,3 +9,5 @@ require (
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20191126161805-25b9eac84517
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 )
+
+go 1.12

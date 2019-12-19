@@ -1,6 +1,9 @@
 package ns1
 
 import (
+	"log"
+	"strings"
+
 	"github.com/hashicorp/terraform/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -55,6 +58,13 @@ func DataSourceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	s, _, err := client.DataSources.Get(d.Id())
 	if err != nil {
+		// No custom error type is currently defined in the SDK for a data source.
+		if strings.Contains(err.Error(), "source not found") {
+			log.Printf("[DEBUG] NS1 data source (%s) not found", d.Id())
+			d.SetId("")
+			return nil
+		}
+
 		return err
 	}
 	dataSourceToResourceData(d, s)

@@ -307,6 +307,12 @@ func zoneRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	z, _, err := client.Zones.Get(d.Get("zone").(string))
 	if err != nil {
+		if err == ns1.ErrZoneMissing {
+			log.Printf("[DEBUG] NS1 zone (%s) not found", d.Id())
+			d.SetId("")
+			return nil
+		}
+
 		return err
 	}
 	if err := resourceZoneToResourceData(d, z); err != nil {

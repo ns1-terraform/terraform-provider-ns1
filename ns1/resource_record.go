@@ -391,6 +391,12 @@ func RecordRead(d *schema.ResourceData, meta interface{}) error {
 
 	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
 	if err != nil {
+		if err == ns1.ErrRecordMissing {
+			log.Printf("[DEBUG] NS1 record (%s) not found", d.Id())
+			d.SetId("")
+			return nil
+		}
+
 		return err
 	}
 

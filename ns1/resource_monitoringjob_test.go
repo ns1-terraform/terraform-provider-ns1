@@ -2,6 +2,7 @@ package ns1
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"testing"
 
@@ -86,6 +87,34 @@ func TestAccMonitoringJob_updated(t *testing.T) {
 					testAccCheckMonitoringJobRuleComparison(&mj, "<="),
 					testAccCheckMonitoringJobRuleKey(&mj, "connect"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccMonitoringJob_ManualDelete(t *testing.T) {
+	var mj monitor.Job
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckMonitoringJobDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccMonitoringJobBasic,
+				Check:  testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),
+			},
+			// Simulate a manual deletion of the monitoring job and verify that the plan has a diff.
+			{
+				PreConfig:          testAccManualDeleteMonitoringJob(&mj),
+				Config:             testAccMonitoringJobBasic,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// Then re-create and make sure it is there again.
+			{
+				Config: testAccMonitoringJobBasic,
+				Check:  testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),
 			},
 		},
 	})
@@ -275,6 +304,18 @@ func testAccCheckMonitoringJobRuleKey(mj *monitor.Job, expected string) resource
 			return fmt.Errorf("mj.Rules[0].Key: got: %#v want: %#v", mj.Rules[0].Key, expected)
 		}
 		return nil
+	}
+}
+
+// Simulate a manual deletion of a monitoring job.
+func testAccManualDeleteMonitoringJob(mj *monitor.Job) func() {
+	return func() {
+		client := testAccProvider.Meta().(*ns1.Client)
+		_, err := client.Jobs.Delete(mj.ID)
+		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
+		if err != nil {
+			log.Printf("failed to delete monitoring job: %v", err)
+		}
 	}
 }
 

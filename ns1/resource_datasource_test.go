@@ -2,6 +2,7 @@ package ns1
 
 import (
 	"fmt"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -52,6 +53,33 @@ func TestAccDataSource_updated(t *testing.T) {
 					testAccCheckDataSourceName(&dataSource, "terraform test"),
 					testAccCheckDataSourceType(&dataSource, "nsone_monitoring"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccDataSource_ManualDelete(t *testing.T) {
+	var dataSource data.Source
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckDataSourceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataSourceBasic,
+				Check:  testAccCheckDataSourceExists("ns1_datasource.foobar", &dataSource),
+			},
+			// Simulate a manual deletion of the data source and verify that the plan has a diff.
+			{
+				PreConfig:          testAccManualDeleteDataSource(&dataSource),
+				Config:             testAccDataSourceBasic,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// Then re-create and make sure it is there again.
+			{
+				Config: testAccDataSourceBasic,
+				Check:  testAccCheckDataSourceExists("ns1_datasource.foobar", &dataSource),
 			},
 		},
 	})
@@ -124,6 +152,18 @@ func testAccCheckDataSourceType(dataSource *data.Source, expected string) resour
 		}
 
 		return nil
+	}
+}
+
+// Simulate a manual deletion of a data source.
+func testAccManualDeleteDataSource(dataSource *data.Source) func() {
+	return func() {
+		client := testAccProvider.Meta().(*ns1.Client)
+		_, err := client.DataSources.Delete(dataSource.ID)
+		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
+		if err != nil {
+			log.Printf("failed to delete data source: %v", err)
+		}
 	}
 }
 

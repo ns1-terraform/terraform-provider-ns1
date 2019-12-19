@@ -2,6 +2,8 @@ package ns1
 
 import (
 	"fmt"
+	"log"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/acctest"
@@ -34,6 +36,36 @@ func TestAccUser_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "notify.billing", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 				),
+			},
+		},
+	})
+}
+
+func TestAccUser_ManualDelete(t *testing.T) {
+	var user account.User
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccUserBasic(rString),
+				Check:  testAccCheckUserExists("ns1_user.u", &user),
+			},
+			// Simulate a manual deletion of the user and verify that the plan has a diff.
+			{
+				PreConfig:          testAccManualDeleteUser(username),
+				Config:             testAccUserBasic(rString),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// Attempt to re-create it, this should fail because user names must be historically unique.
+			{
+				Config:      testAccUserBasic(rString),
+				ExpectError: regexp.MustCompile(`user already exists`),
 			},
 		},
 	})
@@ -81,6 +113,18 @@ func testAccCheckUserExists(n string, user *account.User) resource.TestCheckFunc
 		*user = *foundUser
 
 		return nil
+	}
+}
+
+// Simulate a manual deletion of a user.
+func testAccManualDeleteUser(user string) func() {
+	return func() {
+		client := testAccProvider.Meta().(*ns1.Client)
+		_, err := client.Users.Delete(user)
+		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
+		if err != nil {
+			log.Printf("failed to delete user: %v", err)
+		}
 	}
 }
 

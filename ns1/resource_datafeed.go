@@ -1,6 +1,9 @@
 package ns1
 
 import (
+	"log"
+	"strings"
+
 	"github.com/hashicorp/terraform/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -61,6 +64,13 @@ func DataFeedRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	f, _, err := client.DataFeeds.Get(d.Get("source_id").(string), d.Id())
 	if err != nil {
+		// No custom error type is currently defined in the SDK for a data feed.
+		if strings.Contains(err.Error(), "feed not found") {
+			log.Printf("[DEBUG] NS1 data source (%s) not found", d.Id())
+			d.SetId("")
+			return nil
+		}
+
 		return err
 	}
 	dataFeedToResourceData(d, f)

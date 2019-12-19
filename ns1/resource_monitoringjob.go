@@ -2,8 +2,10 @@ package ns1
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 
@@ -264,6 +266,13 @@ func MonitoringJobRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	j, _, err := client.Jobs.Get(d.Id())
 	if err != nil {
+		// No custom error type is currently defined in the SDK for a monitoring job.
+		if strings.Contains(err.Error(), "unknown monitoring job") {
+			log.Printf("[DEBUG] NS1 record (%s) not found", d.Id())
+			d.SetId("")
+			return nil
+		}
+
 		return err
 	}
 	return monitoringJobToResourceData(d, j)

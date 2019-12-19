@@ -1,6 +1,8 @@
 package ns1
 
 import (
+	"log"
+
 	"github.com/hashicorp/terraform/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -76,6 +78,12 @@ func ApikeyRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	k, _, err := client.APIKeys.Get(d.Id())
 	if err != nil {
+		if err == ns1.ErrKeyMissing {
+			log.Printf("[DEBUG] NS1 API key (%s) not found", d.Id())
+			d.SetId("")
+			return nil
+		}
+
 		return err
 	}
 	return apikeyToResourceData(d, k)

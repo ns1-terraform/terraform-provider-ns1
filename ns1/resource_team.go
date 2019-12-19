@@ -1,6 +1,8 @@
 package ns1
 
 import (
+	"log"
+
 	"github.com/hashicorp/terraform/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -56,6 +58,12 @@ func TeamRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	t, _, err := client.Teams.Get(d.Id())
 	if err != nil {
+		if err == ns1.ErrTeamMissing {
+			log.Printf("[DEBUG] NS1 team (%s) not found", d.Id())
+			d.SetId("")
+			return nil
+		}
+
 		return err
 	}
 	return teamToResourceData(d, t)
