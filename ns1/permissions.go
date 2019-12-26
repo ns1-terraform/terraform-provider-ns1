@@ -1,7 +1,7 @@
 package ns1
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/account"
 )
 
