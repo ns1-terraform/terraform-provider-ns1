@@ -29,9 +29,14 @@ resource "ns1_apikey" "example" {
 
 ## Permissions
 An API key will inherit permissions from the teams it is assigned to.
+If a key is assigned to a team and also has individual permissions set on the key, the individual permissions
+will be overridden by the inherited team permissions.
+In a future release, setting permissions on a key that is part of a team will be explicitly disabled.
+
 When a key is removed from all teams completely, it will inherit whatever permissions it had previously.
 If a key is removed from all it's teams, it will probably be necessary to run `terraform apply` a second time
 to update the keys permissions from it's old team permissions to new key-specific permissions.
+
 See [the NS1 API docs](https://ns1.com/api#getget-all-account-users) for an overview of permission semantics.
 
 ## Argument Reference

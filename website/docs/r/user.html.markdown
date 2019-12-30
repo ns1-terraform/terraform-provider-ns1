@@ -32,9 +32,14 @@ resource "ns1_user" "example" {
 
 ## Permissions
 A user will inherit permissions from the teams they are assigned to.
+If a user is assigned to a team and also has individual permissions set on the user, the individual permissions
+will be overridden by the inherited team permissions.
+In a future release, setting permissions on a user that is part of a team will be explicitly disabled.
+
 When a user is removed from all teams completely, they will inherit whatever permissions they had previously.
 If a user is removed from all their teams, it will probably be necessary to run `terraform apply` a second time
 to update the users permissions from their old team permissions to new user-specific permissions.
+
 See [the NS1 API docs](https://ns1.com/api#getget-all-account-users) for an overview of permission semantics.
 
 ## Argument Reference
