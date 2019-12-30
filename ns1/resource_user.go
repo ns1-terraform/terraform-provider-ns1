@@ -89,10 +89,22 @@ func UserCreate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := client.Users.Create(&u); err != nil {
 		return err
 	}
+
+	// If a user is assigned to at least one team, then it's permissions need to be refreshed
+	// because the current user permissions in Terraform state will be out of date.
+	if len(u.TeamIDs) > 0 {
+		updatedUser, _, err := client.Users.Get(u.Username)
+		if err != nil {
+			return err
+		}
+
+		return userToResourceData(d, updatedUser)
+	}
+
 	return userToResourceData(d, &u)
 }
 
-// UserRead  reads the given users data from ns1
+// UserRead reads the given users data from ns1
 func UserRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	u, _, err := client.Users.Get(d.Id())
@@ -126,8 +138,21 @@ func UserUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err := resourceDataToUser(&u, d); err != nil {
 		return err
 	}
+
 	if _, err := client.Users.Update(&u); err != nil {
 		return err
 	}
+
+	// If a user's teams has changed then the permissions on the user need to be refreshed
+	// because the current user permissions in Terraform state will be out of date.
+	if d.HasChange("teams") {
+		updatedUser, _, err := client.Users.Get(d.Id())
+		if err != nil {
+			return err
+		}
+
+		return userToResourceData(d, updatedUser)
+	}
+
 	return userToResourceData(d, &u)
 }

@@ -89,6 +89,53 @@ func TestAccAPIKey_ManualDelete(t *testing.T) {
 	})
 }
 
+func TestAccAPIKey_permissions(t *testing.T) {
+	var apiKey account.APIKey
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	name := fmt.Sprintf("terraform acc test key %s", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAPIKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAPIKeyPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
+					testAccCheckAPIKeyName(&apiKey, name),
+				),
+			},
+			{
+				Config: testAccAPIKeyPermissionsOnTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
+					testAccCheckAPIKeyName(&apiKey, name),
+				),
+			},
+			{
+				Config: testAccAPIKeyPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
+					testAccCheckAPIKeyName(&apiKey, name),
+					// The key should still have this permission, it would have inherited it from the team.
+					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_account_settings", "true"),
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: testAccAPIKeyPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
+					testAccCheckAPIKeyName(&apiKey, name),
+					// But if an apply is ran again, the permission will be removed.
+					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_account_settings", "false"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckAPIKeyExists(n string, apiKey *account.APIKey) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -167,4 +214,32 @@ func testAccAPIKeyBasic(apiKeyName string) string {
   name = "%s"
 }
 `, apiKeyName)
+}
+
+func testAccAPIKeyPermissionsOnTeam(rString string) string {
+	return fmt.Sprintf(`resource "ns1_team" "t" {
+  name = "terraform acc test team %s"
+  account_manage_account_settings = true
+}
+
+resource "ns1_apikey" "it" {
+  name = "terraform acc test key %s"
+
+  teams = ["${ns1_team.t.id}"]
+}
+
+`, rString, rString)
+}
+
+func testAccAPIKeyPermissionsNoTeam(rString string) string {
+	return fmt.Sprintf(`resource "ns1_team" "t" {
+  name = "terraform acc test team %s"
+  account_manage_account_settings = true
+}
+
+resource "ns1_apikey" "it" {
+  name = "terraform acc test key %s"
+}
+
+`, rString, rString)
 }

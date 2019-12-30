@@ -89,5 +89,9 @@ func TeamUpdate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := client.Teams.Update(&t); err != nil {
 		return err
 	}
+
+	// @TODO - when a teams permissions are updated, all users and keys assigned to that team
+	// should have their Terraform state refreshed, there is not a particularly nice way to implement this
+	// because teams don't have a concept of what users and keys are assigned to them, only the other way around.
 	return teamToResourceData(d, &t)
 }
