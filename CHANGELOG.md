@@ -1,4 +1,4 @@
-## 1.6.4 (Unreleased)
+## 1.6.4 (January 06, 2020)
 
 IMPROVEMENTS:
 * Updated permissions behavior on user and API key resources to accurately show `terraform plan` differences when the user or key is part of a team and updated documentation accordingly ([#100](https://github.com/terraform-providers/terraform-provider-ns1/pull/100))
