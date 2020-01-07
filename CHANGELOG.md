@@ -4,6 +4,7 @@
 IMPROVEMENTS:
 * Updated permissions behavior on user and API key resources to accurately show `terraform plan` differences when the user or key is part of a team and updated documentation accordingly ([#100](https://github.com/terraform-providers/terraform-provider-ns1/pull/100))
 * Switched to the Terraform standalone SDK ([#101](https://github.com/terraform-providers/terraform-provider-ns1/pull/101))
+* Update resource state management to properly handle disappearing resources ([#99](https://github.com/terraform-providers/terraform-provider-ns1/pull/99))
 
 ## 1.6.3 (December 16, 2019)
 
