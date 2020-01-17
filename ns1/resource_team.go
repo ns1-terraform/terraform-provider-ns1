@@ -1,6 +1,7 @@
 package ns1
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -15,27 +16,86 @@ func teamResource() *schema.Resource {
 			Type:     schema.TypeString,
 			Required: true,
 		},
+		"ip_whitelist": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": {
+						Type:     schema.TypeString,
+						Required: true,
+					},
+					"values": {
+						Type:     schema.TypeList,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+						Required: true,
+					},
+				},
+			},
+		},
 	}
+
 	s = addPermsSchema(s)
+
 	return &schema.Resource{
-		Schema: s,
-		Create: TeamCreate,
-		Read:   TeamRead,
-		Update: TeamUpdate,
-		Delete: TeamDelete,
+		Schema:        s,
+		Create:        TeamCreate,
+		Read:          TeamRead,
+		Update:        TeamUpdate,
+		Delete:        TeamDelete,
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    teamResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: permissionInstanceStateUpgradeV0,
+				Version: 0,
+			},
+		},
 	}
 }
 
 func teamToResourceData(d *schema.ResourceData, t *account.Team) error {
 	d.SetId(t.ID)
 	d.Set("name", t.Name)
+
+	wl := make([]interface{}, 0)
+	for _, l := range t.IPWhitelist {
+		wlm := make(map[string]interface{})
+		wlm["name"] = l.Name
+		wlm["values"] = l.Values
+		wl = append(wl, wlm)
+	}
+	if err := d.Set("ip_whitelist", wl); err != nil {
+		return fmt.Errorf("[DEBUG] Error setting IP Whitelist for: %s, error: %#v", t.Name, err)
+	}
+
 	permissionsToResourceData(d, t.Permissions)
+
 	return nil
 }
 
 func resourceDataToTeam(t *account.Team, d *schema.ResourceData) error {
 	t.ID = d.Id()
 	t.Name = d.Get("name").(string)
+
+	ipWhitelistsRaw := d.Get("ip_whitelist").([]interface{})
+	t.IPWhitelist = make([]account.IPWhitelist, 0, len(ipWhitelistsRaw))
+
+	for _, v := range ipWhitelistsRaw {
+		ipWhitelistRaw := v.(map[string]interface{})
+
+		valsRaw := ipWhitelistRaw["values"].([]interface{})
+		vals := make([]string, 0, len(valsRaw))
+		for _, vv := range valsRaw {
+			vals = append(vals, vv.(string))
+		}
+
+		t.IPWhitelist = append(t.IPWhitelist, account.IPWhitelist{
+			Name:   ipWhitelistRaw["name"].(string),
+			Values: vals,
+		})
+	}
+
 	t.Permissions = resourceDataToPermissions(d)
 	return nil
 }

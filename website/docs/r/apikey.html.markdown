@@ -21,6 +21,9 @@ resource "ns1_apikey" "example" {
   name  = "Example key"
   teams = ["${ns1_team.example.id}"]
 
+  # Optional IP whitelist
+  ip_whitelist = ["1.1.1.1","2.2.2.2"]
+
   # Configure permissions 
   dns_view_zones       = false
   account_manage_users = false
@@ -46,6 +49,8 @@ The following arguments are supported:
 * `name` - (Required) The free form name of the apikey.
 * `key` - (Required) The apikeys authentication token.
 * `teams` - (Optional) The teams that the apikey belongs to.
+* `ip_whitelist` - (Optional) The IP addresses to whitelist for this key.
+* `ip_whitelist_strict` - (Optional) Sets exclusivity on this IP whitelist.
 * `dns_view_zones` - (Optional) Whether the apikey can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the apikey can modify the accounts zones.
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.
@@ -65,6 +70,17 @@ The following arguments are supported:
 * `monitoring_manage_lists` - (Optional) Whether the apikey can modify notification lists.
 * `monitoring_manage_jobs` - (Optional) Whether the apikey can modify monitoring jobs.
 * `monitoring_view_jobs` - (Optional) Whether the apikey can view monitoring jobs.
+* `security_manage_global_2fa` - (Optional) Whether the apikey can manage global two factor authentication.
+* `security_manage_active_directory` - (Optional) Whether the apikey can manage global active directory.
+Only relevant for the DDI product.
+* `dhcp_manage_dhcp` - (Optional) Whether the apikey can manage DHCP.
+Only relevant for the DDI product.
+* `dhcp_view_dhcp` - (Optional) Whether the apikey can view DHCP.
+Only relevant for the DDI product.
+* `ipam_manage_ipam` - (Optional) Whether the apikey can manage IPAM.
+Only relevant for the DDI product.
+* `ipam_view_ipam` - (Optional) Whether the apikey can view IPAM.
+Only relevant for the DDI product.
 
 ## Attributes Reference
 

@@ -18,6 +18,9 @@ The credentials used must have the `manage_users` permission set.
 resource "ns1_team" "example" {
   name = "Example team"
 
+  # Optional IP whitelist
+  ip_whitelist = ["1.1.1.1","2.2.2.2"]
+
   dns_view_zones       = false
   account_manage_users = false
 }
@@ -51,6 +54,8 @@ The following arguments are supported:
 * `email` - (Required) The email address of the user.
 * `notify` - (Required) Whether or not to notify the user of specified events. Only `billing` is available currently.
 * `teams` - (Required) The teams that the user belongs to.
+* `ip_whitelist` - (Optional) The IP addresses to whitelist for this key.
+* `ip_whitelist_strict` - (Optional) Sets exclusivity on this IP whitelist.
 * `dns_view_zones` - (Optional) Whether the user can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the user can modify the accounts zones.
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.
@@ -70,6 +75,15 @@ The following arguments are supported:
 * `monitoring_manage_lists` - (Optional) Whether the user can modify notification lists.
 * `monitoring_manage_jobs` - (Optional) Whether the user can modify monitoring jobs.
 * `monitoring_view_jobs` - (Optional) Whether the user can view monitoring jobs.
+* `security_manage_global_2fa` - (Optional) Whether the user can manage global two factor authentication.
+* `security_manage_active_directory` - (Optional) Whether the user can manage global active directory.
+Only relevant for the DDI product.
+* `dhcp_manage_dhcp` - (Optional) Whether the user can manage DHCP.
+Only relevant for the DDI product.
+* `dhcp_view_dhcp` - (Optional) Whether the user can view DHCP.
+Only relevant for the DDI product.
+* `ipam_manage_ipam` - (Optional) Whether the user can manage IPAM.
+Only relevant for the DDI product.
 
 ## Attributes Reference
 

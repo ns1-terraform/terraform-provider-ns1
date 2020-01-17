@@ -3,6 +3,7 @@ package ns1
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -26,6 +27,8 @@ func TestAccAPIKey_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, name),
+					testAccCheckAPIKeyIPWhitelists(&apiKey, []string{"1.1.1.1", "2.2.2.2"}),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "ip_whitelist_strict", "true"),
 				),
 			},
 		},
@@ -47,13 +50,17 @@ func TestAccAPIKey_updated(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, name),
+					testAccCheckAPIKeyIPWhitelists(&apiKey, []string{"1.1.1.1", "2.2.2.2"}),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "ip_whitelist_strict", "true"),
 				),
 			},
 			{
-				Config: testAccAPIKeyBasic(updatedName),
+				Config: testAccAPIKeyUpdated(updatedName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, updatedName),
+					testAccCheckAPIKeyIPWhitelists(&apiKey, []string{}),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "ip_whitelist_strict", "false"),
 				),
 			},
 		},
@@ -197,6 +204,15 @@ func testAccCheckAPIKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
+func testAccCheckAPIKeyIPWhitelists(k *account.APIKey, expected []string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if !reflect.DeepEqual(k.IPWhitelist, expected) {
+			return fmt.Errorf("IPWhitelist: got values: %v want: %v", k.IPWhitelist, expected)
+		}
+		return nil
+	}
+}
+
 // Simulate a manual deletion of an API key.
 func testAccManualDeleteAPIKey(apiKey *account.APIKey) func() {
 	return func() {
@@ -210,6 +226,16 @@ func testAccManualDeleteAPIKey(apiKey *account.APIKey) func() {
 }
 
 func testAccAPIKeyBasic(apiKeyName string) string {
+	return fmt.Sprintf(`resource "ns1_apikey" "it" {
+  name = "%s"
+
+  ip_whitelist			= ["1.1.1.1","2.2.2.2"]
+  ip_whitelist_strict	= true
+}
+`, apiKeyName)
+}
+
+func testAccAPIKeyUpdated(apiKeyName string) string {
 	return fmt.Sprintf(`resource "ns1_apikey" "it" {
   name = "%s"
 }

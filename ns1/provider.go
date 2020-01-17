@@ -31,6 +31,12 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("NS1_IGNORE_SSL", nil),
 				Description: descriptions["ignore_ssl"],
 			},
+			"enable_ddi": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NS1_ENABLE_DDI", nil),
+				Description: descriptions["enable_ddi"],
+			},
 			"rate_limit_parallelism": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -79,6 +85,9 @@ func ns1Configure(d *schema.ResourceData) (interface{}, error) {
 	}
 	if v, ok := d.GetOk("ignore_ssl"); ok {
 		config.IgnoreSSL = v.(bool)
+	}
+	if v, ok := d.GetOk("enable_ddi"); ok {
+		config.EnableDDI = v.(bool)
 	}
 	if v, ok := d.GetOk("rate_limit_parallelism"); ok {
 		config.RateLimitParallelism = v.(int)
