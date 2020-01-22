@@ -30,8 +30,9 @@ data "ns1_zone" "example" {
 In addition to the argument above, the following are exported:
 
 * `link` - The linked target zone.
-* `primary` - The primary ip.
-* `additional_primaries` - List of additional IPs for the primary zone.
+* `primary` - The primary zones' IPv4 address.
+* `additional_primaries` - List of additional IPv4 addresses for the primary
+  zone.
 * `ttl` - The SOA TTL.
 * `refresh` - The SOA Refresh.
 * `retry` - The SOA Retry.

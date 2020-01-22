@@ -69,9 +69,9 @@ The following arguments are supported:
 
 * `zone` - (Required) The domain name of the zone.
 * `link` - (Optional) The target zone(domain name) to link to.
-* `primary` - (Optional) The primary zones' IP. This makes the zone a
+* `primary` - (Optional) The primary zones' IPv4 address. This makes the zone a
   secondary. Conflicts with `secondaries`.
-* `additional_primaries` - (Optional) List of additional IPs for the primary
+* `additional_primaries` - (Optional) List of additional IPv4 addresses for the primary
   zone. Conflicts with `secondaries`.
 * `ttl` - (Optional/Computed) The SOA TTL.
 * `refresh` - (Optional/Computed) The SOA Refresh. Conflicts with `primary` and
