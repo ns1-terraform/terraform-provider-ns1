@@ -82,6 +82,14 @@ func recordResource() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+				Deprecated: `short_answers will be deprecated in a future release.
+It is suggested to migrate to a regular "answers" block. Using Terraform 0.12+, a similar convenience to "short_answers" can be achieved with dynamic blocks:
+  dynamic "answers" {
+    for_each = ["4.4.4.4", "5.5.5.5"]
+    content {
+      answer  = answers.value
+    }
+  }`,
 			},
 			"answers": {
 				Type:     schema.TypeList,
