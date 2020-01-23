@@ -40,6 +40,9 @@ The following arguments are supported:
 * `endpoint` - (Optional) NS1 API endpoint. For managed clients, this normally
   should not be set.
 * `ignore_ssl` - (Optional) This normally does not need to be set.
+* `enable_ddi` - (Optional) This sets the permission schema to a DDI-compatible schema. 
+Users of the managed SaaS product should not need to set this.
+Users of DDI should set this to true if managing teams, users, or API keys through this provider.
 * `rate_limit_parallelism` - (Optional) Integer for parallelism amount
   (terraform's default is 10). If set, uses an alternate strategy to handle
   rate limiting from the NS1 API. Give this a try if you are processing a large

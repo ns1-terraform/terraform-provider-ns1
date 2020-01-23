@@ -3,6 +3,7 @@ package ns1
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"regexp"
 	"testing"
 
@@ -35,6 +36,22 @@ func TestAccUser_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "notify.%", "1"),
 					resource.TestCheckResourceAttr("ns1_user.u", "notify.billing", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					testAccCheckUserIPWhitelists(&user, []string{"1.1.1.1", "2.2.2.2"}),
+					resource.TestCheckResourceAttr("ns1_user.u", "ip_whitelist_strict", "true"),
+				),
+			},
+			{
+				Config: testAccUserUpdated(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "teams.#", "1"),
+					resource.TestCheckResourceAttr("ns1_user.u", "notify.%", "1"),
+					resource.TestCheckResourceAttr("ns1_user.u", "notify.billing", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					testAccCheckUserIPWhitelists(&user, []string{}),
+					resource.TestCheckResourceAttr("ns1_user.u", "ip_whitelist_strict", "false"),
 				),
 			},
 		},
@@ -493,6 +510,15 @@ func testAccCheckUserExists(n string, user *account.User) resource.TestCheckFunc
 	}
 }
 
+func testAccCheckUserIPWhitelists(user *account.User, expected []string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if !reflect.DeepEqual(user.IPWhitelist, expected) {
+			return fmt.Errorf("IPWhitelist: got values: %v want: %v", user.IPWhitelist, expected)
+		}
+		return nil
+	}
+}
+
 // Simulate a manual deletion of a user.
 func testAccManualDeleteUser(user string) func() {
 	return func() {
@@ -508,6 +534,29 @@ func testAccManualDeleteUser(user string) func() {
 func testAccUserBasic(rString string) string {
 	return fmt.Sprintf(`resource "ns1_team" "t" {
   name = "terraform acc test team %s"
+
+  account_view_invoices = true
+}
+
+resource "ns1_user" "u" {
+  name = "terraform acc test user %s"
+  username = "tf_acc_test_user_%s"
+  email = "tf_acc_test_ns1@hashicorp.com"
+  teams = ["${ns1_team.t.id}"]
+  notify = {
+  	billing = true
+  }
+  ip_whitelist			= ["1.1.1.1", "2.2.2.2"]
+  ip_whitelist_strict	= true
+}
+`, rString, rString, rString)
+}
+
+func testAccUserUpdated(rString string) string {
+	return fmt.Sprintf(`resource "ns1_team" "t" {
+  name = "terraform acc test team %s"
+
+  account_view_invoices = true
 }
 
 resource "ns1_user" "u" {

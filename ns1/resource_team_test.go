@@ -33,6 +33,10 @@ func TestAccTeam_basic(t *testing.T) {
 					testAccCheckTeamDNSPermissionZones(&team, "zones_allow", []string{"mytest.zone"}),
 					testAccCheckTeamDNSPermissionZones(&team, "zones_deny", []string{"myother.zone"}),
 					testAccCheckTeamDataPermission(&team, "manage_datasources", true),
+					testAccCheckTeamIPWhitelists(&team, []account.IPWhitelist{
+						{Name: "whitelist-1", Values: []string{"1.1.1.1", "2.2.2.2"}},
+						{Name: "whitelist-2", Values: []string{"3.3.3.3", "4.4.4.4"}},
+					}),
 				),
 			},
 		},
@@ -65,6 +69,7 @@ func TestAccTeam_updated(t *testing.T) {
 					testAccCheckTeamDNSPermissionZones(&team, "zones_allow", []string{}),
 					testAccCheckTeamDNSPermissionZones(&team, "zones_deny", []string{}),
 					testAccCheckTeamDataPermission(&team, "manage_datasources", false),
+					testAccCheckTeamIPWhitelists(&team, []account.IPWhitelist{}),
 				),
 			},
 		},
@@ -219,6 +224,25 @@ func testAccCheckTeamDNSPermissionZones(team *account.Team, perm string, expecte
 	}
 }
 
+func testAccCheckTeamIPWhitelists(team *account.Team, expected []account.IPWhitelist) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if len(team.IPWhitelist) != len(expected) {
+			return fmt.Errorf("IPWhitelist: got length: %v want: %v", len(team.IPWhitelist), len(expected))
+		}
+
+		for i, l := range expected {
+			if l.Name != team.IPWhitelist[i].Name {
+				return fmt.Errorf("IPWhitelist: got name: %v want: %v", team.IPWhitelist[i].Name, l.Name)
+			}
+
+			if !reflect.DeepEqual(l.Values, team.IPWhitelist[i].Values) {
+				return fmt.Errorf("IPWhitelist: got values: %v want: %v", team.IPWhitelist[i].Values, l.Values)
+			}
+		}
+		return nil
+	}
+}
+
 // Simulate a manual deletion of a team.
 func testAccManualDeleteTeam(team *account.Team) func() {
 	return func() {
@@ -241,6 +265,16 @@ resource "ns1_team" "foobar" {
   dns_zones_deny = ["myother.zone"]
 
   data_manage_datasources = true
+
+  ip_whitelist {
+	name = "whitelist-1"
+	values = ["1.1.1.1", "2.2.2.2"]
+  }
+
+  ip_whitelist {
+	name = "whitelist-2"
+	values = ["3.3.3.3", "4.4.4.4"]
+  }
 }`
 
 const testAccTeamUpdated = `

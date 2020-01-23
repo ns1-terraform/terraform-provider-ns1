@@ -24,14 +24,33 @@ func apikeyResource() *schema.Resource {
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
+		"ip_whitelist": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"ip_whitelist_strict": {
+			Type:     schema.TypeBool,
+			Optional: true,
+		},
 	}
+
 	s = addPermsSchema(s)
+
 	return &schema.Resource{
-		Schema: s,
-		Create: ApikeyCreate,
-		Read:   ApikeyRead,
-		Update: ApikeyUpdate,
-		Delete: ApikeyDelete,
+		Schema:        s,
+		Create:        ApikeyCreate,
+		Read:          ApikeyRead,
+		Update:        ApikeyUpdate,
+		Delete:        ApikeyDelete,
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    apikeyResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: permissionInstanceStateUpgradeV0,
+				Version: 0,
+			},
+		},
 	}
 }
 
@@ -40,6 +59,8 @@ func apikeyToResourceData(d *schema.ResourceData, k *account.APIKey) error {
 	d.Set("name", k.Name)
 	d.Set("key", k.Key)
 	d.Set("teams", k.TeamIDs)
+	d.Set("ip_whitelist", k.IPWhitelist)
+	d.Set("ip_whitelist_strict", k.IPWhitelistStrict)
 	permissionsToResourceData(d, k.Permissions)
 	return nil
 }
@@ -57,6 +78,21 @@ func resourceDataToApikey(k *account.APIKey, d *schema.ResourceData) error {
 		k.TeamIDs = make([]string, 0)
 	}
 	k.Permissions = resourceDataToPermissions(d)
+
+	if v, ok := d.GetOk("ip_whitelist"); ok {
+		ipWhitelistRaw := v.([]interface{})
+		k.IPWhitelist = make([]string, len(ipWhitelistRaw))
+		for i, ip := range ipWhitelistRaw {
+			k.IPWhitelist[i] = ip.(string)
+		}
+	} else {
+		// This still needs to be initialized to a zero value,
+		// otherwise it can't be removed.
+		k.IPWhitelist = make([]string, 0)
+	}
+
+	k.IPWhitelistStrict = d.Get("ip_whitelist_strict").(bool)
+
 	return nil
 }
 

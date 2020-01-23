@@ -35,14 +35,33 @@ func userResource() *schema.Resource {
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
+		"ip_whitelist": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
+		},
+		"ip_whitelist_strict": {
+			Type:     schema.TypeBool,
+			Optional: true,
+		},
 	}
+
 	s = addPermsSchema(s)
+
 	return &schema.Resource{
-		Schema: s,
-		Create: UserCreate,
-		Read:   UserRead,
-		Update: UserUpdate,
-		Delete: UserDelete,
+		Schema:        s,
+		Create:        UserCreate,
+		Read:          UserRead,
+		Update:        UserUpdate,
+		Delete:        UserDelete,
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    userResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: permissionInstanceStateUpgradeV0,
+				Version: 0,
+			},
+		},
 	}
 }
 
@@ -54,6 +73,8 @@ func userToResourceData(d *schema.ResourceData, u *account.User) error {
 	notify := make(map[string]bool)
 	notify["billing"] = u.Notify.Billing
 	d.Set("notify", notify)
+	d.Set("ip_whitelist", u.IPWhitelist)
+	d.Set("ip_whitelist_strict", u.IPWhitelistStrict)
 	permissionsToResourceData(d, u.Permissions)
 	return nil
 }
@@ -75,6 +96,21 @@ func resourceDataToUser(u *account.User, d *schema.ResourceData) error {
 		notifyRaw := v.(map[string]interface{})
 		u.Notify.Billing = notifyRaw["billing"].(bool)
 	}
+
+	if v, ok := d.GetOk("ip_whitelist"); ok {
+		ipWhitelistRaw := v.([]interface{})
+		u.IPWhitelist = make([]string, len(ipWhitelistRaw))
+		for i, ip := range ipWhitelistRaw {
+			u.IPWhitelist[i] = ip.(string)
+		}
+	} else {
+		// This still needs to be initialized to a zero value,
+		// otherwise it can't be removed.
+		u.IPWhitelist = make([]string, 0)
+	}
+
+	u.IPWhitelistStrict = d.Get("ip_whitelist_strict").(bool)
+
 	u.Permissions = resourceDataToPermissions(d)
 	return nil
 }

@@ -18,6 +18,17 @@ teams. The credentials used must have the `manage_teams` permission set.
 resource "ns1_team" "example" {
   name = "Example team"
 
+    
+  # Optional IP whitelists
+  ip_whitelist {
+    name = "whitelist-1"
+    values = ["1.1.1.1", "2.2.2.2"]
+  }
+  ip_whitelist {
+    name = "whitelist-2"
+    values = ["3.3.3.3", "4.4.4.4"]
+  }
+
   # Configure permissions
   dns_view_zones       = false
   account_manage_users = false
@@ -29,6 +40,7 @@ resource "ns1_team" "example" {
 The following arguments are supported:
 
 * `name` - (Required) The free form name of the team.
+* `ip_whitelist` - (Optional) The IP addresses to whitelist for this key.
 * `dns_view_zones` - (Optional) Whether the team can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the team can modify the accounts zones.
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.
@@ -48,6 +60,17 @@ The following arguments are supported:
 * `monitoring_manage_lists` - (Optional) Whether the team can modify notification lists.
 * `monitoring_manage_jobs` - (Optional) Whether the team can modify monitoring jobs.
 * `monitoring_view_jobs` - (Optional) Whether the team can view monitoring jobs.
+* `security_manage_global_2fa` - (Optional) Whether the team can manage global two factor authentication.
+* `security_manage_active_directory` - (Optional) Whether the team can manage global active directory.
+Only relevant for the DDI product.
+* `dhcp_manage_dhcp` - (Optional) Whether the team can manage DHCP.
+Only relevant for the DDI product.
+* `dhcp_view_dhcp` - (Optional) Whether the team can view DHCP.
+Only relevant for the DDI product.
+* `ipam_manage_ipam` - (Optional) Whether the team can manage IPAM.
+Only relevant for the DDI product.
+* `ipam_view_ipam` - (Optional) Whether the team can view IPAM.
+Only relevant for the DDI product.
 
 ## Attributes Reference
 
