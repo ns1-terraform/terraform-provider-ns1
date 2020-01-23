@@ -1,6 +1,8 @@
 NS1 Terraform Provider
 ==================
 
+> This project is in [active development](https://github.com/ns1/community/blob/master/project_status/ACTIVE_DEVELOPMENT.md).
+
 - NS1 Website: https://www.ns1.com
 - Terraform Website: https://www.terraform.io
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
@@ -380,6 +382,11 @@ Some helpful things for debugging:
 * Set `TF_LOG=DEBUG` for verbose logging.
 * Additionally set `NS1_DEBUG` environment variable to include details of the
   API requests in the logs.
+
+Contributions
+---
+
+Pull Requests and issues are welcome. See the [NS1 Contribution Guidelines](https://github.com/ns1/community) for more information.
 
 Known Issues/Roadmap
 --------------------
