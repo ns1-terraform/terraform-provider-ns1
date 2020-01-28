@@ -1,4 +1,14 @@
 ## 1.7.0 (Unreleased)
+NOTES:
+* The `short_answers` attribute on `ns1_record` has had a deprecation warning added to it and will be deprecated in a future release ([#102](https://github.com/terraform-providers/terraform-provider-ns1/pull/102)).
+* The project has been tagged as under "active development", in accordance with NS1 standards around public facing repositories ([#109](https://github.com/terraform-providers/terraform-provider-ns1/pull/109)).
+
+ENHANCEMENTS:
+* Support for DDI permissions on teams, users, and API keys has been added,
+and can be enabled via the new `enable_ddi` configuration option on the provider ([#105](https://github.com/terraform-providers/terraform-provider-ns1/pull/105)).
+* Added IP Whitelist support for teams, users, and AIP keys ([#105](https://github.com/terraform-providers/terraform-provider-ns1/pull/105)).
+* Clarified documentation for IPv4 only fields ([#108](https://github.com/terraform-providers/terraform-provider-ns1/pull/108)).
+
 ## 1.6.4 (January 06, 2020)
 
 IMPROVEMENTS:
