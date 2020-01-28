@@ -1,4 +1,4 @@
-## 1.7.0 (Unreleased)
+## 1.7.0 (January 28, 2020)
 NOTES:
 * The `short_answers` attribute on `ns1_record` has had a deprecation warning added to it and will be deprecated in a future release ([#102](https://github.com/terraform-providers/terraform-provider-ns1/pull/102)).
 * The project has been tagged as under "active development", in accordance with NS1 standards around public facing repositories ([#109](https://github.com/terraform-providers/terraform-provider-ns1/pull/109)).
