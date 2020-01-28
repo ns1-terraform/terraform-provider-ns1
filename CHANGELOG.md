@@ -1,4 +1,14 @@
 ## 1.7.0 (Unreleased)
+NOTES:
+* The `short_answers` attribute on `ns1_record` has had a deprecation warning added to it and will be deprecated in a future release.
+* The project has been tagged as under "active development", in accordance with NS1 standards around public facing repositories.
+
+ENHANCEMENTS:
+* Support for DDI permissions on teams, users, and API keys has been added,
+and can be enabled via the new `enable_ddi` configuration option on the provider.
+* Added IP Whitelist support for teams, users, and AIP keys.
+* Clarified documentation for IPv4 only fields.
+
 ## 1.6.4 (January 06, 2020)
 
 IMPROVEMENTS:
