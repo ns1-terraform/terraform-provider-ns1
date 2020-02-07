@@ -105,8 +105,9 @@ It is suggested to migrate to a regular "answers" block. Using Terraform 0.12+, 
 							Optional: true,
 						},
 						"meta": {
-							Type:     schema.TypeMap,
-							Optional: true,
+							Type:             schema.TypeMap,
+							Optional:         true,
+							DiffSuppressFunc: metaDiffSuppress,
 						},
 					},
 				},
@@ -123,7 +124,7 @@ It is suggested to migrate to a regular "answers" block. Using Terraform 0.12+, 
 						"meta": {
 							Type:             schema.TypeMap,
 							Optional:         true,
-							DiffSuppressFunc: regionsMetaDiffSuppress,
+							DiffSuppressFunc: metaDiffSuppress,
 						},
 					},
 				},
@@ -445,11 +446,16 @@ func recordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.Resour
 	return []*schema.ResourceData{d}, nil
 }
 
-func regionsMetaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+// metaDiffSuppress evaluates fields in the meta attribute that could be
+// []string and suppresses a diff if the difference is in ordering of elements,
+// since the API often changes the order.
+func metaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 	if strings.HasSuffix(k, ".georegion") ||
 		strings.HasSuffix(k, ".country") ||
 		strings.HasSuffix(k, ".us_state") ||
-		strings.HasSuffix(k, ".ca_province") {
+		strings.HasSuffix(k, ".ca_province") ||
+		strings.HasSuffix(k, ".ip_prefixes") ||
+		strings.HasSuffix(k, ".asn") {
 
 		compareMap := make(map[string]bool)
 		for _, value := range strings.Split(old, ",") {
