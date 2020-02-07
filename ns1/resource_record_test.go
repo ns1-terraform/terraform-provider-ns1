@@ -483,8 +483,8 @@ func testAccCheckRecordAnswerMetaIPPrefixes(r *dns.Record, expected []string) re
 			ipPrefixes[i] = v.(string)
 		}
 
-		sort.Strings((ipPrefixes))
-		sort.Strings((expected))
+		sort.Strings(ipPrefixes)
+		sort.Strings(expected)
 		if !reflect.DeepEqual(ipPrefixes, expected) {
 			return fmt.Errorf("ip-prefixes: got: %#v want: %#v", ipPrefixes, expected)
 		}
