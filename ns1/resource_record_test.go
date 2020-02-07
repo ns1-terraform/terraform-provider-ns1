@@ -118,7 +118,7 @@ func TestAccRecord_meta(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
 					testAccCheckRecordDomain(&record, domainName),
-					testAccCheckRecordAnswerMetaIPPrefixes(&record, []string{"1.1.1.1/32", "2.2.2.2/32"}),
+					testAccCheckRecordAnswerMetaIPPrefixes(&record, []string{"3.248.0.0/13", "13.248.96.0/24", "13.248.113.0/24", "13.248.118.0/24", "13.248.119.0/24", "13.248.121.0/24"}),
 				),
 			},
 			{
@@ -631,7 +631,7 @@ resource "ns1_record" "it" {
 
     meta = {
       weight = 5
-      ip_prefixes = "1.1.1.1/32,2.2.2.2/32"
+      ip_prefixes = "3.248.0.0/13,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24"
     }
   }
 }
@@ -735,24 +735,24 @@ func TestRegionsMetaDiffSuppress(t *testing.T) {
 	for _, metaKey := range metaKeys {
 		key := fmt.Sprintf("somepath.%s", metaKey)
 
-		if regionsMetaDiffSuppress(key, "val1", "val2", nil) {
+		if metaDiffSuppress(key, "val1", "val2", nil) {
 			t.Errorf("does not return that different strings are different (%s)", metaKey)
 		}
 
-		if !regionsMetaDiffSuppress(key, "val1", "val1", nil) {
+		if !metaDiffSuppress(key, "val1", "val1", nil) {
 			t.Errorf("does return that identical strings are different (%s)", metaKey)
 		}
 
-		if !regionsMetaDiffSuppress(key, "val1,val2", "val1,val2", nil) {
+		if !metaDiffSuppress(key, "val1,val2", "val1,val2", nil) {
 			t.Errorf("does return that identical strings with multiple elements are different (%s)", metaKey)
 		}
 
-		if !regionsMetaDiffSuppress(key, "val2,val1", "val1,val2", nil) {
+		if !metaDiffSuppress(key, "val2,val1", "val1,val2", nil) {
 			t.Errorf("does return that identical values with different orders are different (%s)", metaKey)
 		}
 	}
 
-	if regionsMetaDiffSuppress("somepath.ignorekey", "val2,val1", "val1,val2", nil) {
+	if metaDiffSuppress("somepath.ignorekey", "val2,val1", "val1,val2", nil) {
 		t.Errorf("is processing non-related meta keys")
 	}
 }
