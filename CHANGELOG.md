@@ -1,4 +1,7 @@
 ## 1.7.1 (Unreleased)
+BUG FIXES:
+* Bump ns1-go SDK version to v2.2.1 -- resolves an issue with ASNs causing panics
+
 ## 1.7.0 (January 28, 2020)
 NOTES:
 * The `short_answers` attribute on `ns1_record` has had a deprecation warning added to it and will be deprecated in a future release ([#102](https://github.com/terraform-providers/terraform-provider-ns1/pull/102)).
