@@ -1,6 +1,4 @@
-## 1.7.2 (unreleased)
-
-## 1.7.1 (February 25, 2020)
+## 1.7.1 (Unreleased)
 
 BUG FIXES:
 * Bump ns1-go SDK version to v2.2.1 - resolves an issue with ASNs causing
