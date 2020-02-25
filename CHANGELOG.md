@@ -9,7 +9,7 @@ BUG FIXES:
 
 ENHANCEMENTS:
 * Validate username field in the provider, so issues with usernames are caught
-  in the "plan" stage [#gh-113]
+  in the "plan" stage [#gh-115]
 
 ## 1.7.0 (January 28, 2020)
 
