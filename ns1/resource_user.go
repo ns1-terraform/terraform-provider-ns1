@@ -1,7 +1,9 @@
 package ns1
 
 import (
+	"fmt"
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -10,6 +12,8 @@ import (
 	"gopkg.in/ns1/ns1-go.v2/rest/model/account"
 )
 
+var usernameRegex = regexp.MustCompile(`^([a-zA-Z0-9_]+)$`)
+
 func userResource() *schema.Resource {
 	s := map[string]*schema.Schema{
 		"name": {
@@ -17,9 +21,10 @@ func userResource() *schema.Resource {
 			Required: true,
 		},
 		"username": {
-			Type:     schema.TypeString,
-			Required: true,
-			ForceNew: true,
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			ValidateFunc: validateUsername,
 		},
 		"email": {
 			Type:     schema.TypeString,
@@ -191,4 +196,21 @@ func UserUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	return userToResourceData(d, &u)
+}
+
+func validateUsername(
+	val interface{}, key string,
+) (warns []string, errs []error) {
+	v := []byte(val.(string))
+	if !usernameRegex.Match(v) {
+		errs = append(
+			errs,
+			fmt.Errorf(
+				"username '%s' does not match regular expression `%s`",
+				v,
+				usernameRegex,
+			),
+		)
+	}
+	return warns, errs
 }

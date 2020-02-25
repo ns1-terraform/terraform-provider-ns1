@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/stretchr/testify/assert"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/account"
@@ -465,6 +466,43 @@ resource "ns1_user" "u" {
 }
 */
 
+func TestValidateUsername(t *testing.T) {
+	tests := []struct {
+		name    string
+		in      interface{}
+		expErrs int
+	}{
+		{
+			"valid",
+			"vAlId_uS3r",
+			0,
+		},
+		{
+			"invalid - dash",
+			"inv4lid-user",
+			1,
+		},
+		{
+			"invalid - dot",
+			"invalid.us3r",
+			1,
+		},
+		{
+			"invalid - punctuation",
+			"inv@l!d_us3r",
+			1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			outWarns, outErrs := validateUsername(tt.in, "")
+			assert.Equal(t, tt.expErrs, len(outErrs))
+			assert.Equal(t, 0, len(outWarns))
+		})
+	}
+}
+
 func testAccCheckUserDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ns1.Client)
 
@@ -544,10 +582,10 @@ resource "ns1_user" "u" {
   email = "tf_acc_test_ns1@hashicorp.com"
   teams = ["${ns1_team.t.id}"]
   notify = {
-  	billing = true
+    billing = true
   }
-  ip_whitelist			= ["1.1.1.1", "2.2.2.2"]
-  ip_whitelist_strict	= true
+  ip_whitelist        = ["1.1.1.1", "2.2.2.2"]
+  ip_whitelist_strict = true
 }
 `, rString, rString, rString)
 }
@@ -565,7 +603,7 @@ resource "ns1_user" "u" {
   email = "tf_acc_test_ns1@hashicorp.com"
   teams = ["${ns1_team.t.id}"]
   notify = {
-  	billing = true
+    billing = true
   }
 }
 `, rString, rString, rString)
@@ -585,7 +623,7 @@ resource "ns1_user" "u" {
   teams = ["${ns1_team.t.id}"]
 
   notify = {
-  	billing = false
+    billing = false
   }
 }
 `, rString, rString, rString)
@@ -603,7 +641,7 @@ resource "ns1_user" "u" {
   email = "tf_acc_test_ns1@hashicorp.com"
 
   notify = {
-  	billing = false
+    billing = false
   }
 }
 `, rString, rString, rString)
@@ -624,7 +662,7 @@ resource "ns1_user" "u" {
   teams = []
 
   notify = {
-  	billing = false
+    billing = false
   }
 }
 `, rString, rString, rString)
@@ -649,7 +687,7 @@ resource "ns1_user" "u" {
   teams = ["${ns1_team.t.id}","${ns1_team.t2.id}"]
 
   notify = {
-  	billing = false
+    billing = false
   }
 }
 `, rString, rString, rString, rString)
