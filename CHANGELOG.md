@@ -1,14 +1,18 @@
 ## 1.8.0 (Unreleased)
+
+ENHANCEMENTS:
+  * support for pulsar metadata in record answers [GH-116]
+
 ## 1.7.1 (February 25, 2020)
 
 BUG FIXES:
 * Bump ns1-go SDK version to v2.2.1 - resolves an issue with ASNs causing
-  panics [#gh-113]
-* Fix for IP Prefix ordering - don't show a change when order differs [#gh-112]
+  panics ([#113](https://github.com/terraform-providers/terraform-provider-ns1/pull/113)).
+* Fix for IP Prefix ordering - don't show a change when order differs ([#112](https://github.com/terraform-providers/terraform-provider-ns1/pull/112)).
 
 ENHANCEMENTS:
 * Validate username field in the provider, so issues with usernames are caught
-  in the "plan" stage [#gh-115]
+  in the "plan" stage ([#115](https://github.com/terraform-providers/terraform-provider-ns1/pull/115)).
 
 ## 1.7.0 (January 28, 2020)
 
