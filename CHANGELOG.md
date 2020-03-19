@@ -1,7 +1,7 @@
-## 1.8.0 (Unreleased)
+## 1.8.0 (March 19, 2020)
 
 ENHANCEMENTS:
-  * support for pulsar metadata in record answers [GH-116]
+  * support for pulsar metadata in record answers ([#116](https://github.com/terraform-providers/terraform-provider-ns1/issues/116))
 
 ## 1.7.1 (February 25, 2020)
 
