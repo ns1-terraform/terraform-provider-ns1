@@ -16,6 +16,13 @@ type FeedPtr struct {
 	FeedID string `json:"feed,omitempty"`
 }
 
+// PulsarMeta is currently only used for validation
+type PulsarMeta struct {
+	JobID     string  `json:"job_id,omitempty"`
+	Bias      string  `json:"bias,omitempty"`
+	A5MCutoff float64 `json:"a5m_cutoff,omitempty"`
+}
+
 // Meta contains information on an entity's metadata table. Metadata key/value
 // pairs are used by a record's filter pipeline during a dns query.
 // All values can be a feed id as well, indicating real-time updates of these values.
@@ -51,9 +58,8 @@ type Meta struct {
 	// float64 or FeedPtr.
 	LoadAvg interface{} `json:"loadavg,omitempty"`
 
-	// The Job ID of a Pulsar telemetry gathering job and routing granularities
-	// to associate with.
-	// string or FeedPtr.
+	// The Job ID of a Pulsar telemetry gathering job and associated metadata.
+	// list of PulsarMeta
 	Pulsar interface{} `json:"pulsar,omitempty"`
 
 	// GEOGRAPHICAL
@@ -176,7 +182,19 @@ func FormatInterface(i interface{}) string {
 	case []interface{}:
 		slc := make([]string, 0)
 		for _, s := range v {
-			slc = append(slc, s.(string))
+			switch ss := s.(type) {
+			// Pulsar
+			case map[string]interface{}:
+				data, _ := json.Marshal(v)
+				return string(data)
+			case string:
+				slc = append(slc, ss)
+			// The ASN field specifically is returned from the API as an integer,
+			// which Go treats as a float64 when it parses the json,
+			// so this is to account for that field.
+			case float64:
+				slc = append(slc, strconv.FormatFloat(ss, 'f', -1, 64))
+			}
 		}
 		return strings.Join(slc, ",")
 	case map[string]interface{}:
@@ -235,20 +253,22 @@ func MetaFromMap(m map[string]interface{}) *Meta {
 	mt := mv.Type()
 	for k, v := range m {
 		name := ToCamel(k)
-		if name == "UsState" {
+		switch name {
+		case "UsState":
 			name = "USState"
-		} else if name == "Loadavg" {
+		case "Loadavg":
 			name = "LoadAvg"
-		} else if name == "CaProvince" {
+		case "CaProvince":
 			name = "CAProvince"
-		} else if name == "IpPrefixes" {
+		case "IpPrefixes":
 			name = "IPPrefixes"
-		} else if name == "Asn" {
+		case "Asn":
 			name = "ASN"
 		}
 		if _, ok := mt.FieldByName(name); ok {
 			fv := mv.FieldByName(name)
-			if name == "Up" {
+			switch name {
+			case "Up":
 				if v.(string) == "1" || strings.ToLower(v.(string)) == "true" {
 					fv.Set(reflect.ValueOf(true))
 				} else if v.(string) == "0" || strings.ToLower(v.(string)) == "false" {
@@ -256,7 +276,21 @@ func MetaFromMap(m map[string]interface{}) *Meta {
 				} else {
 					fv.Set(reflect.ValueOf(ParseType(v.(string))))
 				}
-			} else {
+			case "ASN":
+				// If there is only one ASN, it should still be treated as a string.-
+				// otherwise this gets parsed into a float64 and breaks stuff.
+				i := strings.Index(v.(string), ",")
+				if i == -1 {
+					fv.Set(reflect.ValueOf(v.(string)))
+				} else {
+					fv.Set(reflect.ValueOf(ParseType(v.(string))))
+				}
+			case "Pulsar":
+				var pulsars []map[string]interface{}
+				if err := json.Unmarshal([]byte(v.(string)), &pulsars); err == nil {
+					fv.Set(reflect.ValueOf(pulsars))
+				}
+			default:
 				fv.Set(reflect.ValueOf(ParseType(v.(string))))
 			}
 		}
@@ -423,6 +457,34 @@ func validateNoteLength(v reflect.Value) error {
 	return nil
 }
 
+func validatePulsar(v reflect.Value) error {
+	var pulsars []*PulsarMeta
+
+	switch v.Kind() {
+	case reflect.Slice:
+		// Slice from API
+		bs, err := json.Marshal(v.Interface())
+		if err != nil {
+			return fmt.Errorf("pulsar: unexpected value: `%v`", v.Interface())
+		}
+		if err := json.Unmarshal(bs, &pulsars); err != nil {
+			return fmt.Errorf("pulsar: invalid value: `%v`", v.Interface())
+		}
+	case reflect.String:
+		// String from terraform
+		if err := json.Unmarshal([]byte(v.String()), &pulsars); err != nil {
+			return fmt.Errorf("pulsar: invalid value: `%v`", v.String())
+		}
+	}
+
+	for _, p := range pulsars {
+		if p.JobID == "" {
+			return fmt.Errorf("pulsar Job ID is required")
+		}
+	}
+	return nil
+}
+
 // checkFuncs is shorthand for returning a slice of functions that take a reflect.Value and return an error
 func checkFuncs(f ...func(v reflect.Value) error) []func(v reflect.Value) error {
 	return f
@@ -448,7 +510,7 @@ var validationMap = map[string]metaValidation{
 		func(v reflect.Value) error {
 			return validatePositiveNumber("LoadAvg", v)
 		})},
-	"Pulsar":     {kinds(reflect.String), nil},
+	"Pulsar":     {kinds(reflect.String, reflect.Slice), checkFuncs(validatePulsar)},
 	"Latitude":   {kinds(reflect.Float64, reflect.Int), checkFuncs(validateLatLong)},
 	"Longitude":  {kinds(reflect.Float64, reflect.Int), checkFuncs(validateLatLong)},
 	"Georegion":  {kinds(reflect.String, reflect.Slice), checkFuncs(validateGeoregion)},

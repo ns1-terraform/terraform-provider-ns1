@@ -77,6 +77,21 @@ resource "ns1_record" "www" {
     }
   }
 
+  # Example of setting pulsar metadata on an answer. Note the use of
+  # jsonencode (available in terraform 0.12+). This is preferable to the
+  # "quoted JSON" style used for feeds above, both for readability, and
+  # because it handles ordering issues as well.
+  answers {
+    answer = "sub3.${ns1_zone.tld.zone}"
+    meta   = {
+      pulsar = jsonencode([{
+        "job_id"     = "abcdef",
+        "bias"       = "*0.55",
+        "a5m_cutoff" = 0.9
+      }])
+    }
+  }
+
   filters {
     filter = "select_first_n"
 
@@ -194,17 +209,23 @@ record when none actually exist.
 #### Meta
 
 Metadata (`meta`) is a bit tricky at the moment. For "static" values it works
-as you would expect, but when a value is a `datafeed`, it should be represented
-as "escaped" JSON. See the [Example Usage](#example-usage) above for
-illustration of this.
+as you would expect, but when a value is a `datafeed`, or a JSON object, it
+needs some tweaks to work correctly.
 
-Note that variables are still supported in the escaped JSON format. Note also
-that we intend to fix up this "escaped" JSON stuff as soon as possible, so
-please bear with us and plan accordingly.
+If using terraform 0.12+, we can use the `jsonencode` function (see the
+[Example Usage](#example-usage) above). This handles translating the field to
+and from strings as needed, and also handles ordering issues that otherwise may
+need to be handled manually, in config or by the provider.
+
+If you are NOT using terraform 0.12, these values should be represented
+as "escaped" JSON. See the [Example Usage](#example-usage) above for
+illustration of this. Note that variables are still supported in the escaped
+JSON format.
 
 Since this resource supports [import](#import), you may find it helpful to set
 up some `meta` fields via the web portal or API, and use the results from
-import to ensure that everything is properly escaped and evaluated.
+import to check your syntax and ensure that everything is properly escaped and
+evaluated.
 
 See [NS1 API](https://ns1.com/api#get-available-metadata-fields) for the most
 up-to-date list of available `meta` fields.
