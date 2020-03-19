@@ -277,11 +277,11 @@ resource "ns1_notifylist" "test_pagerduty" {
 
 func testAccNotifyListUser(rString string) string {
 	return fmt.Sprintf(`resource "ns1_user" "u" {
-  name = "terraform acc test user %s"
-  username = "tf_acc_test_user_%s"
+  name = "terraform acc test user %[1]s"
+  username = "tf_acc_test_user_%[1]s"
   email = "tf_acc_test_ns1@hashicorp.com"
   notify = {
-  	billing = true
+    billing = true
   }
 }
 
@@ -290,9 +290,9 @@ resource "ns1_notifylist" "test_user" {
   notifications {
     type = "user"
     config = {
-      user = "tf_acc_test_user_%s"
+      user = ns1_user.u.username
     }
   }
 }
-`, rString, rString, rString)
+`, rString)
 }
