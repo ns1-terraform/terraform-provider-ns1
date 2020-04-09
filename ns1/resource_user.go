@@ -12,7 +12,7 @@ import (
 	"gopkg.in/ns1/ns1-go.v2/rest/model/account"
 )
 
-var usernameRegex = regexp.MustCompile(`^([a-zA-Z0-9_]+)$`)
+var usernameRegex = regexp.MustCompile(`^([a-zA-Z0-9_+.@]+)$`)
 
 func userResource() *schema.Resource {
 	s := map[string]*schema.Schema{
