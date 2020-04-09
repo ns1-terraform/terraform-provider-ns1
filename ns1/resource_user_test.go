@@ -478,13 +478,13 @@ func TestValidateUsername(t *testing.T) {
 			0,
 		},
 		{
-			"invalid - dash",
-			"inv4lid-user",
-			1,
+			"valid - email",
+			"valid_us3r@example.com",
+			0,
 		},
 		{
-			"invalid - dot",
-			"invalid.us3r",
+			"invalid - dash",
+			"inv4lid-user",
 			1,
 		},
 		{
