@@ -1,3 +1,7 @@
+## 1.8.1 (Unreleased)
+ENHANCEMENTS
+ * Change username validation regex to match validation used by NS1 API.([#119](https://github.com/terraform-providers/terraform-provider-ns1/pull/119))
+
 ## 1.8.0 (March 19, 2020)
 
 ENHANCEMENTS:
