@@ -30,7 +30,8 @@ Building The Provider
 Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-ns1`
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
+$ mkdir -p $GOPATH/src/github.com/terraform-providers
+$ cd $GOPATH/src/github.com/terraform-providers
 $ git clone git@github.com:terraform-providers/terraform-provider-ns1
 ```
 
@@ -44,7 +45,12 @@ $ make build
 Using The Provider
 ----------------------
 
-### NS1 Resources List and examples
+Documentation and examples for NS1 `resources` and `data sources` is part of
+this repository, and are published at
+[www.terraform.io/docs/providers/ns1](https://www.terraform.io/docs/providers/ns1/index.html)
+as part of the release process.
+
+### NS1 Resources
 
 1. [ApiKey](#apikey)
 2. [Datafeed](#datafeed)
@@ -56,295 +62,72 @@ Using The Provider
 8. [User](#user)
 9. [Zone](#zone)
 
-### Addendum
-
-1. [Permissions](#permissions)
-
-### ApiKey
+#### ApiKey
 
 [ApiKeys Api Doc](https://ns1.com/api#api-key)
 
-ApiKeys are one of the data types that supports permissions at the top level of its Terraform resource
-in addition to its regular parameters. See [Permissions](#permissions) for the parameters that are available.
+[ApiKeys Resource Doc](/website/docs/r/apikey.html.markdown)
 
-_Example_
-
-```hcl
-resource "ns1_apikey" "apikey" {
-  #required
-  name = "my api key"
-
-  #optional
-  teams = ["myteam"]
-
-  #permissions are available at the top level, see permissions for documentation
-}
-```
-
-### Datafeed
+#### Datafeed
 
 [Datafeed Api Doc](https://ns1.com/api#data-feeds)
 
-A Datafeed _requires_ a [Datasource](#datasource)
+[Datafeed Resource Doc](/website/docs/r/datafeed.html.markdown)
 
-_Example_
-```hcl
-resource "ns1_datafeed" "datafeed" {
-  name = "terraform test"
-  source_id = "${ns1_datasource.api.id}"
-
-  #optional
-  config {
-    label = "exampledc2"
-  }
-}
-```
-
-### Datasource
+#### Datasource
 
 [Datasource Api Doc](https://ns1.com/api#data-sources)
 
-_Example_
-```hcl
-resource "ns1_datasource" "datasource" {
-  #required
-  name = "terraform test"
-  sourcetype = "nsone_v1"
+[Datasource Resource Doc](/website/docs/r/datasource.html.markdown)
 
-  #optional
-  config {}
-}
-```
-
-### MonitoringJob
+#### MonitoringJob
 
 [MonitoringJob Api Doc](https://ns1.com/api#monitoring-jobs)
 
-_Example_
-```hcl
-resource "ns1_monitoringjob" "it" {
-  #required
-  job_type = "tcp"
-  name     = "terraform test"
+[MonitoringJob Resource Doc](/website/docs/r/monitoringjob.html.markdown)
 
-  regions   = ["lga"]
-  frequency = 60
-
-  config = {
-    ssl = "1",
-    send = "HEAD / HTTP/1.0\r\n\r\n"
-    port = 443
-    host = "1.2.3.4"
-  }
-
-  #optional
-  active = true
-  rapid_recheck = false
-  notes = "some notes about this job"
-  notify_delay = 3000
-  notify_repeat = 3000
-  notify_failback = false
-  notify_list = ""
-  notify_regional = true
-
-
-  rules = [{
-    value = "200 OK"
-    comparison = "contains"
-    key = "output"
-  }]
-}
-```
-
-### NotifyList
+#### NotifyList
 
 [NotifyList Api Doc](https://ns1.com/api#notification-lists)
 
-_Example_
-```hcl
-resource "ns1_notifylist" "test" {
-  #required
-  name = "terraform test"
+[NotifyList Resource Doc](/website/docs/r/notifylist.html.markdown)
 
-  #optional
-  notifications = {
-    type = "webhook"
-    config = {
-      url = "http://localhost:9090"
-    }
-  }
-}
-```
-
-### Record
+#### Record
 
 [Record Api Doc](https://ns1.com/api#records)
 
-Records have metadata at three different levels:
+[Record Resource Doc](/website/docs/r/record.html.markdown)
 
-* Record Level - Lowest precedence
-* Region Level - Middle precedence
-* Answer Level - Highest precedence
-
-Due to some limitations in Terraform's support of nested maplike objects,
-there are some irregularities in supporting metadata, however metadata is
-now supported at every level. See the documentation for `ns1_record` for
-more details and examples.
-
-Note that regions should be sorted by name in the record's regions list,
-otherwise terraform will detect changes to the record when none actually exist.
-
-A record _requires_ a [Zone](#zone) and the **zone** and **domain** fields should not have any leading or trailing dots (".").
-
-_Example_
-```hcl
-resource "ns1_record" "it" {
-  #required
-  zone              = "${ns1_zone.test.zone}"
-  domain            = "test.${ns1_zone.test.zone}"
-  type              = "CNAME"
-
-  #optional
-  ttl               = 60
-  use_client_subnet = true
-  link = ""
-
-  meta = {
-    up          = true
-    connections = 5
-    latitude    = 0.50
-    longitude   = 0.40
-  }
-
-  answers = [
-    {
-      answer = "10.0.0.1"
-
-      meta = {
-        up          = true
-        connections = 4
-        latitude    = 0.5
-        georegion   = "US-EAST"
-      }
-    },
-  ]
-
-  regions = [
-    {
-      name = "cal"
-
-      meta = {
-        up          = true
-        connections = 3
-      }
-    },
-  ]
-
-  filters {
-    filter = "up"
-  }
-
-  filters {
-    filter = "geotarget_country"
-  }
-
-  filters {
-    filter = "select_first_n"
-    config = {N=1}
-  }
-}
-```
-
-### Team
+#### Team
 
 [Team Api Docs](https://ns1.com/api#team)
 
-Team is one of the data types that supports permissions at the top level of its Terraform resource
-in addition to its regular parameters. See [Permissions](#permissions) for the parameters that are available.
+[Team Resource Doc](/website/docs/r/team.html.markdown)
 
-
-_Example_
-```hcl
-resource "ns1_team" "foobar" {
-  name = "terraform test"
-
-  dns_view_zones = true
-  dns_zones_allow_by_default = true
-  dns_zones_allow = ["mytest.zone"]
-  dns_zones_deny = ["myother.zone"]
-
-  data_manage_datasources = true
-}
-```
-
-### User
+#### User
 
 [User Api Docs](https://ns1.com/api#user)
 
-User is one of the data types that supports permissions at the top level of its Terraform resource
-in addition to its regular parameters. See [Permissions](#permissions) for the parameters that are available.
+[User Resource Doc](/website/docs/r/user.html.markdown)
 
-_Example_
-```hcl
-resource "ns1_user" "u" {
-  #required
-  name = "terraform acc test user %s"
-  username = "tf_acc_test_user_%s"
-  email = "tf_acc_test_ns1@hashicorp.com"
-
-  #optional
-  teams = ["${ns1_team.t.id}"]
-  notify {
-    billing = true
-  }
-}
-```
-
-### Zone
+#### Zone
 
 [Zone Api Docs](https://ns1.com/api#zones)
 
-_Example_
-```hcl
-resource "ns1_zone" "it" {
-  zone    = "terraform-test-zone.io"
-  ttl     = 10800
-  refresh = 3600
-  retry   = 300
-  expiry  = 2592000
-  nx_ttl  = 3601
-}
-```
+[Zone Resource Doc](/website/docs/r/zone.html.markdown)
 
-### Permissions
+### NS1 Data Sources
 
-There are three resources that support permissions:
+1. [DNSSEC](#dnssec)
+2. [Zone](#zone-1)
 
-* Apikey
-* Team
-* User
+#### DNSSEC
 
-For each of those resources, these parameters are available at the top level of the resource:
+[DNSSEC Data Source Doc](/website/docs/d/dnssec.html.markdown)
 
-* dns_view_zones: boolean - allows the requestor to view zones
-* dns_manage_zones: boolean - allows the requestor to edit/manage zones
-* dns_zones_allow_by_default: boolean
-* dns_zones_deny: list of strings - explicitly deny these zones for this user/team/key
-* dns_zones_allow: list of strings - explicitly allow these zones for this user/team/key
-* data_push_to_datafeeds: boolean - allows the requestor to push to datafeeds
-* data_manage_datasources: boolean - allows the requestor to manage datasources
-* data_manage_datafeeds: boolean - allows the requestor to manage datafeeds
-* account_manage_users: boolean - allows the requstor to manage users
-* account_manage_payment_methods: boolean - allows the requestor to manage payment methods
-* account_manage_plan: boolean - allows the requestor to manage the account payment plan
-* account_manage_teams: boolean - allows the requestor to manage teams
-* account_manage_apikeys: boolean - allows the requestor to manage apikeys
-* account_manage_account_settings: boolean - allows the requestor to manage account settings
-* account_view_activity_log: boolean - allows the requestor to view the activity log
-* account_view_invoices: boolean - allows the requestor to view account invoices
-* monitoring_manage_lists: boolean - allows the requestor to manage monitoring lists
-* monitoring_manage_jobs: boolean - allows the requestor to manage monitoring jobs
-* monitoring_view_jobs: boolean - allows the requestor to view monitoring jobs
+#### Zone
+
+[Zone Data Source Doc](/website/docs/d/zone.html.markdown)
 
 Developing The Provider
 ---------------------------

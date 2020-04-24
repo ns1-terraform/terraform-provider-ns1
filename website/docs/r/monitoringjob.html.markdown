@@ -23,8 +23,9 @@ resource "ns1_monitoringjob" "uswest_monitor" {
   policy        = "quorum"
 
   config = {
+    ssl  = 1
     send = "HEAD / HTTP/1.0\r\n\r\n"
-    port = 80
+    port = 443
     host = "example-elb-uswest.aws.amazon.com"
   }
 

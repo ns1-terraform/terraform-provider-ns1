@@ -26,10 +26,13 @@ resource "ns1_team" "example" {
 }
 
 resource "ns1_user" "example" {
-  name     = "Example User"
-  username = "example_user"
-  email    = "user@example.com"
-  teams    = ["${ns1_team.example.id}"]
+  name      = "Example User"
+  username  = "example_user"
+  email     = "user@example.com"
+  teams     = ["${ns1_team.example.id}"]
+  notify {
+    billing = false
+  }
 }
 ```
 
