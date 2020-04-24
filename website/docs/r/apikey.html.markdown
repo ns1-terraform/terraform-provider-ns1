@@ -86,3 +86,7 @@ Only relevant for the DDI product.
 
 All of the arguments listed above are exported as attributes, with no
 additions.
+
+## NS1 Documentation
+
+[ApiKeys Api Doc](https://ns1.com/api#api-key)

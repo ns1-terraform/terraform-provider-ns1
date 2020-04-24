@@ -70,3 +70,7 @@ Monitoring Job Rules (`rules`) support the following:
 
 All of the arguments listed above are exported as attributes, with no
 additions.
+
+## NS1 Documentation
+
+[MonitoringJob Api Doc](https://ns1.com/api#monitoring-jobs)

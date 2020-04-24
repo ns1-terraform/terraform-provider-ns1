@@ -45,89 +45,12 @@ $ make build
 Using The Provider
 ----------------------
 
-Documentation and examples for NS1 `resources` and `data sources` is part of
-this repository, and are published at
+The documentation and examples for NS1 `Resources` and `Data Sources` is
+maintained as part of this repository, in the `/website` directory. This is
+published to
 [www.terraform.io/docs/providers/ns1](https://www.terraform.io/docs/providers/ns1/index.html)
 as part of the release process.
 
-### NS1 Resources
-
-1. [ApiKey](#apikey)
-2. [Datafeed](#datafeed)
-3. [Datasource](#datasource)
-4. [MonitoringJob](#monitoringjob)
-5. [NotifyList](#notifylist)
-6. [Record](#record)
-7. [Team](#team)
-8. [User](#user)
-9. [Zone](#zone)
-
-#### ApiKey
-
-[ApiKeys Api Doc](https://ns1.com/api#api-key)
-
-[ApiKeys Resource Doc](/website/docs/r/apikey.html.markdown)
-
-#### Datafeed
-
-[Datafeed Api Doc](https://ns1.com/api#data-feeds)
-
-[Datafeed Resource Doc](/website/docs/r/datafeed.html.markdown)
-
-#### Datasource
-
-[Datasource Api Doc](https://ns1.com/api#data-sources)
-
-[Datasource Resource Doc](/website/docs/r/datasource.html.markdown)
-
-#### MonitoringJob
-
-[MonitoringJob Api Doc](https://ns1.com/api#monitoring-jobs)
-
-[MonitoringJob Resource Doc](/website/docs/r/monitoringjob.html.markdown)
-
-#### NotifyList
-
-[NotifyList Api Doc](https://ns1.com/api#notification-lists)
-
-[NotifyList Resource Doc](/website/docs/r/notifylist.html.markdown)
-
-#### Record
-
-[Record Api Doc](https://ns1.com/api#records)
-
-[Record Resource Doc](/website/docs/r/record.html.markdown)
-
-#### Team
-
-[Team Api Docs](https://ns1.com/api#team)
-
-[Team Resource Doc](/website/docs/r/team.html.markdown)
-
-#### User
-
-[User Api Docs](https://ns1.com/api#user)
-
-[User Resource Doc](/website/docs/r/user.html.markdown)
-
-#### Zone
-
-[Zone Api Docs](https://ns1.com/api#zones)
-
-[Zone Resource Doc](/website/docs/r/zone.html.markdown)
-
-### NS1 Data Sources
-
-1. [DNSSEC](#dnssec)
-2. [Zone](#zone-1)
-
-#### DNSSEC
-
-[DNSSEC Data Source Doc](/website/docs/d/dnssec.html.markdown)
-
-#### Zone
-
-[Zone Data Source Doc](/website/docs/d/zone.html.markdown)
 
 Developing The Provider
 ---------------------------

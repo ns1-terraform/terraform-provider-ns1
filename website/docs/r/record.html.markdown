@@ -257,3 +257,7 @@ additions.
 So for the example above:
 
 `terraform import ns1_record.www terraform.example.io/www.terraform.example.io/CNAME`
+
+## NS1 Documentation
+
+[Record Api Doc](https://ns1.com/api#records)

@@ -88,3 +88,7 @@ Only relevant for the DDI product.
 
 All of the arguments listed above are exported as attributes, with no
 additions.
+
+## NS1 Documentation
+
+[Team Api Docs](https://ns1.com/api#team)
