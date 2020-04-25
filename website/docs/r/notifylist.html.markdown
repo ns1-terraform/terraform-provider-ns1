@@ -47,3 +47,7 @@ Notify List Notifiers (`notifications`) support the following:
 
 All of the arguments listed above are exported as attributes, with no
 additions.
+
+## NS1 Documentation
+
+[NotifyList Api Doc](https://ns1.com/api#notification-lists)

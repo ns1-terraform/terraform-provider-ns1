@@ -26,10 +26,13 @@ resource "ns1_team" "example" {
 }
 
 resource "ns1_user" "example" {
-  name     = "Example User"
-  username = "example_user"
-  email    = "user@example.com"
-  teams    = ["${ns1_team.example.id}"]
+  name      = "Example User"
+  username  = "example_user"
+  email     = "user@example.com"
+  teams     = ["${ns1_team.example.id}"]
+  notify {
+    billing = false
+  }
 }
 ```
 
@@ -89,3 +92,7 @@ Only relevant for the DDI product.
 
 All of the arguments listed above are exported as attributes, with no
 additions.
+
+## NS1 Documentation
+
+[User Api Docs](https://ns1.com/api#user)

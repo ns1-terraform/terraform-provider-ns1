@@ -33,6 +33,18 @@ resource "ns1_team" "example" {
   dns_view_zones       = false
   account_manage_users = false
 }
+
+# Another team
+resource "ns1_team" "example2" {
+  name = "another team"
+
+  dns_view_zones = true
+  dns_zones_allow_by_default = true
+  dns_zones_allow = ["mytest.zone"]
+  dns_zones_deny = ["myother.zone"]
+
+  data_manage_datasources = true
+}
 ```
 
 ## Argument Reference
@@ -76,3 +88,7 @@ Only relevant for the DDI product.
 
 All of the arguments listed above are exported as attributes, with no
 additions.
+
+## NS1 Documentation
+
+[Team Api Docs](https://ns1.com/api#team)

@@ -32,3 +32,7 @@ The following arguments are supported:
 
 All of the arguments listed above are exported as attributes, with no
 additions.
+
+## NS1 Documentation
+
+[Datasource Api Doc](https://ns1.com/api#data-sources)

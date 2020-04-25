@@ -140,3 +140,7 @@ an issue or contact support, so we can prioritize the work accordingly.
 So for the example above:
 
 `terraform import ns1_zone.example terraform.example.io`
+
+## NS1 Documentation
+
+[Zone Api Docs](https://ns1.com/api#zones)

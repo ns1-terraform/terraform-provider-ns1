@@ -125,10 +125,10 @@ resource "ns1_record" "external" {
 
 The following arguments are supported:
 
-* `zone` - (Required) The zone the record belongs to.
-Cannot have leading or trailing dots (".") - see the example above.
-* `domain` - (Required) The records' domain.
-Cannot have leading or trailing dots - see the example above.
+* `zone` - (Required) The zone the record belongs to. Cannot have leading or
+  trailing dots (".") - see the example above and `FQDN formatting` below.
+* `domain` - (Required) The records' domain. Cannot have leading or trailing
+  dots - see the example above and `FQDN formatting` below.
 * `type` - (Required) The records' RR type.
 * `ttl` - (Optional) The records' time to live.
 * `link` - (Optional) The target record to link to. This means this record is a
@@ -208,6 +208,12 @@ record when none actually exist.
 
 #### Meta
 
+Records can have metadata at three different levels:
+
+* Record Level - Lowest precedence
+* Region Level - Middle precedence
+* Answer Level - Highest precedence
+
 Metadata (`meta`) is a bit tricky at the moment. For "static" values it works
 as you would expect, but when a value is a `datafeed`, or a JSON object, it
 needs some tweaks to work correctly.
@@ -230,12 +236,13 @@ evaluated.
 See [NS1 API](https://ns1.com/api#get-available-metadata-fields) for the most
 up-to-date list of available `meta` fields.
 
-
 #### FQDN Formatting
+
 Different providers may have different requirements for FQDN formatting.
 A common thing is to return or require a trailing dot, e.g. foo.com.
-The NS1 provider does not require or support trailing or leading dots, 
-so depending on what resources you are connecting, a little bit of replacement might be needed.
+The NS1 provider does not require or support trailing or leading dots,
+so depending on what resources you are connecting, a little bit of replacement
+might be needed.
 See the example above.
 
 ## Attributes Reference
@@ -250,3 +257,7 @@ additions.
 So for the example above:
 
 `terraform import ns1_record.www terraform.example.io/www.terraform.example.io/CNAME`
+
+## NS1 Documentation
+
+[Record Api Doc](https://ns1.com/api#records)
