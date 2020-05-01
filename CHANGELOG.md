@@ -1,4 +1,8 @@
-## 1.9.0 (Unreleased)
+## 1.8.2 (Unreleased)
+NOTES:
+* Clarify rate limit documentation ([121](https://github.com/terraform-providers/terraform-provider-ns1/pull/121))
+* Replace examples in README with blurb pointing to docs ([120](https://github.com/terraform-providers/terraform-provider-ns1/pull/120))
+
 ## 1.8.1 (April 09, 2020)
 ENHANCEMENTS
  * Change username validation regex to match validation used by NS1 API.([#119](https://github.com/terraform-providers/terraform-provider-ns1/pull/119))
