@@ -43,10 +43,26 @@ The following arguments are supported:
 * `enable_ddi` - (Optional) This sets the permission schema to a DDI-compatible schema. 
 Users of the managed SaaS product should not need to set this.
 Users of DDI should set this to true if managing teams, users, or API keys through this provider.
-* `rate_limit_parallelism` - (Optional) Integer for parallelism amount
-  (terraform's default is 10). If set, uses an alternate strategy to handle
-  rate limiting from the NS1 API. Give this a try if you are processing a large
-  number of resource and running into `429` rate-limiting errors.
+* `rate_limit_parallelism` - (Optional) Integer for parallelism amount (terraform's default is 10).
+    NS1 uses a token-based method for rate limiting API requests. Details of which can be found here: https://help.ns1.com/hc/en-us/articles/360020250573-About-API-rate-limiting.
+    
+    By default, the NS1 provider uses the standard strategy of the underlying [NS1 Go SDK](https://github.com/ns1/ns1-go) for handling the NS1 API rate limit:
+    an operation waits after every API request for a time equal to the rate limit period of that request type divided by the corresponding tokens renaming.
+    
+    Furthermore, the default behaviour of Terraform uses ten concurrent operations.
+    This means that the provider will burst through available request tokens, gradually slowing until it reaches an equilibrium point where the ten operations wait long enough between requests to replenish ten tokens.
+    However, if there are other concurrent uses of the API this can lead to the tokens being entirely depleted when a Terraform operation makes a new request.
+    This results in a 429 response which will cause the entire Terraform process to fail.
+    
+    If you encounter this scenario, or believe you are likely to, then you can set the rate_limit_parallelism to enable an alternative rate limiting strategy.
+    Here the Terraform operations will burst through all available tokens until they reach a point where the remaining limit is less, or equal, to the value set;
+    after this point an operation will wait for the time it would take to replenish an equal number of tokens.
+    
+    Setting this to a value of 60 represents a good balance between optimising for performance and reducing the risk of a 429 response.
+    If you still encounter issues then you can increase this value: we would recommend you do so in increments of 20.
+    
+    Note: We recommend that you do not set the -parallelism=n option when you run terraform apply so that it is uses the default number of ten.
+    An increase in this value will lead to an increased risk of encountering a 429 response.
 
 ## Environment Variables
 
