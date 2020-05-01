@@ -46,7 +46,7 @@ Users of DDI should set this to true if managing teams, users, or API keys throu
 * `rate_limit_parallelism` - (Optional) Integer for parallelism amount (terraform's default is 10).
     NS1 uses a token-based method for rate limiting API requests. Details of which can be found here: https://help.ns1.com/hc/en-us/articles/360020250573-About-API-rate-limiting.
     
-    By default, the NS1 provider uses the standard strategy of the underlying [NS1 Go SDK](https://github.com/ns1/ns1-go) for handling the NS1 API rate limit:
+    By default, the NS1 provider uses the "sleep" strategy of the underlying [NS1 Go SDK](https://github.com/ns1/ns1-go) for handling the NS1 API rate limit:
     an operation waits after every API request for a time equal to the rate limit period of that request type divided by the corresponding tokens renaming.
     
     Furthermore, the default behaviour of Terraform uses ten concurrent operations.
