@@ -195,7 +195,10 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	d.Set("type", r.Type)
 	d.Set("ttl", r.TTL)
 	if r.Link != "" {
-		d.Set("link", r.Link)
+		err := d.Set("link", r.Link)
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error setting link for: %s, error: %#v", r.Domain, err)
+		}
 	}
 
 	// top level meta works but nested meta doesn't
