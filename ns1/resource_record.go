@@ -391,7 +391,7 @@ func RecordCreate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := client.Records.Create(r); err != nil {
 		return err
 	}
-	return recordToResourceData(d, r)
+	return RecordRead(d, meta)
 }
 
 // RecordRead reads the DNS record from ns1
@@ -430,7 +430,7 @@ func RecordUpdate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := client.Records.Update(r); err != nil {
 		return err
 	}
-	return recordToResourceData(d, r)
+	return RecordRead(d, meta)
 }
 
 func recordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
