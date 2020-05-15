@@ -203,7 +203,10 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 
 	// top level meta works but nested meta doesn't
 	if r.Meta != nil {
-		d.Set("meta", structs.Map(r.Meta))
+		err := d.Set("meta", structs.Map(r.Meta))
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error setting meta for: %s, error: %#v", r.Domain, err)
+		}
 	}
 	if r.UseClientSubnet != nil {
 		d.Set("use_client_subnet", *r.UseClientSubnet)
