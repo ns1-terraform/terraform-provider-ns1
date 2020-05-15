@@ -218,7 +218,10 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 			}
 			filters[i] = m
 		}
-		d.Set("filters", filters)
+		err := d.Set("filters", filters)
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error setting filters for: %s, error: %#v", r.Domain, err)
+		}
 	}
 	if len(r.Answers) > 0 {
 		ans := make([]map[string]interface{}, 0)
