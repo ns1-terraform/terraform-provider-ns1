@@ -203,7 +203,7 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 
 	// top level meta works but nested meta doesn't
 	if r.Meta != nil {
-		err := d.Set("meta", structs.Map(r.Meta))
+		err := d.Set("meta", recordMapValueToString(structs.Map(r.Meta)))
 		if err != nil {
 			return fmt.Errorf("[DEBUG] Error setting meta for: %s, error: %#v", r.Domain, err)
 		}
@@ -223,7 +223,7 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 				m["disabled"] = true
 			}
 			if f.Config != nil {
-				m["config"] = f.Config
+				m["config"] = recordMapValueToString(f.Config)
 			}
 			filters[i] = m
 		}
@@ -265,6 +265,24 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		}
 	}
 	return nil
+}
+
+func recordMapValueToString(configMap map[string]interface{}) map[string]interface{} {
+	config := make(map[string]interface{})
+	for configKey, configValue := range configMap {
+		switch configValue.(type) {
+		case bool:
+			if configValue.(bool) {
+				config[configKey] = "1"
+			} else {
+				config[configKey] = "0"
+			}
+			break
+		default:
+			config[configKey] = configValue
+		}
+	}
+	return config
 }
 
 func answerToMap(a dns.Answer) map[string]interface{} {
