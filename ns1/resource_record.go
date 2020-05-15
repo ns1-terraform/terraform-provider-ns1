@@ -209,7 +209,10 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		}
 	}
 	if r.UseClientSubnet != nil {
-		d.Set("use_client_subnet", *r.UseClientSubnet)
+		err := d.Set("use_client_subnet", *r.UseClientSubnet)
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error setting use_client_subnet for: %s, error: %#v", r.Domain, err)
+		}
 	}
 	if len(r.Filters) > 0 {
 		filters := make([]map[string]interface{}, len(r.Filters))
