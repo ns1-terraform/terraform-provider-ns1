@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 	"strings"
 
-	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -65,8 +65,9 @@ func recordResource() *schema.Resource {
 				Computed: true,
 			},
 			"meta": {
-				Type:     schema.TypeMap,
-				Optional: true,
+				Type:             schema.TypeMap,
+				Optional:         true,
+				DiffSuppressFunc: metaDiffSuppressUp,
 			},
 			"link": {
 				Type:     schema.TypeString,
@@ -195,15 +196,24 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	d.Set("type", r.Type)
 	d.Set("ttl", r.TTL)
 	if r.Link != "" {
-		d.Set("link", r.Link)
+		err := d.Set("link", r.Link)
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error setting link for: %s, error: %#v", r.Domain, err)
+		}
 	}
 
 	// top level meta works but nested meta doesn't
 	if r.Meta != nil {
-		d.Set("meta", structs.Map(r.Meta))
+		err := d.Set("meta", r.Meta.StringMap())
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error setting meta for: %s, error: %#v", r.Domain, err)
+		}
 	}
 	if r.UseClientSubnet != nil {
-		d.Set("use_client_subnet", *r.UseClientSubnet)
+		err := d.Set("use_client_subnet", *r.UseClientSubnet)
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error setting use_client_subnet for: %s, error: %#v", r.Domain, err)
+		}
 	}
 	if len(r.Filters) > 0 {
 		filters := make([]map[string]interface{}, len(r.Filters))
@@ -214,11 +224,14 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 				m["disabled"] = true
 			}
 			if f.Config != nil {
-				m["config"] = f.Config
+				m["config"] = recordMapValueToString(f.Config)
 			}
 			filters[i] = m
 		}
-		d.Set("filters", filters)
+		err := d.Set("filters", filters)
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error setting filters for: %s, error: %#v", r.Domain, err)
+		}
 	}
 	if len(r.Answers) > 0 {
 		ans := make([]map[string]interface{}, 0)
@@ -253,6 +266,24 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		}
 	}
 	return nil
+}
+
+func recordMapValueToString(configMap map[string]interface{}) map[string]interface{} {
+	config := make(map[string]interface{})
+	for configKey, configValue := range configMap {
+		switch configValue.(type) {
+		case bool:
+			if configValue.(bool) {
+				config[configKey] = "1"
+			} else {
+				config[configKey] = "0"
+			}
+			break
+		default:
+			config[configKey] = configValue
+		}
+	}
+	return config
 }
 
 func answerToMap(a dns.Answer) map[string]interface{} {
@@ -446,9 +477,10 @@ func recordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.Resour
 	return []*schema.ResourceData{d}, nil
 }
 
-// metaDiffSuppress evaluates fields in the meta attribute that could be
-// []string and suppresses a diff if the difference is in ordering of elements,
+// metaDiffSuppress evaluates fields in the meta attribute.
+// fields that could be []string have diff suppressed if the difference is in ordering of elements,
 // since the API often changes the order.
+// boolean fields are normalized for string representations of bools.
 func metaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 	if strings.HasSuffix(k, ".georegion") ||
 		strings.HasSuffix(k, ".country") ||
@@ -473,6 +505,21 @@ func metaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 		return len(compareMap) == 0
 	}
 
+	if metaDiffSuppressUp(k, old, new, d) {
+		return true
+	}
+
+	return false
+}
+
+func metaDiffSuppressUp(k, old, new string, _ *schema.ResourceData) bool {
+	if strings.HasSuffix(k, "up") {
+		newB, _ := strconv.ParseBool(new)
+		oldB, _ := strconv.ParseBool(old)
+		if newB == oldB {
+			return true
+		}
+	}
 	return false
 }
 
