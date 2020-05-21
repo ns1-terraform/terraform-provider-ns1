@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -511,20 +512,13 @@ func metaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 	return false
 }
 
-func metaDiffSuppressUp(k, old, new string, d *schema.ResourceData) bool {
+func metaDiffSuppressUp(k, old, new string, _ *schema.ResourceData) bool {
 	if strings.HasSuffix(k, "up") {
-		if trueString(new) != trueString(old) {
-			return false
+		newB, _ := strconv.ParseBool(new)
+		oldB, _ := strconv.ParseBool(old)
+		if newB == oldB {
+			return true
 		}
-		return true
-	}
-
-	return false
-}
-
-func trueString(in string) bool {
-	if in == "1" || in == "True" || in == "true" {
-		return true
 	}
 	return false
 }
