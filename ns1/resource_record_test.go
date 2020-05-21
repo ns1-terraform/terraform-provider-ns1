@@ -630,6 +630,7 @@ resource "ns1_record" "it" {
     answer = "1.2.3.4"
 
     meta = {
+	  up = true
       weight = 5
       ip_prefixes = "3.248.0.0/13,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24"
       pulsar = jsonencode([{

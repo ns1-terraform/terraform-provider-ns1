@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -65,8 +64,9 @@ func recordResource() *schema.Resource {
 				Computed: true,
 			},
 			"meta": {
-				Type:     schema.TypeMap,
-				Optional: true,
+				Type:             schema.TypeMap,
+				Optional:         true,
+				DiffSuppressFunc: metaDiffSuppressUp,
 			},
 			"link": {
 				Type:     schema.TypeString,
@@ -203,7 +203,7 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 
 	// top level meta works but nested meta doesn't
 	if r.Meta != nil {
-		err := d.Set("meta", recordMapValueToString(structs.Map(r.Meta)))
+		err := d.Set("meta", r.Meta.StringMap())
 		if err != nil {
 			return fmt.Errorf("[DEBUG] Error setting meta for: %s, error: %#v", r.Domain, err)
 		}
@@ -421,7 +421,7 @@ func RecordCreate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := client.Records.Create(r); err != nil {
 		return err
 	}
-	return RecordRead(d, meta)
+	return recordToResourceData(d, r)
 }
 
 // RecordRead reads the DNS record from ns1
@@ -460,7 +460,7 @@ func RecordUpdate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := client.Records.Update(r); err != nil {
 		return err
 	}
-	return RecordRead(d, meta)
+	return recordToResourceData(d, r)
 }
 
 func recordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
@@ -476,9 +476,10 @@ func recordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.Resour
 	return []*schema.ResourceData{d}, nil
 }
 
-// metaDiffSuppress evaluates fields in the meta attribute that could be
-// []string and suppresses a diff if the difference is in ordering of elements,
+// metaDiffSuppress evaluates fields in the meta attribute.
+// fields that could be []string have diff suppressed if the difference is in ordering of elements,
 // since the API often changes the order.
+// boolean fields are normalized for string representations of bools.
 func metaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 	if strings.HasSuffix(k, ".georegion") ||
 		strings.HasSuffix(k, ".country") ||
@@ -503,6 +504,28 @@ func metaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 		return len(compareMap) == 0
 	}
 
+	if metaDiffSuppressUp(k, old, new, d) {
+		return true
+	}
+
+	return false
+}
+
+func metaDiffSuppressUp(k, old, new string, d *schema.ResourceData) bool {
+	if strings.HasSuffix(k, "up") {
+		if trueString(new) != trueString(old) {
+			return false
+		}
+		return true
+	}
+
+	return false
+}
+
+func trueString(in string) bool {
+	if in == "1" || in == "True" || in == "true" {
+		return true
+	}
 	return false
 }
 
