@@ -460,7 +460,7 @@ func RecordUpdate(d *schema.ResourceData, meta interface{}) error {
 	if _, err := client.Records.Update(r); err != nil {
 		return err
 	}
-	return RecordRead(d, meta)
+	return recordToResourceData(d, r)
 }
 
 func recordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
