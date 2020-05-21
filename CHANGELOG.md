@@ -1,4 +1,9 @@
 ## 1.9.0 (Unreleased)
+
+## 1.8.3 (May 21, 2020)
+BUG FIXES:
+* Resolves issues on record filter and meta fields around boolean values not properly being converted to strings ([123](https://github.com/terraform-providers/terraform-provider-ns1/pull/123)).
+
 ## 1.8.2 (May 01, 2020)
 NOTES:
 * Clarify rate limit documentation ([121](https://github.com/terraform-providers/terraform-provider-ns1/pull/121))
