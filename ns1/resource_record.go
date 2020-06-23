@@ -514,8 +514,14 @@ func metaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 
 func metaDiffSuppressUp(k, old, new string, _ *schema.ResourceData) bool {
 	if strings.HasSuffix(k, "up") {
-		newB, _ := strconv.ParseBool(new)
-		oldB, _ := strconv.ParseBool(old)
+		newB, err := strconv.ParseBool(new)
+		if err != nil {
+			return new == old
+		}
+		oldB, err := strconv.ParseBool(old)
+		if err != nil {
+			return new == old
+		}
 		if newB == oldB {
 			return true
 		}
