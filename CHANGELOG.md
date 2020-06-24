@@ -1,4 +1,4 @@
-## 1.8.4 (Unreleased)
+## 1.8.4 (June 24, 2020)
 BUG FIXES:
 * Resolves an issue where changes involving feed pointers in record answer metadata were not detected ([124](https://github.com/terraform-providers/terraform-provider-ns1/pull/124))
 
