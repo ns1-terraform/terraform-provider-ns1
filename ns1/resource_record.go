@@ -512,10 +512,17 @@ func metaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 	return false
 }
 
+// suppress a detected diff if it reflects an unchanged boolean value
 func metaDiffSuppressUp(k, old, new string, _ *schema.ResourceData) bool {
 	if strings.HasSuffix(k, "up") {
-		newB, _ := strconv.ParseBool(new)
-		oldB, _ := strconv.ParseBool(old)
+		newB, err := strconv.ParseBool(new)
+		if err != nil {
+			return false
+		}
+		oldB, err := strconv.ParseBool(old)
+		if err != nil {
+			return false
+		}
 		if newB == oldB {
 			return true
 		}

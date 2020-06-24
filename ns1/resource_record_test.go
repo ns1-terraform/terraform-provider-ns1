@@ -114,11 +114,18 @@ func TestAccRecord_meta(t *testing.T) {
 		CheckDestroy: testAccCheckRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRecordMeta(rString),
+				Config: testAccRecordAnswerMeta(rString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
 					testAccCheckRecordDomain(&record, domainName),
-					testAccCheckRecordAnswerMetaIPPrefixes(&record, []string{"3.248.0.0/13", "13.248.96.0/24", "13.248.113.0/24", "13.248.118.0/24", "13.248.119.0/24", "13.248.121.0/24"}),
+					testAccCheckRecordAnswerMetaIPPrefixes(&record, []string{
+						"3.248.0.0/13",
+						"13.248.96.0/24",
+						"13.248.113.0/24",
+						"13.248.118.0/24",
+						"13.248.119.0/24",
+						"13.248.121.0/24",
+					}),
 				),
 			},
 			{
@@ -126,6 +133,13 @@ func TestAccRecord_meta(t *testing.T) {
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/A", zoneName, domainName),
 				ImportStateVerify: true,
+			},
+			{
+				Config: testAccRecordAnswerMetaDataFeed(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordAnswerMetaUp("ns1_datafeed.test", &record),
+				),
 			},
 		},
 	})
@@ -492,6 +506,32 @@ func testAccCheckRecordAnswerMetaIPPrefixes(r *dns.Record, expected []string) re
 	}
 }
 
+func testAccCheckRecordAnswerMetaUp(expected interface{}, r *dns.Record) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		recordAnswer := r.Answers[0]
+		recordMetas := recordAnswer.Meta
+		up := recordMetas.Up
+		switch up.(type) {
+		case bool:
+			if expected.(bool) != recordMetas.Up {
+				return fmt.Errorf("r.Answers[0].Meta.Up: got: %#v want: %#v", up, expected)
+			}
+		case map[string]interface{}:
+			// feed mapping: expected points us to the datafeed, which has the id
+			//               that should be in our map
+			rs, ok := s.RootModule().Resources[expected.(string)]
+			if !ok {
+				return fmt.Errorf("resource not found in state: %v", expected)
+			}
+			ch := map[string]interface{}{"feed": rs.Primary.ID}
+			if !reflect.DeepEqual(ch, up) {
+				return fmt.Errorf("r.Answers[0].Meta.Up: map: %#v want: %#v", up, ch)
+			}
+		}
+		return nil
+	}
+}
+
 func testAccCheckRecordAnswerRdata(
 	t *testing.T, r *dns.Record, answerIdx int, expected []string,
 ) resource.TestCheckFunc {
@@ -620,7 +660,7 @@ resource "ns1_zone" "test" {
 `, rString)
 }
 
-func testAccRecordMeta(rString string) string {
+func testAccRecordAnswerMeta(rString string) string {
 	return fmt.Sprintf(`
 resource "ns1_record" "it" {
   zone              = "${ns1_zone.test.zone}"
@@ -630,7 +670,7 @@ resource "ns1_record" "it" {
     answer = "1.2.3.4"
 
     meta = {
-	  up = true
+    up = true
       weight = 5
       ip_prefixes = "3.248.0.0/13,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24"
       pulsar = jsonencode([{
@@ -646,6 +686,59 @@ resource "ns1_zone" "test" {
   zone = "terraform-test-%s.io"
 }
 `, rString)
+}
+
+func testAccRecordAnswerMetaDataFeed(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_monitoringjob" "test" {
+  name = "terraform-test-%s"
+  active = true
+  regions = [
+    "ams"
+  ]
+  job_type = "http"
+  frequency = 30
+  rapid_recheck = true
+  policy = "all"
+  config = {
+    method = "GET"
+    url = "https://www.example.com"
+  }
+  rules {
+    value = "200"
+    comparison = "=="
+    key = "status_code"
+  }
+}
+resource "ns1_datasource" "test" {
+  name       = "test datasource"
+  sourcetype = "nsone_monitoring"
+}
+resource "ns1_datafeed" "test" {
+  name = "monitoring datafeed"
+  source_id = ns1_datasource.test.id
+  config = {
+    jobid = ns1_monitoringjob.test.id
+  }
+}
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+resource "ns1_record" "it" {
+  zone   = ns1_zone.test.zone
+  domain = "datafeed.${ns1_zone.test.zone}"
+  type   = "A"
+  answers {
+    answer = "192.0.2.1"
+    meta = {
+      up = jsonencode({"feed": "${ns1_datafeed.test.id}"})
+    }
+  }
+  filters {
+    filter = "up"
+  }
+}
+`, rString, rString)
 }
 
 func testAccRecordCAA(rString string) string {
