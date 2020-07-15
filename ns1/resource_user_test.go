@@ -483,12 +483,17 @@ func TestValidateUsername(t *testing.T) {
 			0,
 		},
 		{
-			"invalid - dash",
-			"inv4lid-user",
-			1,
+			"valid - dash",
+			"v4lid-user",
+			0,
 		},
 		{
-			"invalid - punctuation",
+			"valid - punctuation",
+			"%v.4.l.i.d_u.s.3.r.+name@%",
+			"0",
+		},
+		{
+			"invalid - punctuation (exclamation)",
 			"inv@l!d_us3r",
 			1,
 		},
