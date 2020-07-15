@@ -497,6 +497,16 @@ func TestValidateUsername(t *testing.T) {
 			"inv@l!d_us3r",
 			1,
 		},
+		{
+			"invalid - too short (<3)",
+			"a",
+			"1",
+		},
+		{
+			"invalid - too long (>64)",
+			".................................................................",
+			"1",
+		},
 	}
 
 	for _, tt := range tests {
