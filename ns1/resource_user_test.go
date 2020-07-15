@@ -490,7 +490,7 @@ func TestValidateUsername(t *testing.T) {
 		{
 			"valid - punctuation",
 			"%v.4.l.i.d_u.s.3.r.+name@%",
-			"0",
+			0,
 		},
 		{
 			"invalid - punctuation (exclamation)",
@@ -500,12 +500,12 @@ func TestValidateUsername(t *testing.T) {
 		{
 			"invalid - too short (<3)",
 			"a",
-			"1",
+			1,
 		},
 		{
 			"invalid - too long (>64)",
 			".................................................................",
-			"1",
+			1,
 		},
 	}
 
