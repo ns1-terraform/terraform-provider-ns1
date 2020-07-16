@@ -130,7 +130,7 @@ The following arguments are supported:
 * `domain` - (Required) The records' domain. Cannot have leading or trailing
   dots - see the example above and `FQDN formatting` below.
 * `type` - (Required) The records' RR type.
-* `ttl` - (Optional) The records' time to live.
+* `ttl` - (Optional) The records' time to live (in seconds).
 * `link` - (Optional) The target record to link to. This means this record is a
   'linked' record, and it inherits all properties from its target.
 * `use_client_subnet` - (Optional) Whether to use EDNS client subnet data when
