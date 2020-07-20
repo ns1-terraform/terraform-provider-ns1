@@ -69,7 +69,7 @@ The following arguments are supported:
 * `data_manage_datafeeds` - (Optional) Whether the user can modify data feeds.
 * `account_manage_users` - (Optional) Whether the user can modify account users.
 * `account_manage_payment_methods` - (Optional) Whether the user can modify account payment methods.
-* `account_manage_plan` - (This is now obsolete.)
+* `account_manage_plan` - (Optional) **Deprecated** Whether the user can modify the account plan.
 * `account_manage_teams` - (Optional) Whether the user can modify other teams in the account.
 * `account_manage_apikeys` - (Optional) Whether the user can modify account apikeys.
 * `account_manage_account_settings` - (Optional) Whether the user can modify account settings.
