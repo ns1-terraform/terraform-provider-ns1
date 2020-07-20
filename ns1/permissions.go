@@ -69,6 +69,7 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 		Optional:         true,
 		Default:          false,
 		DiffSuppressFunc: suppressPermissionDiff,
+		Deprecated:       "obsolete, should no longer be used",
 	}
 	s["account_manage_teams"] = &schema.Schema{
 		Type:             schema.TypeBool,
