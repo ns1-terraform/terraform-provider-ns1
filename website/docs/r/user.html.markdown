@@ -30,7 +30,7 @@ resource "ns1_user" "example" {
   username  = "example_user"
   email     = "user@example.com"
   teams     = ["${ns1_team.example.id}"]
-  notify {
+  notify = {
     billing = false
   }
 }
