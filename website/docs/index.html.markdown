@@ -43,7 +43,7 @@ The following arguments are supported:
 * `enable_ddi` - (Optional) This sets the permission schema to a DDI-compatible schema. 
 Users of the managed SaaS product should not need to set this.
 Users of DDI should set this to true if managing teams, users, or API keys through this provider.
-* `rate_limit_parallelism` - (Optional) Integer for alternative rate limit and parallelism strategy.
+* `rate_limit_parallelism` - (Optional) Integer for alternative rate limit and parallelism strategy. (Terraform default value is 10.)
     NS1 uses a token-based method for rate limiting API requests. Details of which can be found here: https://help.ns1.com/hc/en-us/articles/360020250573-About-API-rate-limiting.
     
     By default, the NS1 provider uses the "sleep" strategy of the underlying [NS1 Go SDK](https://github.com/ns1/ns1-go) for handling the NS1 API rate limit:
