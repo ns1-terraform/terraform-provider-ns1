@@ -46,7 +46,7 @@ When a user is removed from all teams completely, they will inherit whatever per
 If a user is removed from all their teams, it will probably be necessary to run `terraform apply` a second time
 to update the users permissions from their old team permissions to new user-specific permissions.
 
-See [the NS1 API docs](https://ns1.com/api#getget-all-account-users) for an overview of permission semantics.
+See [this Help Center article](https://help.ns1.com/hc/en-us/articles/360024409034-Managing-user-permissions) for an overview of user permission settings.
 
 ## Argument Reference
 
@@ -69,7 +69,7 @@ The following arguments are supported:
 * `data_manage_datafeeds` - (Optional) Whether the user can modify data feeds.
 * `account_manage_users` - (Optional) Whether the user can modify account users.
 * `account_manage_payment_methods` - (Optional) Whether the user can modify account payment methods.
-* `account_manage_plan` - (Optional) Whether the user can modify the account plan.
+* `account_manage_plan` - (Optional) **Deprecated** Whether the user can modify the account plan.
 * `account_manage_teams` - (Optional) Whether the user can modify other teams in the account.
 * `account_manage_apikeys` - (Optional) Whether the user can modify account apikeys.
 * `account_manage_account_settings` - (Optional) Whether the user can modify account settings.
@@ -96,3 +96,5 @@ additions.
 ## NS1 Documentation
 
 [User Api Docs](https://ns1.com/api#user)
+[Managing user permissions](https://help.ns1.com/hc/en-us/articles/360024409034-Managing-user-permissions)
+
