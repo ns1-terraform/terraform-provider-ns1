@@ -279,6 +279,9 @@ func recordMapValueToString(configMap map[string]interface{}) map[string]interfa
 				config[configKey] = "0"
 			}
 			break
+		case float64:
+			config[configKey] = strconv.FormatFloat(configValue.(float64), 'f', -1, 64)
+			break
 		default:
 			config[configKey] = configValue
 		}
