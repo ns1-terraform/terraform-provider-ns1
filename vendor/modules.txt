@@ -358,7 +358,7 @@ google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
 google.golang.org/grpc/test/bufconn
-# gopkg.in/ns1/ns1-go.v2 v2.3.0
+# gopkg.in/ns1/ns1-go.v2 v2.4.2
 gopkg.in/ns1/ns1-go.v2/rest
 gopkg.in/ns1/ns1-go.v2/rest/model/account
 gopkg.in/ns1/ns1-go.v2/rest/model/data
