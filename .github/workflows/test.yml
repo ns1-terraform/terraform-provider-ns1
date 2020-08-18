@@ -20,4 +20,4 @@ jobs:
       - name: Vet
         run: make vet
       - name: Test Website
-        run: make webnsite-test
+        run: make website-test
