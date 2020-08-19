@@ -1,4 +1,4 @@
-name: test
+name: test-pr
 on:
   pull_request:
     branches:
@@ -21,5 +21,3 @@ jobs:
         run: make test
       - name: Vet
         run: make vet
-      - name: Test Website
-        run: make website-test
