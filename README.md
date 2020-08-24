@@ -12,33 +12,57 @@ NS1 Terraform Provider
 
 Contents
 ------
-1. [Requirements](#requirements) - lists the requirements for building the provider
-2. [Building The Provider](#building-the-provider) - lists the steps for building the provider
-3. [Using The Provider](#using-the-provider) - details how to use the provider
-4. [Developing The Provider](#developing-the-provider) - steps for contributing back to the provider
-5. [Known Isssues/Roadmap](#known-issues) - check here for some of the improvements we are working on
+1. [Upgrading from Terraform 0.12](#upgrading-from-terraform-012) - considerations when upgrading from previous versions of Terraform
+2. [Requirements](#requirements) - lists the requirements for building the provider
+3. [Building The Provider](#building-the-provider) - lists the steps for building the provider
+4. [Using The Provider](#using-the-provider) - details how to use the provider
+5. [Developing The Provider](#developing-the-provider) - steps for contributing back to the provider
+6. [Known Isssues/Roadmap](#known-issuesroadmap) - check here for some of the improvements we are working on
+
+Upgrading from Terraform 0.12
+-----------------------------
+In preperation for the 0.13 release of Terraform, this repo has recently changed locations from the Hashicorp GitHub org to one owned by NS1.
+
+As a result, in order to upgrade an existing config and state to Terraform 0.13 and use NS1 provider v1.8.5 and above, you'll need to
+update your config's `required_providers` block to point to the new location. 
+
+The `0.13upgrade` tool will display a warning suggesting as much, but will not enforce this or automatically update your config.
+
+Note that this block is only required if updating an existing state from `0.12` or below.  Fresh deployments via Terraform `0.13` or above will automatically detect the new location of the provider.
+
+Here is an example `required_providers` block enforcing the new location of this provider and Terraform `0.13` or greater:
+```
+terraform {
+  required_providers {
+    ns1 = {
+      source = "ns1-terraform/ns1"
+    }
+  }
+  required_version = ">= 0.13"
+}
+```
 
 Requirements
 ------------
 
--	[Terraform](https://www.terraform.io/downloads.html) 0.10+
+-	[Terraform](https://www.terraform.io/downloads.html) 0.13+
 -	[Go](https://golang.org/doc/install) 1.12+ (to build the provider plugin)
 
 Building The Provider
 ---------------------
 
-Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-ns1`
+Clone repository to: `$GOPATH/src/github.com/ns1-terraform/terraform-provider-ns1`
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/terraform-providers
-$ cd $GOPATH/src/github.com/terraform-providers
-$ git clone git@github.com:terraform-providers/terraform-provider-ns1
+$ mkdir -p $GOPATH/src/github.com/ns1-terraform
+$ cd $GOPATH/src/github.com/ns1-terraform
+$ git clone git@github.com:ns1-terraform/terraform-provider-ns1.git
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-$ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-ns1
+$ cd $GOPATH/src/github.com/ns1-terraform/terraform-provider-ns1
 $ make build
 ```
 
@@ -48,7 +72,7 @@ Using The Provider
 The documentation and examples for NS1 `Resources` and `Data Sources` is
 maintained as part of this repository, in the `/website` directory. This is
 published to
-[www.terraform.io/docs/providers/ns1](https://www.terraform.io/docs/providers/ns1/index.html)
+[registry.terraform.io/providers/ns1-terraform/ns1/latest/docs](https://registry.terraform.io/providers/ns1-terraform/ns1/latest/docs)
 as part of the release process.
 
 
@@ -56,7 +80,7 @@ Developing The Provider
 ---------------------------
 
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine 
-(version 1.11+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH),
+(version 1.12+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH),
 as well as adding `$GOPATH/bin` to your `$PATH`.
 
 To compile the provider, run `make build`. This will build the provider and put the provider binary in 
@@ -108,3 +132,4 @@ Known Issues/Roadmap
   defaults returned for optional/unused features.
 * We'll be adding a `record` data source ASAP, to cover simple read-only use
   cases
+
