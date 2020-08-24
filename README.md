@@ -12,12 +12,12 @@ NS1 Terraform Provider
 
 Contents
 ------
-1. [Upgrading from Terraform 0.12](#upgrading-from-terraform-0.12) - considerations when upgrading from previous versions of Terraform
+1. [Upgrading from Terraform 0.12](#upgrading-from-terraform-012) - considerations when upgrading from previous versions of Terraform
 2. [Requirements](#requirements) - lists the requirements for building the provider
 3. [Building The Provider](#building-the-provider) - lists the steps for building the provider
 4. [Using The Provider](#using-the-provider) - details how to use the provider
 5. [Developing The Provider](#developing-the-provider) - steps for contributing back to the provider
-6. [Known Isssues/Roadmap](#known-issues) - check here for some of the improvements we are working on
+6. [Known Isssues/Roadmap](#known-issuesroadmap) - check here for some of the improvements we are working on
 
 Upgrading from Terraform 0.12
 -----------------------------
