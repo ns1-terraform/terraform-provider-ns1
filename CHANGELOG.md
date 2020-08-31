@@ -1,5 +1,9 @@
 ## 1.9.0 (Unreleased)
 
+## 1.8.6 (August 31, 2020)
+ENHANCEMENTS:
+* Add additional config field to monitoring job configuration
+
 ## 1.8.5 (August 13, 2020)
 BUG FIXES:
 * Resolves issue with config maps returning floats sometimes
