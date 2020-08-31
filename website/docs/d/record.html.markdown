@@ -35,8 +35,8 @@ In addition to the argument above, the following are exported:
 
 * `ttl` - The records' time to live (in seconds).
 * `link` - The target record this links to.
-* `use_client_subnet` - Whether to use EDNS client subnet data when available(in filter chain).
-* ` meta` - Map of metadata
+* `use_client_subnet` - Whether to use EDNS client subnet data when available (in filter chain).
+* `meta` - Map of metadata
 * `regions` - List of regions.
 * `answers` - List of NS1 answers.
 * `filters` - List of NS1 filters.

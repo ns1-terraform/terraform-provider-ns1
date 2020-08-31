@@ -2,7 +2,6 @@ package ns1
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 )
 
 func dataSourceRecord() *schema.Resource {
@@ -22,97 +21,82 @@ func dataSourceRecord() *schema.Resource {
 			},
 			"ttl": {
 				Type:     schema.TypeInt,
-				Optional: true,
 				Computed: true,
 			},
 			"meta": {
-				Type:             schema.TypeMap,
-				Optional:         true,
-				DiffSuppressFunc: metaDiffSuppressUp,
+				Type:     schema.TypeMap,
+				Computed: true,
 			},
 			"link": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Computed: true,
 			},
 			"use_client_subnet": {
 				Type:     schema.TypeBool,
-				Optional: true,
+				Computed: true,
 			},
 			"short_answers": {
 				Type:     schema.TypeList,
-				Optional: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 			"answers": {
 				Type:     schema.TypeList,
-				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"answer": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						"region": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Computed: true,
 						},
 						"meta": {
-							Type:             schema.TypeMap,
-							Optional:         true,
-							DiffSuppressFunc: metaDiffSuppress,
+							Type:     schema.TypeMap,
+							Computed: true,
 						},
 					},
 				},
 			},
 			"regions": {
 				Type:     schema.TypeList,
-				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
 							Type:     schema.TypeString,
-							Required: true,
+							Computed: true,
 						},
 						"meta": {
-							Type:             schema.TypeMap,
-							Optional:         true,
-							DiffSuppressFunc: metaDiffSuppress,
+							Type:     schema.TypeMap,
+							Computed: true,
 						},
 					},
 				},
 			},
 			"filters": {
 				Type:     schema.TypeList,
-				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"filter": {
 							Type:     schema.TypeString,
-							Required: true,
+							Computed: true,
 						},
 						"disabled": {
 							Type:     schema.TypeBool,
-							Optional: true,
+							Computed: true,
 						},
 						"config": {
 							Type:     schema.TypeMap,
-							Optional: true,
+							Computed: true,
 						},
 					},
 				},
 			},
 		},
-		Read: dataSourceRecordRead,
+		Read: RecordRead,
 	}
-}
-
-func dataSourceRecordRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*ns1.Client)
-
-	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
-	if err != nil {
-		return err
-	}
-
-	return recordToResourceData(d, r)
 }
