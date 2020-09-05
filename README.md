@@ -130,6 +130,3 @@ Known Issues/Roadmap
 * Currently, some resources do not return attributes for optional features that
   are unused. We are working on making the resource schemas fixed, with proper
   defaults returned for optional/unused features.
-* We'll be adding a `record` data source ASAP, to cover simple read-only use
-  cases
-
