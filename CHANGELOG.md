@@ -1,4 +1,6 @@
-## 1.9.0 (Unreleased)
+## 1.10.0 (Unreleased)
+
+## 1.9.0 (September 8, 2020)
 FEATURES:
 * **New Data Source:** `ns1_record` [#137](https://github.com/ns1-terraform/terraform-provider-ns1/pull/137). Thanks to @zahiar!
 
