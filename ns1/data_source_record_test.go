@@ -40,8 +40,13 @@ func TestAccDataSourceRecord(t *testing.T) {
 }
 
 func testAccDataSourceResource(zoneName string, domainName string, rrType string) string {
-	return fmt.Sprintf(`resource "ns1_record" "it" {
+	return fmt.Sprintf(`
+resource "ns1_zone" "test" {
   zone = "%s"
+}
+
+resource "ns1_record" "it" {
+  zone = ns1_zone.test.zone
   domain = "%s"
   type = "%s"
 
@@ -51,9 +56,9 @@ func testAccDataSourceResource(zoneName string, domainName string, rrType string
 }
 
 data "ns1_record" "test" {
-  zone = "${ns1_record.it.zone}"
-  domain = "${ns1_record.it.domain}"
-  type = "${ns1_record.it.type}"
+  zone = ns1_record.it.zone
+  domain = ns1_record.it.domain
+  type = ns1_record.it.type
 }
 `, zoneName, domainName, rrType)
 }
