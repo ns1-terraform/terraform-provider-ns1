@@ -1,4 +1,6 @@
 ## 1.10.0 (Unreleased)
+BUG FIXES:
+* Values for IPv6 monitoring job configs are coerced correctly [#141](https://github.com/ns1-terraform/terraform-provider-ns1/pull/141).
 
 ## 1.9.0 (September 8, 2020)
 FEATURES:
