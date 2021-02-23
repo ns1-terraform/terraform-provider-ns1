@@ -133,7 +133,7 @@ func monitoringJobToResourceData(d *schema.ResourceData, r *monitor.Job) error {
 			} else {
 				config[k] = "0"
 			}
-		} else if k == "follow_redirect" || k == "ipv6" {
+		} else if k == "follow_redirect" || k == "ipv6" || k == "tls_skip_verify" {
 			if v.(bool) {
 				config[k] = "true"
 			} else {
@@ -216,7 +216,7 @@ func resourceDataToMonitoringJob(r *monitor.Job, d *schema.ResourceData) error {
 	config := make(map[string]interface{})
 	if rawConfig := d.Get("config"); rawConfig != nil {
 		for k, v := range rawConfig.(map[string]interface{}) {
-			if k == "ssl" || k == "follow_redirect" || k == "ipv6" {
+			if k == "ssl" || k == "follow_redirect" || k == "ipv6" || k == "tls_skip_verify" {
 				if v.(string) == "1" || v.(string) == "true" {
 					config[k] = true
 				}
