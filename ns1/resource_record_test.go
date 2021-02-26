@@ -701,6 +701,7 @@ resource "ns1_monitoringjob" "test" {
   rapid_recheck = true
   policy = "all"
   config = {
+	tls_skip_verify = true
     method = "GET"
     url = "https://www.example.com"
   }
