@@ -1,3 +1,7 @@
+## 1.9.2 (February 26, 2021)
+BUG FIXES:
+* Values for `tls_skip_verify` are coerced correctly [#146](https://github.com/ns1-terraform/terraform-provider-ns1/pull/146). Thanks @zahiar!
+
 ## 1.9.1 (January 7, 2021)
 BUG FIXES:
 * Values for IPv6 monitoring job configs are coerced correctly [#141](https://github.com/ns1-terraform/terraform-provider-ns1/pull/141).
