@@ -101,6 +101,12 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 		Default:          false,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
+	s["account_manage_ip_whitelist"] = &schema.Schema{
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
+	}
 	s["monitoring_manage_lists"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
@@ -209,6 +215,7 @@ func permissionsToResourceData(d *schema.ResourceData, permissions account.Permi
 	d.Set("account_manage_account_settings", permissions.Account.ManageAccountSettings)
 	d.Set("account_view_activity_log", permissions.Account.ViewActivityLog)
 	d.Set("account_view_invoices", permissions.Account.ViewInvoices)
+	d.Set("account_manage_ip_whitelist", permissions.Account.ManageIPWhitelist)
 	d.Set("monitoring_manage_lists", permissions.Monitoring.ManageLists)
 	d.Set("monitoring_manage_jobs", permissions.Monitoring.ManageJobs)
 	d.Set("monitoring_view_jobs", permissions.Monitoring.ViewJobs)
@@ -287,6 +294,9 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	}
 	if v, ok := d.GetOk("account_view_invoices"); ok {
 		p.Account.ViewInvoices = v.(bool)
+	}
+	if v, ok := d.GetOk("account_manage_ip_whitelist"); ok {
+		p.Account.ManageIPWhitelist = v.(bool)
 	}
 	if v, ok := d.GetOk("monitoring_manage_lists"); ok {
 		p.Monitoring.ManageLists = v.(bool)
