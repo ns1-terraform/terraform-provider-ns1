@@ -1,3 +1,7 @@
+## 1.9.3 (March 4, 2021)
+BUG FIXES:
+* Adds missing `account_manage_ip_whitelist` permission [#148](https://github.com/ns1-terraform/terraform-provider-ns1/pull/148).
+
 ## 1.9.2 (February 26, 2021)
 BUG FIXES:
 * Values for `tls_skip_verify` are coerced correctly [#146](https://github.com/ns1-terraform/terraform-provider-ns1/pull/146). Thanks @zahiar!

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	clientVersion = "2.4.2"
+	clientVersion = "2.4.4"
 
 	defaultEndpoint               = "https://api.nsone.net/v1/"
 	defaultShouldFollowPagination = true
@@ -71,6 +71,11 @@ type Client struct {
 	Warnings      *WarningsService
 	Zones         *ZonesService
 	DNSSEC        *DNSSECService
+	IPAM          *IPAMService
+	ScopeGroup    *ScopeGroupService
+	Scope         *ScopeService
+	Reservation   *ReservationService
+	OptionDef     *OptionDefService
 }
 
 // NewClient constructs and returns a reference to an instantiated Client.
@@ -103,6 +108,11 @@ func NewClient(httpClient Doer, options ...func(*Client)) *Client {
 	c.Warnings = (*WarningsService)(&c.common)
 	c.Zones = (*ZonesService)(&c.common)
 	c.DNSSEC = (*DNSSECService)(&c.common)
+	c.IPAM = (*IPAMService)(&c.common)
+	c.ScopeGroup = (*ScopeGroupService)(&c.common)
+	c.Scope = (*ScopeService)(&c.common)
+	c.Reservation = (*ReservationService)(&c.common)
+	c.OptionDef = (*OptionDefService)(&c.common)
 
 	for _, option := range options {
 		option(c)
