@@ -69,6 +69,7 @@ The following arguments are supported:
 * `account_manage_account_settings` - (Optional) Whether the team can modify account settings.
 * `account_view_activity_log` - (Optional) Whether the team can view activity logs.
 * `account_view_invoices` - (Optional) Whether the team can view invoices.
+* `account_manage_ip_whitelist` - (Optional) Whether the team can manage ip whitelist.
 * `monitoring_manage_lists` - (Optional) Whether the team can modify notification lists.
 * `monitoring_manage_jobs` - (Optional) Whether the team can modify monitoring jobs.
 * `monitoring_view_jobs` - (Optional) Whether the team can view monitoring jobs.

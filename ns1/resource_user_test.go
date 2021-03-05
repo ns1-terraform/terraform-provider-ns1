@@ -108,6 +108,7 @@ func TestAccUser_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
 			{
@@ -118,6 +119,7 @@ func TestAccUser_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 			},
 			{
@@ -129,6 +131,7 @@ func TestAccUser_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					// The user should still have this permission, it would have inherited it from the team.
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -141,6 +144,7 @@ func TestAccUser_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					// But if an apply is ran again, the permission will be removed.
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
 		},
@@ -166,6 +170,7 @@ func TestAccUser_permissions_empty_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 			},
 			// Strange Terraform behavior causes explicitly settings a users team to []
@@ -178,6 +183,7 @@ func TestAccUser_permissions_empty_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -190,6 +196,7 @@ func TestAccUser_permissions_empty_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					// But if an apply is ran again, the permission will be removed.
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
 		},
@@ -216,6 +223,7 @@ func TestAccUser_permissions_start_no_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
 			{
@@ -226,6 +234,7 @@ func TestAccUser_permissions_start_no_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 			},
 			{
@@ -237,6 +246,7 @@ func TestAccUser_permissions_start_no_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					// The user should still have this permission, it would have inherited it from the team.
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -249,6 +259,7 @@ func TestAccUser_permissions_start_no_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					// But if an apply is ran again, the permission will be removed.
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
 		},
@@ -275,6 +286,7 @@ func TestAccUser_permissions_multiple_teams(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 			},
 			{
@@ -286,6 +298,7 @@ func TestAccUser_permissions_multiple_teams(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
 			{
@@ -297,6 +310,7 @@ func TestAccUser_permissions_multiple_teams(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 			},
 			{
@@ -309,6 +323,7 @@ func TestAccUser_permissions_multiple_teams(t *testing.T) {
 					// The user should still have this permission, it would have inherited it from the team.
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -322,6 +337,7 @@ func TestAccUser_permissions_multiple_teams(t *testing.T) {
 					// But if an apply is ran again, the permission will be removed.
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
 		},
@@ -348,6 +364,7 @@ func TestAccUser_permissions_multiple_teams_start_no_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
 			{
@@ -359,6 +376,7 @@ func TestAccUser_permissions_multiple_teams_start_no_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
 			{
@@ -370,6 +388,7 @@ func TestAccUser_permissions_multiple_teams_start_no_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 			},
 			{
@@ -382,6 +401,7 @@ func TestAccUser_permissions_multiple_teams_start_no_team(t *testing.T) {
 					// The user should still have this permission, it would have inherited it from the team.
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -395,6 +415,7 @@ func TestAccUser_permissions_multiple_teams_start_no_team(t *testing.T) {
 					// But if an apply is ran again, the permission will be removed.
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
 		},
@@ -613,6 +634,7 @@ func testAccUserPermissionsOnTeam(rString string) string {
 	return fmt.Sprintf(`resource "ns1_team" "t" {
   name = "terraform acc test team %s"
   account_manage_account_settings = true
+  account_manage_ip_whitelist = false
 }
 
 resource "ns1_user" "u" {
@@ -643,6 +665,8 @@ resource "ns1_user" "u" {
   notify = {
     billing = false
   }
+
+  account_manage_ip_whitelist = true
 }
 `, rString, rString, rString)
 }
@@ -677,6 +701,7 @@ func testAccUserPermissionsOnTwoTeam(rString string) string {
 resource "ns1_team" "t2" {
   name = "terraform acc test team %s-2"
   account_manage_apikeys = true
+  account_manage_ip_whitelist = true
 }
 
 resource "ns1_user" "u" {
@@ -689,6 +714,8 @@ resource "ns1_user" "u" {
   notify = {
     billing = false
   }
+
+  account_manage_ip_whitelist = true
 }
 `, rString, rString, rString, rString)
 }

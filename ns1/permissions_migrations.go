@@ -108,6 +108,12 @@ func addPermsSchemaV0(s map[string]*schema.Schema) map[string]*schema.Schema {
 		Default:          false,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
+	s["account_manage_ip_whitelist"] = &schema.Schema{
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
+	}
 	s["monitoring_manage_lists"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,

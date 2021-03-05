@@ -127,6 +127,7 @@ func TestAccAPIKey_permissions(t *testing.T) {
 					testAccCheckAPIKeyName(&apiKey, name),
 					// The key should still have this permission, it would have inherited it from the team.
 					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_ip_whitelist", "true"),
 				),
 				ExpectNonEmptyPlan: true,
 			},
@@ -137,6 +138,7 @@ func TestAccAPIKey_permissions(t *testing.T) {
 					testAccCheckAPIKeyName(&apiKey, name),
 					// But if an apply is ran again, the permission will be removed.
 					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_ip_whitelist", "false"),
 				),
 			},
 		},
@@ -246,6 +248,7 @@ func testAccAPIKeyPermissionsOnTeam(rString string) string {
 	return fmt.Sprintf(`resource "ns1_team" "t" {
   name = "terraform acc test team %s"
   account_manage_account_settings = true
+  account_manage_ip_whitelist = true
 }
 
 resource "ns1_apikey" "it" {
@@ -261,6 +264,7 @@ func testAccAPIKeyPermissionsNoTeam(rString string) string {
 	return fmt.Sprintf(`resource "ns1_team" "t" {
   name = "terraform acc test team %s"
   account_manage_account_settings = true
+  account_manage_ip_whitelist = true
 }
 
 resource "ns1_apikey" "it" {
