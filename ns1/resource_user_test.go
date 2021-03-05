@@ -132,7 +132,6 @@ func TestAccUser_permissions(t *testing.T) {
 					// The user should still have this permission, it would have inherited it from the team.
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
-
 				),
 				ExpectNonEmptyPlan: true,
 			},
