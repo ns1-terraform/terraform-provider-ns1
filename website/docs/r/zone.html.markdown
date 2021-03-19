@@ -108,7 +108,7 @@ example above. A secondary has the following fields:
   when the zone changes. Default `false`.
 * `networks` - (Computed) - List of network IDs (`int`) for which the zone
   should be made available. Default is network 0, the primary NSONE Global
-  Network. Normally, you should not have to worry about this.
+  Network. 5 is for the China Network. Normally, you should not have to worry about this.
 
 ## Attributes Reference
 
