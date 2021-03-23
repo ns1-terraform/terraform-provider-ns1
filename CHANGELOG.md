@@ -1,3 +1,7 @@
+## 1.9.4 (March 23, 2021)
+NOTES:
+* Updates docs to clarify `key` is an Attribute and not and Argument [#150](https://github.com/ns1-terraform/terraform-provider-ns1/pull/150).
+
 ## 1.9.3 (March 4, 2021)
 BUG FIXES:
 * Adds missing `account_manage_ip_whitelist` permission [#148](https://github.com/ns1-terraform/terraform-provider-ns1/pull/148).
