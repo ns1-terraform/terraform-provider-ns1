@@ -47,7 +47,6 @@ See [the NS1 API docs](https://ns1.com/api#getget-all-account-users) for an over
 The following arguments are supported:
 
 * `name` - (Required) The free form name of the apikey.
-* `key` - (Required) The apikeys authentication token.
 * `teams` - (Optional) The teams that the apikey belongs to.
 * `ip_whitelist` - (Optional) The IP addresses to whitelist for this key.
 * `ip_whitelist_strict` - (Optional) Sets exclusivity on this IP whitelist.
@@ -85,8 +84,9 @@ Only relevant for the DDI product.
 
 ## Attributes Reference
 
-All of the arguments listed above are exported as attributes, with no
-additions.
+In addition to all arguments above, the following attributes are exported:
+
+* `key` - (Computed) The apikeys authentication token.
 
 ## NS1 Documentation
 
