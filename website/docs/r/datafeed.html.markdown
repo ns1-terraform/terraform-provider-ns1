@@ -18,6 +18,12 @@ resource "ns1_datasource" "example" {
   sourcetype = "nsone_v1"
 }
 
+resource "ns1_datasource" "example_monitoring" {
+  name       = "example_monitoring"
+  sourcetype = "nsone_monitoring"
+}
+
+
 resource "ns1_datafeed" "uswest_feed" {
   name      = "uswest_feed"
   source_id = "${ns1_datasource.example.id}"
@@ -35,6 +41,25 @@ resource "ns1_datafeed" "useast_feed" {
     label = "useast"
   }
 }
+
+resource "ns1_datafeed" "useast_monitor_feed" {
+  name      = "useast_monitor_feed"
+  source_id = "${ns1_datasource.example_monitoring.id}"
+
+  config = {
+    jobid = "${ns1_monitoringjob.example_job.id}"
+  }
+}
+
+
+
+
+
+
+
+
+
+
 ```
 
 ## Argument Reference
@@ -44,7 +69,7 @@ The following arguments are supported:
 * `source_id` - (Required) The data source id that this feed is connected to.
 * `name` - (Required) The free form name of the data feed.
 * `config` - (Optional) The feeds configuration matching the specification in
-  `feed_config` from /data/sourcetypes.
+  `feed_config` from /data/sourcetypes. `jobid` is required in the `config` for datafeeds connected to NS1 monitoring.
 
 ## Attributes Reference
 
