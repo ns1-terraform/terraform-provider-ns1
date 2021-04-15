@@ -28,6 +28,17 @@ resource "ns1_notifylist" "nl" {
       email = "test@test.com"
     }
   }
+  
+ notifications {
+    config = {
+      sourceid = "${ns1_datasource.monitoring_datasource.id}"
+    }
+    type = "datafeed"
+  }
+}
+  
+  
+  
 }
 ```
 
@@ -40,8 +51,8 @@ The following arguments are supported:
 
 Notify List Notifiers (`notifications`) support the following:
 
-* `type` - (Required) The type of notifier. Available notifiers are indicated in /notifytypes endpoint. 
-* `config` - (Required) Configuration details for the given notifier type.
+* `type` - (Required) The type of notifier. Available notifiers are indicated in /notifytypes endpoint. Note type `datafeed` is for NS1 Monitoring Data Sources to enable NS1 monitoring to pass metadata to your records and answers.  
+* `config` - (Required) Configuration details for the given notifier type. `sourceid` is required in `config` for notifcations to NS1 Monitoring Data Sources. 
 
 ## Attributes Reference
 
