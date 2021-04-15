@@ -18,6 +18,13 @@ resource "ns1_datasource" "example" {
   sourcetype = "nsone_v1"
 }
 ```
+OR
+```hcl
+resource "ns1_datasource" "example" {
+  name       = "example"
+  sourcetype = "nsone_monitoring"
+}
+```
 
 ## Argument Reference
 
