@@ -248,6 +248,42 @@ func TestAccRecord_SRV(t *testing.T) {
 	})
 }
 
+func TestAccRecord_DS(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("_some-server._tcp.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordDS(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.ds", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 86400),
+					testAccCheckRecordUseClientSubnet(&record, true),
+					testAccCheckRecordAnswerRdata(
+						t,
+						&record,
+						0,
+						[]string{"262", "13", "2", "287787bd551bcab4f57d0c1dcaf312eebe36cc338bebb90d1402353c7096785d"},
+					),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.it",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/DS", zoneName, domainName),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccRecord_URLFWD(t *testing.T) {
 	var record dns.Record
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
@@ -790,6 +826,25 @@ resource "ns1_record" "srv" {
   use_client_subnet = "true"
   answers {
     answer = "10 0 2380 node-1.${ns1_zone.test.zone}"
+  }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordDS(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "ds" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "_some-server._tcp.${ns1_zone.test.zone}"
+  type              = "DS"
+  ttl               = 86400
+  use_client_subnet = "true"
+  answers {
+    answer = "262 13 2 287787bd551bcab4f57d0c1dcaf312eebe36cc338bebb90d1402353c7096785d"
   }
 }
 
