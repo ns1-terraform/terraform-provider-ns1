@@ -24,6 +24,7 @@ var recordTypeStringEnum = NewStringEnum([]string{
 	"CAA",
 	"CNAME",
 	"DNAME",
+	"DS",
 	"HINFO",
 	"MX",
 	"NAPTR",
