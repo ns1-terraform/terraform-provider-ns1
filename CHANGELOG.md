@@ -1,3 +1,7 @@
+## 1.9.5 (April 22, 2021)
+ENHANCEMENTS:
+* Adds DS record support [#157](https://github.com/ns1-terraform/terraform-provider-ns1/pull/157)
+
 ## 1.9.4 (March 23, 2021)
 NOTES:
 * Updates docs to clarify `key` is an Attribute and not an Argument [#150](https://github.com/ns1-terraform/terraform-provider-ns1/pull/150).
