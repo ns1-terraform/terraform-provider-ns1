@@ -96,6 +96,29 @@ func TestAccAPIKey_ManualDelete(t *testing.T) {
 	})
 }
 
+func TestAccAPIKey_teamKey(t *testing.T) {
+	var apiKey account.APIKey
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	name := fmt.Sprintf("terraform acc test key %s", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAPIKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAPIKeyPermissionsOnTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
+					testAccCheckAPIKeyName(&apiKey, name),
+					// ensure Key attribute is populated on create of apikey joined to team
+					resource.TestCheckResourceAttrSet("ns1_apikey.it", "key"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccAPIKey_permissions(t *testing.T) {
 	var apiKey account.APIKey
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
