@@ -1,3 +1,7 @@
+## 1.10.1 (April 27, 2021)
+BUG FIXES:
+* Resolves issue with missing value for Key attribute when creating an apikey joined to a team [#158](https://github.com/ns1-terraform/terraform-provider-ns1/pull/158).
+
 ## 1.10.0 (April 22, 2021)
 ENHANCEMENTS:
 * Adds DS record support [#157](https://github.com/ns1-terraform/terraform-provider-ns1/pull/157).
