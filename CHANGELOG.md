@@ -1,3 +1,7 @@
+## 1.10.2 (May 21, 2021)
+ENHANCEMENTS:
+* Updates ns1-go dependency to add handling of rate limitting when API returns 4xx error [#159](https://github.com/ns1-terraform/terraform-provider-ns1/pull/159).
+
 ## 1.10.1 (April 27, 2021)
 BUG FIXES:
 * Resolves issue with missing value for Key attribute when creating an apikey joined to a team [#158](https://github.com/ns1-terraform/terraform-provider-ns1/pull/158).
@@ -54,7 +58,7 @@ ENHANCEMENTS
 ## 1.8.0 (March 19, 2020)
 
 ENHANCEMENTS:
-  * support for pulsar metadata in record answers ([#116](https://github.com/terraform-providers/terraform-provider-ns1/issues/116))
+* support for pulsar metadata in record answers ([#116](https://github.com/terraform-providers/terraform-provider-ns1/issues/116))
 
 ## 1.7.1 (February 25, 2020)
 
