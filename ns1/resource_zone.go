@@ -287,13 +287,13 @@ func zoneCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	z := dns.NewZone(d.Get("zone").(string))
 	resourceDataToZone(z, d)
-	if _, err := client.Zones.Create(z); err != nil {
-		return err
+	if resp, err := client.Zones.Create(z); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 	if !d.Get("autogenerate_ns_record").(bool) {
 		log.Printf("autogenerate_ns_record set to false: deleting NS record for zone %s", z.Zone)
-		if _, err := client.Records.Delete(z.Zone, z.Zone, "NS"); err != nil {
-			return err
+		if resp, err := client.Records.Delete(z.Zone, z.Zone, "NS"); err != nil {
+			return ConvertToNs1Error(resp, err)
 		}
 	}
 	if err := resourceZoneToResourceData(d, z); err != nil {
@@ -305,7 +305,7 @@ func zoneCreate(d *schema.ResourceData, meta interface{}) error {
 // zoneRead reads the given zone data from ns1
 func zoneRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	z, _, err := client.Zones.Get(d.Get("zone").(string))
+	z, resp, err := client.Zones.Get(d.Get("zone").(string))
 	if err != nil {
 		if err == ns1.ErrZoneMissing {
 			log.Printf("[DEBUG] NS1 zone (%s) not found", d.Id())
@@ -313,7 +313,7 @@ func zoneRead(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 
-		return err
+		return ConvertToNs1Error(resp, err)
 	}
 	if err := resourceZoneToResourceData(d, z); err != nil {
 		return err
@@ -324,9 +324,9 @@ func zoneRead(d *schema.ResourceData, meta interface{}) error {
 // zoneDelete deletes the given zone from ns1
 func zoneDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	_, err := client.Zones.Delete(d.Get("zone").(string))
+	resp, err := client.Zones.Delete(d.Get("zone").(string))
 	d.SetId("")
-	return err
+	return ConvertToNs1Error(resp, err)
 }
 
 // zoneUpdate updates the zone with given params in ns1
@@ -334,8 +334,8 @@ func zoneUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	z := dns.NewZone(d.Get("zone").(string))
 	resourceDataToZone(z, d)
-	if _, err := client.Zones.Update(z); err != nil {
-		return err
+	if resp, err := client.Zones.Update(z); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 	if err := resourceZoneToResourceData(d, z); err != nil {
 		return err

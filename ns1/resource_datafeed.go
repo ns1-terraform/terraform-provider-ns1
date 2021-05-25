@@ -52,8 +52,8 @@ func resourceDataToDataFeed(d *schema.ResourceData) *data.Feed {
 func DataFeedCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	f := resourceDataToDataFeed(d)
-	if _, err := client.DataFeeds.Create(d.Get("source_id").(string), f); err != nil {
-		return err
+	if resp, err := client.DataFeeds.Create(d.Get("source_id").(string), f); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 	dataFeedToResourceData(d, f)
 	return nil
@@ -62,7 +62,7 @@ func DataFeedCreate(d *schema.ResourceData, meta interface{}) error {
 // DataFeedRead reads the datafeed for the given ID from ns1
 func DataFeedRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	f, _, err := client.DataFeeds.Get(d.Get("source_id").(string), d.Id())
+	f, resp, err := client.DataFeeds.Get(d.Get("source_id").(string), d.Id())
 	if err != nil {
 		// No custom error type is currently defined in the SDK for a data feed.
 		if strings.Contains(err.Error(), "feed not found") {
@@ -71,7 +71,7 @@ func DataFeedRead(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 
-		return err
+		return ConvertToNs1Error(resp, err)
 	}
 	dataFeedToResourceData(d, f)
 	return nil
@@ -80,9 +80,9 @@ func DataFeedRead(d *schema.ResourceData, meta interface{}) error {
 // DataFeedDelete delets the given datafeed from ns1
 func DataFeedDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	_, err := client.DataFeeds.Delete(d.Get("source_id").(string), d.Id())
+	resp, err := client.DataFeeds.Delete(d.Get("source_id").(string), d.Id())
 	d.SetId("")
-	return err
+	return ConvertToNs1Error(resp, err)
 }
 
 // DataFeedUpdate updates the given datafeed with modified parameters
@@ -90,8 +90,8 @@ func DataFeedUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	f := resourceDataToDataFeed(d)
 	f.ID = d.Id()
-	if _, err := client.DataFeeds.Update(d.Get("source_id").(string), f); err != nil {
-		return err
+	if resp, err := client.DataFeeds.Update(d.Get("source_id").(string), f); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 	dataFeedToResourceData(d, f)
 	return nil

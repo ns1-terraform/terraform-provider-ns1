@@ -46,8 +46,8 @@ func DataSourceCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	s := data.NewSource(d.Get("name").(string), d.Get("sourcetype").(string))
 	s.Config = d.Get("config").(map[string]interface{})
-	if _, err := client.DataSources.Create(s); err != nil {
-		return err
+	if resp, err := client.DataSources.Create(s); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 	dataSourceToResourceData(d, s)
 	return nil
@@ -56,7 +56,7 @@ func DataSourceCreate(d *schema.ResourceData, meta interface{}) error {
 // DataSourceRead fetches info for the given datasource from ns1
 func DataSourceRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	s, _, err := client.DataSources.Get(d.Id())
+	s, resp, err := client.DataSources.Get(d.Id())
 	if err != nil {
 		// No custom error type is currently defined in the SDK for a data source.
 		if strings.Contains(err.Error(), "source not found") {
@@ -65,7 +65,7 @@ func DataSourceRead(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 
-		return err
+		return ConvertToNs1Error(resp, err)
 	}
 	dataSourceToResourceData(d, s)
 	return nil
@@ -74,9 +74,9 @@ func DataSourceRead(d *schema.ResourceData, meta interface{}) error {
 // DataSourceDelete deteltes the given datasource from ns1
 func DataSourceDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	_, err := client.DataSources.Delete(d.Id())
+	resp, err := client.DataSources.Delete(d.Id())
 	d.SetId("")
-	return err
+	return ConvertToNs1Error(resp, err)
 }
 
 // DataSourceUpdate updates the datasource with given parameters
@@ -84,8 +84,8 @@ func DataSourceUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	s := data.NewSource(d.Get("name").(string), d.Get("sourcetype").(string))
 	s.ID = d.Id()
-	if _, err := client.DataSources.Update(s); err != nil {
-		return err
+	if resp, err := client.DataSources.Update(s); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 	dataSourceToResourceData(d, s)
 	return nil

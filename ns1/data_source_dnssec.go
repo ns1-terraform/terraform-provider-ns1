@@ -95,9 +95,9 @@ func dnssecToResourceData(d *schema.ResourceData, z *dns.ZoneDNSSEC) error {
 
 func dnssecRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	z, _, err := client.DNSSEC.Get(d.Get("zone").(string))
+	z, resp, err := client.DNSSEC.Get(d.Get("zone").(string))
 	if err != nil {
-		return err
+		return ConvertToNs1Error(resp, err)
 	}
 	if err := dnssecToResourceData(d, z); err != nil {
 		return err

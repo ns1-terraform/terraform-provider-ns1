@@ -261,8 +261,8 @@ func MonitoringJobCreate(d *schema.ResourceData, meta interface{}) error {
 	if err := resourceDataToMonitoringJob(&j, d); err != nil {
 		return err
 	}
-	if _, err := client.Jobs.Create(&j); err != nil {
-		return err
+	if resp, err := client.Jobs.Create(&j); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 	return monitoringJobToResourceData(d, &j)
 }
@@ -270,7 +270,7 @@ func MonitoringJobCreate(d *schema.ResourceData, meta interface{}) error {
 // MonitoringJobRead reads the given monitoring job from ns1
 func MonitoringJobRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	j, _, err := client.Jobs.Get(d.Id())
+	j, resp, err := client.Jobs.Get(d.Id())
 	if err != nil {
 		// No custom error type is currently defined in the SDK for a monitoring job.
 		if strings.Contains(err.Error(), "unknown monitoring job") {
@@ -279,7 +279,7 @@ func MonitoringJobRead(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 
-		return err
+		return ConvertToNs1Error(resp, err)
 	}
 	return monitoringJobToResourceData(d, j)
 }
@@ -287,9 +287,9 @@ func MonitoringJobRead(d *schema.ResourceData, meta interface{}) error {
 // MonitoringJobDelete deteltes the given monitoring job from ns1
 func MonitoringJobDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	_, err := client.Jobs.Delete(d.Id())
+	resp, err := client.Jobs.Delete(d.Id())
 	d.SetId("")
-	return err
+	return ConvertToNs1Error(resp, err)
 }
 
 // MonitoringJobUpdate updates the given monitoring job
@@ -301,8 +301,8 @@ func MonitoringJobUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err := resourceDataToMonitoringJob(&j, d); err != nil {
 		return err
 	}
-	if _, err := client.Jobs.Update(&j); err != nil {
-		return err
+	if resp, err := client.Jobs.Update(&j); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 	return monitoringJobToResourceData(d, &j)
 }

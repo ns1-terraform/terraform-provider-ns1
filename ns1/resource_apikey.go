@@ -103,16 +103,16 @@ func ApikeyCreate(d *schema.ResourceData, meta interface{}) error {
 	if err := resourceDataToApikey(&k, d); err != nil {
 		return err
 	}
-	if _, err := client.APIKeys.Create(&k); err != nil {
-		return err
+	if resp, err := client.APIKeys.Create(&k); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 
 	// If a key is assigned to at least one team, then it's permissions need to be refreshed
 	// because the current key permissions in Terraform state will be out of date.
 	if len(k.TeamIDs) > 0 {
-		updatedKey, _, err := client.APIKeys.Get(k.ID)
+		updatedKey, resp, err := client.APIKeys.Get(k.ID)
 		if err != nil {
-			return err
+			return ConvertToNs1Error(resp, err)
 		}
 		// Key attribute only avail on initial GET
 		updatedKey.Key = k.Key
@@ -126,7 +126,7 @@ func ApikeyCreate(d *schema.ResourceData, meta interface{}) error {
 // ApikeyRead reads API key from ns1
 func ApikeyRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	k, _, err := client.APIKeys.Get(d.Id())
+	k, resp, err := client.APIKeys.Get(d.Id())
 	if err != nil {
 		if err == ns1.ErrKeyMissing {
 			log.Printf("[DEBUG] NS1 API key (%s) not found", d.Id())
@@ -134,7 +134,7 @@ func ApikeyRead(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 
-		return err
+		return ConvertToNs1Error(resp, err)
 	}
 	return apikeyToResourceData(d, k)
 }
@@ -142,9 +142,9 @@ func ApikeyRead(d *schema.ResourceData, meta interface{}) error {
 //ApikeyDelete deletes the given ns1 api key
 func ApikeyDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	_, err := client.APIKeys.Delete(d.Id())
+	resp, err := client.APIKeys.Delete(d.Id())
 	d.SetId("")
-	return err
+	return ConvertToNs1Error(resp, err)
 }
 
 //ApikeyUpdate updates the given api key in ns1
@@ -158,16 +158,16 @@ func ApikeyUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if _, err := client.APIKeys.Update(&k); err != nil {
-		return err
+	if resp, err := client.APIKeys.Update(&k); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 
 	// If a key's teams have changed then the permissions on the key need to be refreshed
 	// because the current key permissions in Terraform state will be out of date.
 	if d.HasChange("teams") {
-		updatedKey, _, err := client.APIKeys.Get(d.Id())
+		updatedKey, resp, err := client.APIKeys.Get(d.Id())
 		if err != nil {
-			return err
+			return ConvertToNs1Error(resp, err)
 		}
 
 		return apikeyToResourceData(d, updatedKey)

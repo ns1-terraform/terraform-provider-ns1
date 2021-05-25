@@ -423,8 +423,8 @@ func RecordCreate(d *schema.ResourceData, meta interface{}) error {
 	if err := resourceDataToRecord(r, d); err != nil {
 		return err
 	}
-	if _, err := client.Records.Create(r); err != nil {
-		return err
+	if resp, err := client.Records.Create(r); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 	return recordToResourceData(d, r)
 }
@@ -433,7 +433,7 @@ func RecordCreate(d *schema.ResourceData, meta interface{}) error {
 func RecordRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 
-	r, _, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	r, resp, err := client.Records.Get(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
 	if err != nil {
 		if err == ns1.ErrRecordMissing {
 			log.Printf("[DEBUG] NS1 record (%s) not found", d.Id())
@@ -441,7 +441,7 @@ func RecordRead(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 
-		return err
+		return ConvertToNs1Error(resp, err)
 	}
 
 	return recordToResourceData(d, r)
@@ -450,9 +450,9 @@ func RecordRead(d *schema.ResourceData, meta interface{}) error {
 // RecordDelete deletes the DNS record from ns1
 func RecordDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	_, err := client.Records.Delete(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+	resp, err := client.Records.Delete(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
 	d.SetId("")
-	return err
+	return ConvertToNs1Error(resp, err)
 }
 
 // RecordUpdate updates the given dns record in ns1
@@ -462,8 +462,8 @@ func RecordUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err := resourceDataToRecord(r, d); err != nil {
 		return err
 	}
-	if _, err := client.Records.Update(r); err != nil {
-		return err
+	if resp, err := client.Records.Update(r); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 	return recordToResourceData(d, r)
 }
