@@ -36,10 +36,6 @@ resource "ns1_notifylist" "nl" {
     type = "datafeed"
   }
 }
-  
-  
-  
-}
 ```
 
 ## Argument Reference
