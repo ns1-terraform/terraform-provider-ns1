@@ -23,7 +23,6 @@ resource "ns1_datasource" "example_monitoring" {
   sourcetype = "nsone_monitoring"
 }
 
-
 resource "ns1_datafeed" "uswest_feed" {
   name      = "uswest_feed"
   source_id = "${ns1_datasource.example.id}"
@@ -50,15 +49,6 @@ resource "ns1_datafeed" "useast_monitor_feed" {
     jobid = "${ns1_monitoringjob.example_job.id}"
   }
 }
-
-
-
-
-
-
-
-
-
 
 ```
 
