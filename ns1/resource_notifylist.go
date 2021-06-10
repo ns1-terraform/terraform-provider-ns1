@@ -102,8 +102,8 @@ func NotifyListCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if _, err := client.Notifications.Create(nl); err != nil {
-		return err
+	if resp, err := client.Notifications.Create(nl); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 
 	return notifyListToResourceData(d, nl)
@@ -113,7 +113,7 @@ func NotifyListCreate(d *schema.ResourceData, meta interface{}) error {
 func NotifyListRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 
-	nl, _, err := client.Notifications.Get(d.Id())
+	nl, resp, err := client.Notifications.Get(d.Id())
 	if err != nil {
 		if err == ns1.ErrListMissing {
 			log.Printf("[DEBUG] NS1 notify list (%s) not found", d.Id())
@@ -121,7 +121,7 @@ func NotifyListRead(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 
-		return err
+		return ConvertToNs1Error(resp, err)
 	}
 
 	return notifyListToResourceData(d, nl)
@@ -131,10 +131,9 @@ func NotifyListRead(d *schema.ResourceData, meta interface{}) error {
 func NotifyListDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 
-	_, err := client.Notifications.Delete(d.Id())
+	resp, err := client.Notifications.Delete(d.Id())
 	d.SetId("")
-
-	return err
+	return ConvertToNs1Error(resp, err)
 }
 
 // NotifyListUpdate updates the notifylist with given parameters
@@ -147,8 +146,8 @@ func NotifyListUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if _, err := client.Notifications.Update(nl); err != nil {
-		return err
+	if resp, err := client.Notifications.Update(nl); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 
 	return notifyListToResourceData(d, nl)

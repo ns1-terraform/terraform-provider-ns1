@@ -107,8 +107,8 @@ func TeamCreate(d *schema.ResourceData, meta interface{}) error {
 	if err := resourceDataToTeam(&t, d); err != nil {
 		return err
 	}
-	if _, err := client.Teams.Create(&t); err != nil {
-		return err
+	if resp, err := client.Teams.Create(&t); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 	return teamToResourceData(d, &t)
 }
@@ -116,7 +116,7 @@ func TeamCreate(d *schema.ResourceData, meta interface{}) error {
 // TeamRead reads the team data from ns1
 func TeamRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	t, _, err := client.Teams.Get(d.Id())
+	t, resp, err := client.Teams.Get(d.Id())
 	if err != nil {
 		if err == ns1.ErrTeamMissing {
 			log.Printf("[DEBUG] NS1 team (%s) not found", d.Id())
@@ -124,7 +124,7 @@ func TeamRead(d *schema.ResourceData, meta interface{}) error {
 			return nil
 		}
 
-		return err
+		return ConvertToNs1Error(resp, err)
 	}
 	return teamToResourceData(d, t)
 }
@@ -132,9 +132,9 @@ func TeamRead(d *schema.ResourceData, meta interface{}) error {
 // TeamDelete deletes the given team from ns1
 func TeamDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	_, err := client.Teams.Delete(d.Id())
+	resp, err := client.Teams.Delete(d.Id())
 	d.SetId("")
-	return err
+	return ConvertToNs1Error(resp, err)
 }
 
 // TeamUpdate updates the given team in ns1
@@ -146,8 +146,8 @@ func TeamUpdate(d *schema.ResourceData, meta interface{}) error {
 	if err := resourceDataToTeam(&t, d); err != nil {
 		return err
 	}
-	if _, err := client.Teams.Update(&t); err != nil {
-		return err
+	if resp, err := client.Teams.Update(&t); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 
 	// @TODO - when a teams permissions are updated, all users and keys assigned to that team
