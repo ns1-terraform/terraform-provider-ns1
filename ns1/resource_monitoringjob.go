@@ -80,6 +80,7 @@ func monitoringJobResource() *schema.Resource {
 			"notify_failback": {
 				Type:     schema.TypeBool,
 				Optional: true,
+				Default:  true,
 			},
 			"notify_regional": {
 				Type:     schema.TypeBool,
