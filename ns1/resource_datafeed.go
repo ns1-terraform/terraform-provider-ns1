@@ -1,6 +1,7 @@
 package ns1
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -45,28 +46,25 @@ func dataFeedToResourceData(d *schema.ResourceData, f *data.Feed) {
 
 func resourceDataToDataFeed(d *schema.ResourceData) (feed *data.Feed, e error) {
 	err := configAdapterIn(d)
+	if err != nil {
+		return nil, err
+	}
 	return &data.Feed{
 		Name:     d.Get("name").(string),
 		SourceID: d.Get("source_id").(string),
 		Config:   d.Get("config").(map[string]interface{}),
-	}, err
+	}, nil
 }
 
 // DataFeedCreate creates an ns1 datafeed
 func DataFeedCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-<<<<<<< HEAD
-	f := resourceDataToDataFeed(d)
-	if resp, err := client.DataFeeds.Create(d.Get("source_id").(string), f); err != nil {
-		return ConvertToNs1Error(resp, err)
-=======
 	f, err := resourceDataToDataFeed(d)
 	if err != nil {
 		return err
 	}
-	if _, err = client.DataFeeds.Create(d.Get("source_id").(string), f); err != nil {
-		return err
->>>>>>> add adapter layer for config map
+	if resp, err := client.DataFeeds.Create(d.Get("source_id").(string), f); err != nil {
+		return ConvertToNs1Error(resp, err)
 	}
 	dataFeedToResourceData(d, f)
 	return nil
@@ -121,7 +119,7 @@ func configAdapterIn(d *schema.ResourceData) error {
 		if test_id != nil {
 			test_id_int, err := strconv.Atoi(test_id.(string))
 			if err != nil {
-				return err
+				return fmt.Errorf("could not convert %v as int %w", test_id, err)
 			}
 			config["test_id"] = test_id_int
 			d.Set("config", config)
