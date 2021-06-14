@@ -3,6 +3,7 @@ package ns1
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -25,6 +26,25 @@ func TestAccDataFeed_basic(t *testing.T) {
 					testAccCheckDataFeedExists("ns1_datafeed.foobar", "ns1_datasource.api", &dataFeed, t),
 					testAccCheckDataFeedName(&dataFeed, "terraform test"),
 					testAccCheckDataFeedConfig(&dataFeed, "label", "exampledc2"),
+				),
+			},
+		},
+	})
+}
+
+func TestThousandeyes_Basic(t *testing.T) {
+	var dataFeed data.Feed
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckDataFeedDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testThousandeyesBasic,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDataFeedExists("ns1_datafeed.uswest_feed", "ns1_datasource.api", &dataFeed, t),
+					testAccCheckDataFeedName(&dataFeed, "uswest_feed"),
+					testThousandeyesConfig(&dataFeed, "test_id", 123),
 				),
 			},
 		},
@@ -173,6 +193,21 @@ func testAccCheckDataFeedConfig(dataFeed *data.Feed, key, expected string) resou
 	}
 }
 
+func testThousandeyesConfig(dataFeed *data.Feed, key string, expected float64) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+
+		if reflect.TypeOf(dataFeed.Config[key]).Kind() != reflect.Float64 {
+			return fmt.Errorf("the value must be float64")
+		}
+
+		if dataFeed.Config[key] != expected {
+			return fmt.Errorf("dataFeed.Config[%s]: got: %#v, want: %f", key, dataFeed.Config[key], expected)
+		}
+
+		return nil
+	}
+}
+
 // Simulate a manual deletion of a data feed.
 func testAccManualDeleteDataFeed(dataFeed *data.Feed) func() {
 	return func() {
@@ -196,6 +231,20 @@ resource "ns1_datafeed" "foobar" {
   source_id = "${ns1_datasource.api.id}"
   config = {
     label = "exampledc2"
+  }
+}`
+
+const testThousandeyesBasic = `
+resource "ns1_datasource" "api" {
+  name = "terraform test"
+  sourcetype = "thousandeyes"
+}
+
+resource "ns1_datafeed" "uswest_feed" {
+  name = "uswest_feed"
+  source_id = "${ns1_datasource.api.id}"
+  config = {
+    test_id = "123"
   }
 }`
 
