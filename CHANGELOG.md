@@ -1,3 +1,11 @@
+## 1.10.3 (June 15, 2021)
+ENHANCEMENTS:
+* Add more verbose logging output for failed requests [#160](https://github.com/ns1-terraform/terraform-provider-ns1/pull/160)
+* Update to documentation to reflect proper usage for monitoring datafeeds [#154](https://github.com/ns1-terraform/terraform-provider-ns1/pull/154) 
+BUG FIXES:
+* Correctly coerce `test_id` config value for datafeed resource used with `thousandeyes` `datasource` [#163](https://github.com/ns1-terraform/terraform-provider-ns1/pull/163)
+* Change `notify_failback` field in `monitoringjob` resource default to `true` to match default in api [#161](https://github.com/ns1-terraform/terraform-provider-ns1/pull/161)
+
 ## 1.10.2 (May 21, 2021)
 ENHANCEMENTS:
 * Updates ns1-go dependency to add handling of rate limitting when API returns 4xx error [#159](https://github.com/ns1-terraform/terraform-provider-ns1/pull/159).
