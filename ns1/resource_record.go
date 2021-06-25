@@ -338,6 +338,23 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 
 			if v, ok := answer["meta"]; ok {
 				log.Println("answer meta", v)
+				allsubdivisions := v.(map[string]interface{})["subdivisions"]
+				if allsubdivisions != nil {
+					subdivisions := strings.Split(allsubdivisions.(string), ",")
+					subdvisionsMap := make(map[string]interface{})
+					for _, sub := range subdivisions {
+						subp := strings.Split(sub, "-")
+						if len(subp) != 2 {
+							return fmt.Errorf("invalid subidivision format. expecting Country-Subdivision got %s", sub)
+						}
+						subdvisionsMap[subp[0]] = []string{}
+					}
+					for _, sub := range subdivisions {
+						sub := strings.Split(sub, "-")
+						subdvisionsMap[sub[0]] = append(subdvisionsMap[sub[0]].([]string), sub[1])
+					}
+					v.(map[string]interface{})["subdivisions"] = subdvisionsMap
+				}
 				a.Meta = data.MetaFromMap(v.(map[string]interface{}))
 				log.Println(a.Meta)
 				errs := a.Meta.Validate()
