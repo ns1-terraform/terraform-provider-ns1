@@ -280,6 +280,8 @@ gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15/go.mod h1:Co6ibVJAznAaIkqp8
 gopkg.in/cheggaaa/pb.v1 v1.0.27/go.mod h1:V/YB90LKu/1FcN3WVnfiiE5oMCibMjukxqG/qStrOgw=
 gopkg.in/ns1/ns1-go.v2 v2.5.1 h1:yDCffh6bVBQuOUHuikJ2CC3cnMmsu8biEEwtLkpxVSI=
 gopkg.in/ns1/ns1-go.v2 v2.5.1/go.mod h1:GMnKY+ZuoJ+lVLL+78uSTjwTz2jMazq6AfGKQOYhsPk=
+gopkg.in/ns1/ns1-go.v2 v2.6.0 h1:2Fiu/xz1EVxiGS15iyYKuIvn//YfgIuKH9SnoTvLtLw=
+gopkg.in/ns1/ns1-go.v2 v2.6.0/go.mod h1:GMnKY+ZuoJ+lVLL+78uSTjwTz2jMazq6AfGKQOYhsPk=
 gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 gopkg.in/yaml.v2 v2.2.7 h1:VUgggvou5XRW9mHwD/yXxIYSMtY0zoKQf/v226p2nyo=
 gopkg.in/yaml.v2 v2.2.7/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=

@@ -342,6 +342,7 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 					subdivisions := strings.Split(allsubdivisions.(string), ",")
 					subdvisionsMap := make(map[string]interface{})
 					for _, sub := range subdivisions {
+						sub = strings.Join(strings.Fields(sub), "")
 						subp := strings.Split(sub, "-")
 						if len(subp) != 2 {
 							return fmt.Errorf("invalid subidivision format. expecting (\"Country-Subdivision\") got %s", sub)
