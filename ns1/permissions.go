@@ -6,6 +6,56 @@ import (
 )
 
 func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
+	s["dns_records_allow"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Optional: true,
+		Required: false,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"domain": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"include_subdomains": {
+					Type:     schema.TypeBool,
+					Required: true,
+				},
+				"zone": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"type": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+			},
+		},
+	}
+	s["dns_records_deny"] = &schema.Schema{
+		Type:     schema.TypeList,
+		Optional: true,
+		Required: false,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"domain": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"include_subdomains": {
+					Type:     schema.TypeBool,
+					Required: true,
+				},
+				"zone": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"type": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+			},
+		},
+	}
 	s["dns_view_zones"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
@@ -235,6 +285,38 @@ func permissionsToResourceData(d *schema.ResourceData, permissions account.Permi
 
 func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	var p account.PermissionsMap
+	if v, ok := d.GetOk("dns_records_allow"); ok {
+		records := []account.Record{}
+		schemaRecord := v.([]interface{})
+		for _, sr := range schemaRecord {
+			mapRecord := sr.(map[string]interface{})
+			record := account.Record{
+				Domain:     mapRecord["domain"].(string),
+				Subdomains: mapRecord["include_subdomains"].(bool),
+				Zone:       mapRecord["zone"].(string),
+				RecordType: mapRecord["type"].(string)}
+			records = append(records, record)
+		}
+		p.DNS.RecordsAllow = records
+	} else {
+		p.DNS.RecordsAllow = []account.Record{}
+	}
+	if v, ok := d.GetOk("dns_records_deny"); ok {
+		records := []account.Record{}
+		schemaRecord := v.([]interface{})
+		for _, sr := range schemaRecord {
+			mapRecord := sr.(map[string]interface{})
+			record := account.Record{
+				Domain:     mapRecord["domain"].(string),
+				Subdomains: mapRecord["include_subdomains"].(bool),
+				Zone:       mapRecord["zone"].(string),
+				RecordType: mapRecord["type"].(string)}
+			records = append(records, record)
+		}
+		p.DNS.RecordsDeny = records
+	} else {
+		p.DNS.RecordsDeny = []account.Record{}
+	}
 	if v, ok := d.GetOk("dns_view_zones"); ok {
 		p.DNS.ViewZones = v.(bool)
 	}
