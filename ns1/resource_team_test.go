@@ -32,9 +32,9 @@ func TestAccTeam_basic(t *testing.T) {
 					testAccCheckTeamDNSPermission(&team, "zones_allow_by_default", true),
 					testAccCheckTeamDNSPermissionZones(&team, "zones_allow", []string{"mytest.zone"}),
 					testAccCheckTeamDNSPermissionZones(&team, "zones_deny", []string{"myother.zone"}),
-					testAccCheckTeamDNSPermissionRecords(&team, "dns_records_allow", []account.Record{
+					testAccCheckTeamDNSPermissionRecords(&team, "dns_records_allow", []account.PermissionsRecord{
 						{Domain: "my.ns1.com", Subdomains: false, Zone: "ns1.com", RecordType: "A"}}),
-					testAccCheckTeamDNSPermissionRecords(&team, "dns_records_deny", []account.Record{
+					testAccCheckTeamDNSPermissionRecords(&team, "dns_records_deny", []account.PermissionsRecord{
 						{Domain: "my.test.com", Subdomains: true, Zone: "test.com", RecordType: "A"}}),
 					testAccCheckTeamDataPermission(&team, "manage_datasources", true),
 					testAccCheckTeamIPWhitelists(&team, []account.IPWhitelist{
@@ -72,8 +72,8 @@ func TestAccTeam_updated(t *testing.T) {
 					testAccCheckTeamDNSPermission(&team, "zones_allow_by_default", true),
 					testAccCheckTeamDNSPermissionZones(&team, "zones_allow", []string{}),
 					testAccCheckTeamDNSPermissionZones(&team, "zones_deny", []string{}),
-					testAccCheckTeamDNSPermissionRecords(&team, "dns_records_allow", []account.Record{}),
-					testAccCheckTeamDNSPermissionRecords(&team, "dns_records_deny", []account.Record{}),
+					testAccCheckTeamDNSPermissionRecords(&team, "dns_records_allow", []account.PermissionsRecord{}),
+					testAccCheckTeamDNSPermissionRecords(&team, "dns_records_deny", []account.PermissionsRecord{}),
 					testAccCheckTeamDataPermission(&team, "manage_datasources", false),
 					testAccCheckTeamIPWhitelists(&team, []account.IPWhitelist{}),
 				),
@@ -213,7 +213,6 @@ func testAccCheckTeamDataPermission(team *account.Team, perm string, expected bo
 
 func testAccCheckTeamDNSPermissionZones(team *account.Team, perm string, expected []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-
 		dns := team.Permissions.DNS
 
 		switch perm {
@@ -231,7 +230,7 @@ func testAccCheckTeamDNSPermissionZones(team *account.Team, perm string, expecte
 	}
 }
 
-func testAccCheckTeamDNSPermissionRecords(team *account.Team, perm string, expected []account.Record) resource.TestCheckFunc {
+func testAccCheckTeamDNSPermissionRecords(team *account.Team, perm string, expected []account.PermissionsRecord) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		dns := team.Permissions.DNS
 
