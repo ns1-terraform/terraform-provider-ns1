@@ -264,14 +264,12 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	var p account.PermissionsMap
 
 	if v, ok := d.GetOk("dns_records_allow"); ok {
-		schemaRecord := v.([]interface{})
-		p.DNS.RecordsAllow = SchemaToRecordArray(schemaRecord)
+		p.DNS.RecordsAllow = SchemaToRecordArray(v)
 	} else {
 		p.DNS.RecordsAllow = []account.PermissionsRecord{}
 	}
 	if v, ok := d.GetOk("dns_records_deny"); ok {
-		schemaRecord := v.([]interface{})
-		p.DNS.RecordsDeny = SchemaToRecordArray(schemaRecord)
+		p.DNS.RecordsDeny = SchemaToRecordArray(v)
 	} else {
 		p.DNS.RecordsDeny = []account.PermissionsRecord{}
 	}
@@ -386,16 +384,19 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	return p
 }
 
-func SchemaToRecordArray(schemaRecord []interface{}) []account.PermissionsRecord {
-	var records []account.PermissionsRecord
-	for _, sr := range schemaRecord {
-		mapRecord := sr.(map[string]interface{})
-		record := account.PermissionsRecord{
-			Domain:     mapRecord["domain"].(string),
-			Subdomains: mapRecord["include_subdomains"].(bool),
-			Zone:       mapRecord["zone"].(string),
-			RecordType: mapRecord["type"].(string)}
-		records = append(records, record)
+func SchemaToRecordArray(v interface{}) []account.PermissionsRecord {
+	if schemaRecord, ok := v.([]interface{}); ok {
+		var records []account.PermissionsRecord
+		for _, sr := range schemaRecord {
+			mapRecord := sr.(map[string]interface{})
+			record := account.PermissionsRecord{
+				Domain:     mapRecord["domain"].(string),
+				Subdomains: mapRecord["include_subdomains"].(bool),
+				Zone:       mapRecord["zone"].(string),
+				RecordType: mapRecord["type"].(string)}
+			records = append(records, record)
+		}
+		return records
 	}
-	return records
+	return []account.PermissionsRecord{}
 }
