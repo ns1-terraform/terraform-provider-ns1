@@ -6,6 +6,33 @@ import (
 )
 
 func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
+	dnsRecords := &schema.Schema{
+		Type:     schema.TypeList,
+		Optional: true,
+		Required: false,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"domain": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"include_subdomains": {
+					Type:     schema.TypeBool,
+					Required: true,
+				},
+				"zone": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+				"type": {
+					Type:     schema.TypeString,
+					Required: true,
+				},
+			},
+		},
+	}
+	s["dns_records_allow"] = dnsRecords
+	s["dns_records_deny"] = dnsRecords
 	s["dns_view_zones"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
@@ -235,6 +262,17 @@ func permissionsToResourceData(d *schema.ResourceData, permissions account.Permi
 
 func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	var p account.PermissionsMap
+
+	if v, ok := d.GetOk("dns_records_allow"); ok {
+		p.DNS.RecordsAllow = SchemaToRecordArray(v)
+	} else {
+		p.DNS.RecordsAllow = []account.PermissionsRecord{}
+	}
+	if v, ok := d.GetOk("dns_records_deny"); ok {
+		p.DNS.RecordsDeny = SchemaToRecordArray(v)
+	} else {
+		p.DNS.RecordsDeny = []account.PermissionsRecord{}
+	}
 	if v, ok := d.GetOk("dns_view_zones"); ok {
 		p.DNS.ViewZones = v.(bool)
 	}
@@ -344,4 +382,21 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 		p.IPAM.ViewIPAM = v.(bool)
 	}
 	return p
+}
+
+func SchemaToRecordArray(v interface{}) []account.PermissionsRecord {
+	if schemaRecord, ok := v.([]interface{}); ok {
+		var records []account.PermissionsRecord
+		for _, sr := range schemaRecord {
+			mapRecord := sr.(map[string]interface{})
+			record := account.PermissionsRecord{
+				Domain:     mapRecord["domain"].(string),
+				Subdomains: mapRecord["include_subdomains"].(bool),
+				Zone:       mapRecord["zone"].(string),
+				RecordType: mapRecord["type"].(string)}
+			records = append(records, record)
+		}
+		return records
+	}
+	return []account.PermissionsRecord{}
 }
