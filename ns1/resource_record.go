@@ -35,6 +35,7 @@ var recordTypeStringEnum = NewStringEnum([]string{
 	"SRV",
 	"TXT",
 	"URLFWD",
+	"strings",
 })
 
 func recordResource() *schema.Resource {
@@ -298,7 +299,7 @@ func answerToMap(a dns.Answer) map[string]interface{} {
 	}
 	if a.Meta != nil {
 		log.Println("got meta: ", a.Meta)
-		m["meta"] = a.Meta.StringMap()
+		m["meta"] = metaToMapString(a.Meta)
 		log.Println(m["meta"])
 	}
 	return m
@@ -338,21 +339,21 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 
 			if v, ok := answer["meta"]; ok {
 				log.Println("answer meta", v)
-				if allsubdivisions, ok := v.(map[string]interface{})["subdivisions"]; ok {
-					subdivisions := strings.Split(allsubdivisions.(string), ",")
-					subdvisionsMap := make(map[string]interface{})
+				if allSubdivisions, ok := v.(map[string]interface{})["subdivisions"]; ok {
+					subdivisions := strings.Split(allSubdivisions.(string), ",")
+					subdivisionsMap := make(map[string]interface{})
 					for _, sub := range subdivisions {
 						sub = strings.Join(strings.Fields(sub), "")
 						subp := strings.Split(sub, "-")
 						if len(subp) != 2 {
 							return fmt.Errorf("invalid subidivision format. expecting (\"Country-Subdivision\") got %s", sub)
 						}
-						if subdvisionsMap[subp[0]] == nil {
-							subdvisionsMap[subp[0]] = []string{}
+						if subdivisionsMap[subp[0]] == nil {
+							subdivisionsMap[subp[0]] = []string{}
 						}
-						subdvisionsMap[subp[0]] = append(subdvisionsMap[subp[0]].([]string), subp[1])
+						subdivisionsMap[subp[0]] = append(subdivisionsMap[subp[0]].([]string), subp[1])
 					}
-					v.(map[string]interface{})["subdivisions"] = subdvisionsMap
+					v.(map[string]interface{})["subdivisions"] = subdivisionsMap
 				}
 				a.Meta = data.MetaFromMap(v.(map[string]interface{}))
 				log.Println(a.Meta)
@@ -564,3 +565,21 @@ func validateFQDN(val interface{}, key string) (warns []string, errs []error) {
 
 	return warns, errs
 }
+
+func metaToMapString(m *data.Meta) map[string]interface{} {
+	stringMap := m.StringMap()
+	if stringMap != nil {
+		subdivisions := stringMap["subdivisions"]
+		if subdivisions != nil {
+			var array []string
+			for subRegion, subArray := range m.Subdivisions.(map[string]interface{}) {
+				for _, sub := range subArray.([]interface{}) {
+					array = append(array, subRegion+"-"+sub.(string))
+				}
+			}
+			stringMap["subdivisions"] = strings.Join(array[:], ",")
+		}
+	}
+	return stringMap
+}
+
