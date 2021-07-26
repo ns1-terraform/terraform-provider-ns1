@@ -37,6 +37,7 @@ func TestAccMonitoringJob_basic(t *testing.T) {
 					testAccCheckMonitoringJobRuleValue(&mj, "200 OK"),
 					testAccCheckMonitoringJobRuleComparison(&mj, "contains"),
 					testAccCheckMonitoringJobRuleKey(&mj, "output"),
+					testAccCheckMonitoringJobMute(&mj, true),
 				),
 			},
 		},
@@ -67,6 +68,7 @@ func TestAccMonitoringJob_updated(t *testing.T) {
 					testAccCheckMonitoringJobRuleValue(&mj, "200 OK"),
 					testAccCheckMonitoringJobRuleComparison(&mj, "contains"),
 					testAccCheckMonitoringJobRuleKey(&mj, "output"),
+					testAccCheckMonitoringJobMute(&mj, true),
 				),
 			},
 			{
@@ -86,6 +88,7 @@ func TestAccMonitoringJob_updated(t *testing.T) {
 					testAccCheckMonitoringJobRuleValue(&mj, "200"),
 					testAccCheckMonitoringJobRuleComparison(&mj, "<="),
 					testAccCheckMonitoringJobRuleKey(&mj, "connect"),
+					testAccCheckMonitoringJobMute(&mj, false),
 				),
 			},
 		},
@@ -306,6 +309,14 @@ func testAccCheckMonitoringJobRuleKey(mj *monitor.Job, expected string) resource
 		return nil
 	}
 }
+func testAccCheckMonitoringJobMute(mj *monitor.Job, expected bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if mj.Mute != expected {
+			return fmt.Errorf("mj.mute: got: %#v want: %#v", mj.Mute, expected)
+		}
+		return nil
+	}
+}
 
 // Simulate a manual deletion of a monitoring job.
 func testAccManualDeleteMonitoringJob(mj *monitor.Job) func() {
@@ -326,6 +337,7 @@ resource "ns1_monitoringjob" "it" {
 
   regions   = ["lga"]
   frequency = 60
+  mute      = true
 
   config = {
     ssl = "1",
@@ -351,6 +363,7 @@ resource "ns1_monitoringjob" "it" {
   frequency     = 120
   rapid_recheck = true
   policy        = "all"
+  mute      = false
 
   config = {
     ssl = "1",
