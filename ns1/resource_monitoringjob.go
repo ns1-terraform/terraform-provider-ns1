@@ -52,6 +52,11 @@ func monitoringJobResource() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"mute": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 			"policy": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -123,6 +128,7 @@ func monitoringJobToResourceData(d *schema.ResourceData, r *monitor.Job) error {
 	d.Set("name", r.Name)
 	d.Set("job_type", r.Type)
 	d.Set("active", r.Active)
+	d.Set("mute", r.Mute)
 	d.Set("regions", r.Regions)
 	d.Set("frequency", r.Frequency)
 	d.Set("rapid_recheck", r.RapidRecheck)
@@ -180,6 +186,7 @@ func resourceDataToMonitoringJob(r *monitor.Job, d *schema.ResourceData) error {
 	r.Name = d.Get("name").(string)
 	r.Type = d.Get("job_type").(string)
 	r.Active = d.Get("active").(bool)
+	r.Mute = d.Get("mute").(bool)
 	rawRegions := d.Get("regions").([]interface{})
 	r.Regions = make([]string, len(rawRegions))
 	for i, v := range rawRegions {
