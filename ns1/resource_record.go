@@ -147,6 +147,7 @@ It is suggested to migrate to a regular "answers" block. Using Terraform 0.12+, 
 						},
 						"config": {
 							Type:     schema.TypeMap,
+							Computed: true,
 							Optional: true,
 						},
 					},
