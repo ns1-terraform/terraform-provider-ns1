@@ -1,3 +1,12 @@
+## 1.11.0 (July 26, 2021)
+ENHANCEMENTS:
+* Adds support for subdivisions to record resources [#164](https://github.com/ns1-terraform/terraform-provider-ns1/pull/164)
+* Adds support for `dns_records_allow` and `dns_records_deny` permissions [#165](https://github.com/ns1-terraform/terraform-provider-ns1/pull/165)
+* Adds support for `mute` attribute to monitoring job resorce [#166](https://github.com/ns1-terraform/terraform-provider-ns1/pull/166)
+
+BUG FIXES:
+* Make `config` for filter chain of `record` computed if not provided [#167](https://github.com/ns1-terraform/terraform-provider-ns1/pull/167)
+
 ## 1.10.3 (June 15, 2021)
 ENHANCEMENTS:
 * Add more verbose logging output for failed requests [#160](https://github.com/ns1-terraform/terraform-provider-ns1/pull/160)
