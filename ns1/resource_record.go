@@ -582,4 +582,3 @@ func metaToMapString(m *data.Meta) map[string]interface{} {
 	}
 	return stringMap
 }
-
