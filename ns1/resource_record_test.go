@@ -107,7 +107,9 @@ func TestAccRecord_meta(t *testing.T) {
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
 	domainName := fmt.Sprintf("test.%s", zoneName)
-
+	sub := make(map[string]interface{}, 2)
+	sub["DZ"] = []string{"01", "02", "03"}
+	sub["BR"] = []string{"SC", "SP"}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -118,6 +120,7 @@ func TestAccRecord_meta(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
 					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordAnswerMetaSubdivisions(&record, sub),
 					testAccCheckRecordAnswerMetaIPPrefixes(&record, []string{
 						"3.248.0.0/13",
 						"13.248.96.0/24",
@@ -512,6 +515,18 @@ func testAccCheckRecordRegionName(r *dns.Record, expected []string) resource.Tes
 	}
 }
 
+func testAccCheckRecordAnswerMetaSubdivisions(r *dns.Record, expected map[string]interface{}) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		recordAnswer := r.Answers[0]
+		recordMetas := recordAnswer.Meta
+		sub := recordMetas.Subdivisions.(map[string]interface{})
+		if reflect.DeepEqual(sub, expected) {
+			return fmt.Errorf("r.Answers[0].Meta.Subdivisions: got: %#v want: %#v", sub, expected)
+		}
+		return nil
+	}
+}
+
 func testAccCheckRecordAnswerMetaWeight(r *dns.Record, expected float64) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		recordAnswer := r.Answers[0]
@@ -707,6 +722,7 @@ resource "ns1_record" "it" {
 
     meta = {
     up = true
+    subdivisions = "DZ-01,DZ-02,DZ-03,BR-SC,BR-SP"
       weight = 5
       ip_prefixes = "3.248.0.0/13,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24"
       pulsar = jsonencode([{
