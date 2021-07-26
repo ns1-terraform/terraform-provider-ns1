@@ -1,4 +1,4 @@
-## 1.11.0 (July 26, 2021)
+## 1.11.0 (Unreleased)
 ENHANCEMENTS:
 * Adds support for subdivisions to record resources [#164](https://github.com/ns1-terraform/terraform-provider-ns1/pull/164)
 * Adds support for `dns_records_allow` and `dns_records_deny` permissions [#165](https://github.com/ns1-terraform/terraform-provider-ns1/pull/165)
