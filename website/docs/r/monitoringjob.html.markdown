@@ -21,6 +21,7 @@ resource "ns1_monitoringjob" "uswest_monitor" {
   frequency     = 60
   rapid_recheck = true
   policy        = "quorum"
+  mute          = true
 
   config = {
     ssl  = 1
@@ -58,6 +59,7 @@ The following arguments are supported:
 * `notify_list` - (Optional) The Terraform ID (e.g. ns1_notifylist.my_slack_notifier.id) of the notification list to which monitoring notifications should be sent.
 * `notes` - (Optional) Freeform notes to be included in any notifications about this job.
 * `rules` - (Optional) A list of rules for determining failure conditions. Each rule acts on one of the outputs from the monitoring job. You must specify key (the output key); comparison (a comparison to perform on the the output); and value (the value to compare to). For example, {"key":"rtt", "comparison":"<", "value":100} is a rule requiring the rtt from a job to be under 100ms, or the job will be marked failed. Available output keys, comparators, and value types are are found by submitting a GET request to https://api.nsone.net/v1/monitoring/jobtypes.
+* `mute` - (Optional) turn off the notifications for the monitoring job.
 
 ## Attributes Reference
 
