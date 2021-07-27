@@ -42,6 +42,13 @@ resource "ns1_team" "example2" {
   dns_zones_allow_by_default = true
   dns_zones_allow = ["mytest.zone"]
   dns_zones_deny = ["myother.zone"]
+  
+  dns_records_allow {
+    domain = "terraform.example.io"
+    include_subdomains = false
+    zone = "example.io"
+    type = "A"
+  }
 
   data_manage_datasources = true
 }
@@ -58,6 +65,8 @@ The following arguments are supported:
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.
 * `dns_zones_allow` - (Optional) List of zones that the team may access.
 * `dns_zones_deny` - (Optional) List of zones that the team may not access.
+* `dns_record_allow` - (Optional) List of records that the team may access.
+* `dns_record_deny` - (Optional) List of records that the team may not access.
 * `data_push_to_datafeeds` - (Optional) Whether the team can publish to data feeds.
 * `data_manage_datasources` - (Optional) Whether the team can modify data sources.
 * `data_manage_datafeeds` - (Optional) Whether the team can modify data feeds.
