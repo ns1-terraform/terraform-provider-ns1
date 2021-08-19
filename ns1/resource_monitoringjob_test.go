@@ -40,6 +40,20 @@ func TestAccMonitoringJob_basic(t *testing.T) {
 					testAccCheckMonitoringJobMute(&mj, true),
 				),
 			},
+			{
+				Config: testAccMonitoringJobBasicHttp,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),
+					testAccCheckMonitoringJobName(&mj, "terraform http test"),
+					testAccCheckMonitoringJobActive(&mj, true),
+					testAccCheckMonitoringJobRegions(&mj, []string{"sjc"}),
+					testAccCheckMonitoringJobType(&mj, "http"),
+					testAccCheckMonitoringJobFrequency(&mj, 60),
+					testAccCheckMonitoringJobRapidRecheck(&mj, false),
+					testAccCheckMonitoringJobMute(&mj, true),
+					testAccCheckMonitoringJobConfigTlsAddVerify(&mj, true),
+				),
+			},
 		},
 	})
 }
@@ -274,6 +288,18 @@ func testAccCheckMonitoringJobConfigPort(mj *monitor.Job, expected float64) reso
 	}
 }
 
+func testAccCheckMonitoringJobConfigTlsAddVerify(mj *monitor.Job, expected bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if mj.Config["tls_add_verify"] == nil {
+			mj.Config["tls_add_verify"] = false
+		}
+		if mj.Config["tls_add_verify"].(bool) != expected {
+			return fmt.Errorf("mj.Config.tls_add_verify: got: %#v want: %#v", mj.Config["tls_add_verify"].(bool), expected)
+		}
+		return nil
+	}
+}
+
 func testAccCheckMonitoringJobConfigHost(mj *monitor.Job, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if mj.Config["host"].(string) != expected {
@@ -349,6 +375,21 @@ resource "ns1_monitoringjob" "it" {
     value = "200 OK"
     comparison = "contains"
     key = "output"
+  }
+}
+`
+const testAccMonitoringJobBasicHttp = `
+resource "ns1_monitoringjob" "it" {
+  job_type = "http"
+  name     = "terraform http test"
+
+  regions   = ["sjc"]
+  frequency = 60
+  mute      = true
+
+  config = {
+    url = "https://test.domain/"
+    tls_add_verify = true
   }
 }
 `
