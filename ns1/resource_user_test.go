@@ -112,6 +112,18 @@ func TestAccUser_permissions(t *testing.T) {
 				),
 			},
 			{
+				Config: testAccUserSecurityPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "security_manage_global_2fa", "false"),
+				),
+			},
+			{
 				Config: testAccUserPermissionsOnTeam(rString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckUserExists("ns1_user.u", &user),
@@ -667,6 +679,27 @@ resource "ns1_user" "u" {
   }
 
   account_manage_ip_whitelist = true
+}
+`, rString, rString, rString)
+}
+
+func testAccUserSecurityPermissionsNoTeam(rString string) string {
+	return fmt.Sprintf(`resource "ns1_team" "t" {
+  name = "terraform acc test team %s"
+  account_manage_account_settings = true
+}
+
+resource "ns1_user" "u" {
+  name = "terraform acc test user %s"
+  username = "tf_acc_test_user_%s"
+  email = "tf_acc_test_ns1@hashicorp.com"
+
+  notify = {
+    billing = false
+  }
+
+  account_manage_ip_whitelist = true
+  security_manage_global_2fa = false
 }
 `, rString, rString, rString)
 }
