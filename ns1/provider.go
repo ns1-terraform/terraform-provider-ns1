@@ -59,6 +59,7 @@ func Provider() terraform.ResourceProvider {
 			"ns1_user":          userResource(),
 			"ns1_apikey":        apikeyResource(),
 			"ns1_team":          teamResource(),
+			"ns1_application":	 resourceApplication(),
 		},
 		ConfigureFunc: ns1Configure,
 	}
