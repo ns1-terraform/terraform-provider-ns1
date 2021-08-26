@@ -108,8 +108,8 @@ func TestAccRecord_meta(t *testing.T) {
 	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
 	domainName := fmt.Sprintf("test.%s", zoneName)
 	sub := make(map[string]interface{}, 2)
-	sub["DZ"] = []string{"01", "02", "03"}
 	sub["BR"] = []string{"SC", "SP"}
+	sub["DZ"] = []string{"01", "02", "03"}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
