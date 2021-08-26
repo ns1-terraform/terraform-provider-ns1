@@ -102,20 +102,48 @@ func resourceDataToApplication(a *pulsar.Application, d *schema.ResourceData) {
 	if v, ok := d.GetOk("jobs_per_transaction"); ok {
 		a.JobsPerTransaction = v.(int)
 	}
-
 	if v, ok := d.GetOk("default_config"); ok {
-		defaultConfigSet := v.(map[string]interface{})
-		a.DefaultConfig = pulsar.DefaultConfig{}
-		a.DefaultConfig.Http, _ = strconv.ParseBool(defaultConfigSet["http"].(string))
-		a.DefaultConfig.Https, _ = strconv.ParseBool(defaultConfigSet["https"].(string))
-		a.DefaultConfig.RequestTimeoutMillis, _ = strconv.Atoi(defaultConfigSet["request_timeout_millis"].(string))
-		a.DefaultConfig.JobTimeoutMillis, _ = strconv.Atoi(defaultConfigSet["job_timeout_millis"].(string))
-		a.DefaultConfig.UseXhr, _ = strconv.ParseBool(defaultConfigSet["use_xhr"].(string))
-		a.DefaultConfig.StaticValues, _ = strconv.ParseBool(defaultConfigSet["static_values"].(string))
+		a.DefaultConfig = setDefaultConfig(v)
 	}
 }
 
-// applicationCreate creates the given zone in ns1
+func setDefaultConfig(ds interface{}) (d pulsar.DefaultConfig){
+	defaultConfig := ds.(map[string]interface{})
+	d = pulsar.DefaultConfig{}
+	httpConf := defaultConfig["http"]
+	if httpConf != nil{
+		httpsBool, _ := strconv.ParseBool(httpConf.(string))
+		d.Http = httpsBool
+	}
+	httpsConf := defaultConfig["https"]
+	if httpsConf != nil{
+		httpsBool, _ := strconv.ParseBool(httpsConf.(string))
+		d.Https = httpsBool
+	}
+	xhrConf := defaultConfig["use_xhr"]
+	if xhrConf != nil{
+		xhrBool, _ := strconv.ParseBool(xhrConf.(string))
+		d.UseXhr = xhrBool
+	}
+	staticConf := defaultConfig["static_values"]
+	if staticConf != nil{
+		StaticBool, _ := strconv.ParseBool(staticConf.(string))
+		d.StaticValues = StaticBool
+	}
+	jobConf := defaultConfig["job_timeout_millis"]
+	if jobConf != nil{
+		jobInt, _ := strconv.Atoi(jobConf.(string))
+		d.JobTimeoutMillis = jobInt
+	}
+	reqConf := defaultConfig["request_timeout_millis"]
+	if reqConf != nil{
+		reqInt, _ := strconv.Atoi(reqConf.(string))
+		d.RequestTimeoutMillis = reqInt
+	}
+return
+}
+
+// ApplicationCreate creates the given zone in ns1
 func ApplicationCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	a := pulsar.NewApplication(d.Get("name").(string))
@@ -129,7 +157,7 @@ func ApplicationCreate(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-// applicationRead reads the given zone data from ns1
+// ApplicationRead reads the given zone data from ns1
 func ApplicationRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	app, _, _ := client.Applications.Get(d.Id())
@@ -139,7 +167,7 @@ func ApplicationRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-// applicationDelete deletes the given zone from ns1
+// ApplicationDelete deletes the given zone from ns1
 func ApplicationDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	resp, err := client.Applications.Delete(d.Id())
@@ -147,7 +175,7 @@ func ApplicationDelete(d *schema.ResourceData, meta interface{}) error {
 	return ConvertToNs1Error(resp, err)
 }
 
-// applicationUpdate updates the zone with given params in ns1
+// ApplicationUpdate updates the zone with given params in ns1
 func ApplicationUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	app := pulsar.NewApplication(d.Get("name").(string))
