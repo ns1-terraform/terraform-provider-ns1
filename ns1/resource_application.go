@@ -60,10 +60,10 @@ func resourceApplication() *schema.Resource {
 				},
 			},
 		},
-		Create: ApplicationCreate,
-		Read:   ApplicationRead,
-		Update: ApplicationUpdate,
-		Delete: ApplicationDelete,
+		Create:   ApplicationCreate,
+		Read:     ApplicationRead,
+		Update:   ApplicationUpdate,
+		Delete:   ApplicationDelete,
 		Importer: &schema.ResourceImporter{State: ApplicationStateFunc},
 	}
 }
