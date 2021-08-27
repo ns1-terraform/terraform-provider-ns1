@@ -64,6 +64,7 @@ func resourceApplication() *schema.Resource {
 		Read:   ApplicationRead,
 		Update: ApplicationUpdate,
 		Delete: ApplicationDelete,
+		Importer: &schema.ResourceImporter{State: ApplicationStateFunc},
 	}
 }
 
@@ -146,12 +147,12 @@ func setDefaultConfig(ds interface{}) (d pulsar.DefaultConfig) {
 // ApplicationCreate creates the given zone in ns1
 func ApplicationCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	a := pulsar.NewApplication(d.Get("name").(string))
-	resourceDataToApplication(a, d)
-	if resp, err := client.Applications.Create(a); err != nil {
+	app := pulsar.NewApplication(d.Get("name").(string))
+	resourceDataToApplication(app, d)
+	if resp, err := client.Applications.Create(app); err != nil {
 		return ConvertToNs1Error(resp, err)
 	}
-	if err := resourceApplicationToResourceData(d, a); err != nil {
+	if err := resourceApplicationToResourceData(d, app); err != nil {
 		return err
 	}
 	return nil
@@ -196,4 +197,8 @@ func ApplicationUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func ApplicationStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	return []*schema.ResourceData{d}, nil
 }
