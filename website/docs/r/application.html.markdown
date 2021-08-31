@@ -5,7 +5,7 @@ sidebar_current: "docs-ns1-resource-application"
 description: |- Provides a NS1 Pulsar Application resource.
 ---
 
-# ns1\_application
+# ns1_application
 
 Provides a NS1 Pulsar application resource. This can be used to create, modify, and delete applications.
 
@@ -61,13 +61,6 @@ The following arguments are supported:
   0, the primary NSONE Global Network. Normally, you should not have to worry about this.
 * `use_xhr` - (Computed) - Whether to use XMLHttpRequest (XHR) when taking measurements.
 * `static_values` - (Computed) - Indicates whether or not to skip aggregation for this job's measurements
-
-## Attributes Reference
-
-In addition to all arguments above, the following attributes are exported:
-
-* `dns_servers` - (Computed) Authoritative Name Servers.
-* `hostmaster` - (Computed) The SOA Hostmaster.
 
 ## Import
 

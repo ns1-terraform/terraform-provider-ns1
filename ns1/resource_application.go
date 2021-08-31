@@ -1,6 +1,7 @@
 package ns1
 
 import (
+	"errors"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/pulsar"
@@ -144,7 +145,7 @@ func setDefaultConfig(ds interface{}) (d pulsar.DefaultConfig) {
 	return
 }
 
-// ApplicationCreate creates the given zone in ns1
+// ApplicationCreate creates the given application in ns1
 func ApplicationCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	app := pulsar.NewApplication(d.Get("name").(string))
@@ -158,12 +159,12 @@ func ApplicationCreate(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-// ApplicationRead reads the given zone data from ns1
+// ApplicationRead reads the given application data from ns1
 func ApplicationRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	app, resp, err := client.Applications.Get(d.Id())
 	if err != nil {
-		if err == ns1.ErrApplicationMissing {
+		if errors.Is(err, ns1.ErrApplicationMissing) {
 			log.Printf("[DEBUG] NS1 application (%s) not found", d.Id())
 			d.SetId("")
 			return nil
@@ -177,7 +178,7 @@ func ApplicationRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-// ApplicationDelete deletes the given zone from ns1
+// ApplicationDelete deletes the given application from ns1
 func ApplicationDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	resp, err := client.Applications.Delete(d.Id())
@@ -185,7 +186,7 @@ func ApplicationDelete(d *schema.ResourceData, meta interface{}) error {
 	return ConvertToNs1Error(resp, err)
 }
 
-// ApplicationUpdate updates the zone with given params in ns1
+// ApplicationUpdate updates the application with given params in ns1
 func ApplicationUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	app := pulsar.NewApplication(d.Get("name").(string))

@@ -114,7 +114,7 @@ func TestAccApplication_ManualDelete(t *testing.T) {
 				Config: testAccApplicationBasic(applicationName),
 				Check:  testAccCheckApplicationExists("ns1_application.it", &application),
 			},
-			// Simulate a manual deletion of the zone and verify that the plan has a diff.
+			// Simulate a manual deletion of the application and verify that the plan has a diff.
 			{
 				PreConfig:          testAccManualDeleteApplication(&application),
 				Config:             testAccApplicationBasic(applicationName),
@@ -133,7 +133,7 @@ func TestAccApplication_ManualDelete(t *testing.T) {
 func testAccCheckApplicationDefaultConfig(app *pulsar.Application, expected pulsar.DefaultConfig) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if app.DefaultConfig != expected {
-			return fmt.Errorf("zone: got: %v want: %v", app.JobsPerTransaction, expected)
+			return fmt.Errorf("application DefaultConfig: got: %v want: %v", app.DefaultConfig, expected)
 		}
 		return nil
 	}
@@ -142,7 +142,7 @@ func testAccCheckApplicationDefaultConfig(app *pulsar.Application, expected puls
 func testAccCheckApplicationJobs(app *pulsar.Application, expected int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if app.JobsPerTransaction != expected {
-			return fmt.Errorf("zone: got: %d want: %d", app.JobsPerTransaction, expected)
+			return fmt.Errorf("application JobsPerTransaction: got: %d want: %d", app.JobsPerTransaction, expected)
 		}
 		return nil
 	}
@@ -151,7 +151,7 @@ func testAccCheckApplicationJobs(app *pulsar.Application, expected int) resource
 func testAccCheckApplicationBrowser(app *pulsar.Application, expected int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if app.BrowserWaitMillis != expected {
-			return fmt.Errorf("zone: got: %d want: %d", app.BrowserWaitMillis, expected)
+			return fmt.Errorf("application BrowserWaitMillis: got: %d want: %d", app.BrowserWaitMillis, expected)
 		}
 		return nil
 	}
@@ -160,7 +160,7 @@ func testAccCheckApplicationBrowser(app *pulsar.Application, expected int) resou
 func testAccCheckApplicationName(app *pulsar.Application, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if app.Name != expected {
-			return fmt.Errorf("zone: got: %s want: %s", app.Name, expected)
+			return fmt.Errorf("application name: got: %s want: %s", app.Name, expected)
 		}
 		return nil
 	}
