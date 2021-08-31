@@ -21,8 +21,8 @@ resource "ns1_application" "example" {
 # Create a new Pulsar JavaScript Job with Blend Metric Weights and multiple weights
 resource "ns1_pulsarjob" "example_javascript" {
   name    = "terraform.example_javascript.io"
-  appid = "${ns1_pulsar_application.example.id}"
-  typeid  = "latency"
+  app_id = "${ns1_pulsar_application.example.id}"
+  type_id  = "latency"
   
   config = {
     host = "terraform.job_host.io"
@@ -36,11 +36,11 @@ resource "ns1_pulsarjob" "example_javascript" {
 The following arguments are supported:
 
 * `name` - (Required) Name of the Pulsar job. Typically, this is the name of the CDN or endpoint.
-* `appid` - (Required) ID of the Pulsar app.
-* `typeid` - (Required) Specifies the type of Pulsar job - either latency or custom.
+* `app_id` - (Required) ID of the Pulsar app.
+* `type_id` - (Required) Specifies the type of Pulsar job - either latency or custom.
 * `active` - (Optional) The job's status, if it's active or not.
 * `shared` - (Optional) Enable to share data with other approved accounts.
-* `Config` - (Optional) [Config](#config-1) is documented below. Note: **Required if typeid is "latency"** 
+* `Config` - (Optional) [Config](#config-1) is documented below. Note: **Required if type_id is "latency"** 
 
 
 #### Config
@@ -54,11 +54,11 @@ The following arguments are supported:
 * `request_timeout_millis` - (Optional) The amount of time to allow a single job to perform N runs.
 * `job_timeout_millis` - (Optional) The amount of time to allow a single job to perform 1 run.
 * `use_xhr` - (Optional) Indicates wheter or not to use XmlHttpRequest (XHR) when taking measurements.
-* `satuc_values` - (Optional) Indicates wheter or not to skip aggregation for this job's measurements.
+* `static_values` - (Optional) Indicates wheter or not to skip aggregation for this job's measurements.
 
 ## Import
 
-`terraform import ns1_pulsarjob.<name> <appid>_<jobid>`
+`terraform import ns1_pulsarjob.<name> <app_id>_<job_id>`
 
 ## NS1 Documentation
 

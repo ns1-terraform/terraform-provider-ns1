@@ -1,6 +1,7 @@
 package ns1
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -22,7 +23,7 @@ func pulsarJobResource() *schema.Resource {
 			Type:     schema.TypeString,
 			Required: true,
 		},
-		"typeid": {
+		"type_id": {
 			Type:         schema.TypeString,
 			Required:     true,
 			ValidateFunc: validateTypeId,
@@ -31,14 +32,14 @@ func pulsarJobResource() *schema.Resource {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
-		"jobid": {
+		"job_id": {
 			Type:     schema.TypeString,
 			Computed: true,
 			ForceNew: true,
 		},
-		"appid": {
+		"app_id": {
 			Type:     schema.TypeString,
-			Optional: true,
+			Required: true,
 		},
 		"active": {
 			Type:     schema.TypeBool,
@@ -48,7 +49,7 @@ func pulsarJobResource() *schema.Resource {
 		"shared": {
 			Type:     schema.TypeBool,
 			Optional: true,
-			Default:  true,
+			Default:  false,
 		},
 		"config": {
 			Type:     schema.TypeMap,
@@ -145,9 +146,9 @@ func pulsarJobToResourceData(d *schema.ResourceData, j *pulsar.PulsarJob) error 
 	d.SetId(j.JobID)
 	d.Set("customer", j.Customer)
 	d.Set("name", j.Name)
-	d.Set("typeid", j.TypeID)
+	d.Set("type_id", j.TypeID)
 	d.Set("community", j.Community)
-	d.Set("appid", j.AppID)
+	d.Set("app_id", j.AppID)
 	d.Set("active", j.Active)
 	d.Set("shared", j.Shared)
 
@@ -228,9 +229,9 @@ func weightsToResourceData(w *pulsar.Weights) map[string]interface{} {
 
 func resourceDataToPulsarJob(j *pulsar.PulsarJob, d *schema.ResourceData) error {
 	j.Name = d.Get("name").(string)
-	j.TypeID = d.Get("typeid").(string)
+	j.TypeID = d.Get("type_id").(string)
 	j.JobID = d.Id()
-	j.AppID = d.Get("appid").(string)
+	j.AppID = d.Get("app_id").(string)
 	j.Active = d.Get("active").(bool)
 	j.Shared = d.Get("shared").(bool)
 
@@ -369,16 +370,16 @@ func PulsarJobCreate(d *schema.ResourceData, meta interface{}) error {
 // pulsarJobRead reads the given zone data from ns1
 func pulsarJobRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	j, resp, err := client.PulsarJobs.Get(d.Get("appid").(string), d.Id())
+	j, resp, err := client.PulsarJobs.Get(d.Get("app_id").(string), d.Id())
 	if err != nil {
-		if err == ns1.ErrAppMissing {
-			log.Printf("[DEBUG] NS1 Pulsar Application (%s) not found", d.Get("appid"))
+		if errors.Is(err, ns1.ErrAppMissing) {
+			log.Printf("[DEBUG] NS1 Pulsar Application (%s) not found", d.Get("app_id"))
 			d.SetId("")
 			return nil
 		}
 
-		if err == ns1.ErrJobMissing {
-			log.Printf("[DEBUG] NS1 Pulsar Job (%s) not found", d.Get("jobid"))
+		if errors.Is(err, ns1.ErrJobMissing) {
+			log.Printf("[DEBUG] NS1 Pulsar Job (%s) not found", d.Get("job_id"))
 			d.SetId("")
 			return nil
 		}
@@ -396,7 +397,7 @@ func PulsarJobUpdate(job_schema *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	j := pulsar.PulsarJob{
 		JobID: job_schema.Id(),
-		AppID: job_schema.Get("appid").(string),
+		AppID: job_schema.Get("app_id").(string),
 	}
 	if err := resourceDataToPulsarJob(&j, job_schema); err != nil {
 		return err
@@ -424,7 +425,7 @@ func validateTypeId(val interface{}, key string) (warns []string, errs []error) 
 	if v != "latency" && v != "custom" {
 		errs = append(errs,
 			fmt.Errorf(
-				"typeid %s invalid, please select between 'latency' or 'custom'", v,
+				"type_id %s invalid, please select between 'latency' or 'custom'", v,
 			),
 		)
 	}
@@ -434,11 +435,11 @@ func validateTypeId(val interface{}, key string) (warns []string, errs []error) 
 func pulsarJobImportStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	parts := strings.Split(d.Id(), "_")
 	if len(parts) != 2 {
-		return nil, fmt.Errorf("invalid job specifier. Expected 2 ids (\"appid_jobid\", got %d)", len(parts))
+		return nil, fmt.Errorf("invalid job specifier. Expected 2 ids (\"app_id\"_\"job_id\", got %d)", len(parts))
 	}
 
-	d.Set("appid", parts[0])
-	d.Set("jobid", parts[1])
+	d.Set("app_id", parts[0])
+	d.Set("job_id", parts[1])
 	d.SetId(parts[1])
 
 	return []*schema.ResourceData{d}, nil
