@@ -54,13 +54,13 @@ The following arguments are supported:
 
 #### Default config
 
-* `http` - (Required) Indicates whether or not to use HTTP in measurements.
+* `http` - (Optional) Indicates whether or not to use HTTP in measurements.
 * `https` - (Optional) Indicates whether or not to use HTTPS in measurements.
 * `request_timeout_millis` - (Optional) Maximum timeout per request.
-* `job_timeout_millis` - (Computed) - Maximum timeout per job
+* `job_timeout_millis` - (Optional) - Maximum timeout per job
   0, the primary NSONE Global Network. Normally, you should not have to worry about this.
-* `use_xhr` - (Computed) - Whether to use XMLHttpRequest (XHR) when taking measurements.
-* `static_values` - (Computed) - Indicates whether or not to skip aggregation for this job's measurements
+* `use_xhr` - (Optional) - Whether to use XMLHttpRequest (XHR) when taking measurements.
+* `static_values` - (Optional) - Indicates whether or not to skip aggregation for this job's measurements
 
 ## Import
 
