@@ -1,3 +1,14 @@
+## 1.12.0 (September 7, 2021)
+ENHANCEMENTS:
+* Adds support for Pulsar applications [#172](https://github.com/ns1-terraform/terraform-provider-ns1/pull/172)
+* Adds support for Pulsar jobs [#173](https://github.com/ns1-terraform/terraform-provider-ns1/pull/173)
+* Adds support for `dns_records_deny` and `dns_records_allow` permission fields [#165](https://github.com/ns1-terraform/terraform-provider-ns1/pull/165)
+* Adds support for the `mute` field on monitoring jobs [#166](https://github.com/ns1-terraform/terraform-provider-ns1/pull/166)
+
+BUG FIXES:
+* Fixed an issue with the `tls_add_verify` field on monitoring jobs [#171](https://github.com/ns1-terraform/terraform-provider-ns1/pull/171)
+* Resolved an issue with default permissions [#170](https://github.com/ns1-terraform/terraform-provider-ns1/pull/170)
+
 ## 1.11.0 (June 29, 2021)
 ENHANCEMENTS:
 * Adds support for subdivisions to record resources [#164](https://github.com/ns1-terraform/terraform-provider-ns1/pull/164)
