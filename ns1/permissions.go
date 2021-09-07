@@ -345,16 +345,13 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	if v, ok := d.GetOk("monitoring_view_jobs"); ok {
 		p.Monitoring.ViewJobs = v.(bool)
 	}
+	if p.Security == nil {
+		p.Security = &account.PermissionsSecurity{}
+	}
 	if v, ok := d.GetOk("security_manage_global_2fa"); ok {
-		if p.Security == nil {
-			p.Security = &account.PermissionsSecurity{}
-		}
 		p.Security.ManageGlobal2FA = v.(bool)
 	}
 	if v, ok := d.GetOk("security_manage_active_directory"); ok {
-		if p.Security == nil {
-			p.Security = &account.PermissionsSecurity{}
-		}
 		p.Security.ManageActiveDirectory = v.(bool)
 	}
 	if v, ok := d.GetOk("dhcp_manage_dhcp"); ok {

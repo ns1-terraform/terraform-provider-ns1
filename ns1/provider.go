@@ -60,6 +60,7 @@ func Provider() terraform.ResourceProvider {
 			"ns1_apikey":        apikeyResource(),
 			"ns1_team":          teamResource(),
 			"ns1_application":   resourceApplication(),
+			"ns1_pulsarjob":     pulsarJobResource(),
 		},
 		ConfigureFunc: ns1Configure,
 	}
