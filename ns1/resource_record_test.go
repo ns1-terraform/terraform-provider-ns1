@@ -108,8 +108,8 @@ func TestAccRecord_meta(t *testing.T) {
 	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
 	domainName := fmt.Sprintf("test.%s", zoneName)
 	sub := make(map[string]interface{}, 2)
-	sub["BR"] = []string{"SC", "SP"}
 	sub["DZ"] = []string{"01", "02", "03"}
+	sub["BR"] = []string{"SP", "SC"}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -723,7 +723,7 @@ resource "ns1_record" "it" {
 
     meta = {
     up = true
-    subdivisions = "DZ-01,DZ-02,DZ-03,BR-SC,BR-SP"
+    subdivisions = "DZ-01,DZ-02,DZ-03,BR-SP,BR-SC"
       weight = 5
       ip_prefixes = "3.248.0.0/13,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24"
       pulsar = jsonencode([{
