@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -231,7 +232,13 @@ func testAccCheckAPIKeyDestroy(s *terraform.State) error {
 
 func testAccCheckAPIKeyIPWhitelists(k *account.APIKey, expected []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if !reflect.DeepEqual(k.IPWhitelist, expected) {
+		actualList := k.IPWhitelist
+		expectedList := expected
+
+		sort.Strings(actualList)
+		sort.Strings(expectedList)
+
+		if !reflect.DeepEqual(actualList, expectedList) {
 			return fmt.Errorf("IPWhitelist: got values: %v want: %v", k.IPWhitelist, expected)
 		}
 		return nil
