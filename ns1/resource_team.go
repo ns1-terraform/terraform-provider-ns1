@@ -17,7 +17,7 @@ func teamResource() *schema.Resource {
 			Required: true,
 		},
 		"ip_whitelist": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -26,7 +26,7 @@ func teamResource() *schema.Resource {
 						Required: true,
 					},
 					"values": {
-						Type:     schema.TypeList,
+						Type:     schema.TypeSet,
 						Elem:     &schema.Schema{Type: schema.TypeString},
 						Required: true,
 					},
@@ -78,15 +78,15 @@ func resourceDataToTeam(t *account.Team, d *schema.ResourceData) error {
 	t.ID = d.Id()
 	t.Name = d.Get("name").(string)
 
-	ipWhitelistsRaw := d.Get("ip_whitelist").([]interface{})
-	t.IPWhitelist = make([]account.IPWhitelist, 0, len(ipWhitelistsRaw))
+	ipWhitelistsRaw := d.Get("ip_whitelist").(*schema.Set)
+	t.IPWhitelist = make([]account.IPWhitelist, 0, ipWhitelistsRaw.Len())
 
-	for _, v := range ipWhitelistsRaw {
+	for _, v := range ipWhitelistsRaw.List() {
 		ipWhitelistRaw := v.(map[string]interface{})
 
-		valsRaw := ipWhitelistRaw["values"].([]interface{})
-		vals := make([]string, 0, len(valsRaw))
-		for _, vv := range valsRaw {
+		valsRaw := ipWhitelistRaw["values"].(*schema.Set)
+		vals := make([]string, 0, valsRaw.Len())
+		for _, vv := range valsRaw.List() {
 			vals = append(vals, vv.(string))
 		}
 

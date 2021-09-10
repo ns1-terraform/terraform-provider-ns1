@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -255,12 +256,33 @@ func testAccCheckTeamIPWhitelists(team *account.Team, expected []account.IPWhite
 			return fmt.Errorf("IPWhitelist: got length: %v want: %v", len(team.IPWhitelist), len(expected))
 		}
 
-		for i, l := range expected {
-			if l.Name != team.IPWhitelist[i].Name {
+		// Sort whitelists by Name
+		actualWhiteLists := team.IPWhitelist
+		expectedWhiteLists := expected
+
+		sort.Slice(actualWhiteLists, func(i, j int) bool {
+			return actualWhiteLists[i].Name < actualWhiteLists[j].Name
+		})
+
+		sort.Slice(expectedWhiteLists, func(i, j int) bool {
+			return expectedWhiteLists[i].Name < expectedWhiteLists[j].Name
+		})
+
+		// Compare Whitelists
+		for i, l := range expectedWhiteLists {
+			// If names are different, return error
+			if l.Name != actualWhiteLists[i].Name {
 				return fmt.Errorf("IPWhitelist: got name: %v want: %v", team.IPWhitelist[i].Name, l.Name)
 			}
 
-			if !reflect.DeepEqual(l.Values, team.IPWhitelist[i].Values) {
+			// Sort IPs from values
+			actualIPList := actualWhiteLists[i].Values
+			expectedIPList := l.Values
+
+			sort.Strings(actualIPList)
+			sort.Strings(expectedIPList)
+
+			if !reflect.DeepEqual(expectedIPList, actualIPList) {
 				return fmt.Errorf("IPWhitelist: got values: %v want: %v", team.IPWhitelist[i].Values, l.Values)
 			}
 		}
