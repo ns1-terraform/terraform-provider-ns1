@@ -5,6 +5,7 @@ import (
 	"log"
 	"reflect"
 	"regexp"
+	"sort"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
@@ -583,6 +584,9 @@ func testAccCheckUserExists(n string, user *account.User) resource.TestCheckFunc
 
 func testAccCheckUserIPWhitelists(user *account.User, expected []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		sort.Strings(user.IPWhitelist)
+		sort.Strings(expected)
+
 		if !reflect.DeepEqual(user.IPWhitelist, expected) {
 			return fmt.Errorf("IPWhitelist: got values: %v want: %v", user.IPWhitelist, expected)
 		}

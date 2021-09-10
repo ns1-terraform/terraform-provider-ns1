@@ -41,7 +41,7 @@ func userResource() *schema.Resource {
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"ip_whitelist": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -103,9 +103,9 @@ func resourceDataToUser(u *account.User, d *schema.ResourceData) error {
 	}
 
 	if v, ok := d.GetOk("ip_whitelist"); ok {
-		ipWhitelistRaw := v.([]interface{})
-		u.IPWhitelist = make([]string, len(ipWhitelistRaw))
-		for i, ip := range ipWhitelistRaw {
+		ipWhitelistRaw := v.(*schema.Set)
+		u.IPWhitelist = make([]string, ipWhitelistRaw.Len())
+		for i, ip := range ipWhitelistRaw.List() {
 			u.IPWhitelist[i] = ip.(string)
 		}
 	} else {

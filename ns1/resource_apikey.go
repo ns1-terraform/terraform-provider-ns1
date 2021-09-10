@@ -25,7 +25,7 @@ func apikeyResource() *schema.Resource {
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"ip_whitelist": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -80,9 +80,10 @@ func resourceDataToApikey(k *account.APIKey, d *schema.ResourceData) error {
 	k.Permissions = resourceDataToPermissions(d)
 
 	if v, ok := d.GetOk("ip_whitelist"); ok {
-		ipWhitelistRaw := v.([]interface{})
-		k.IPWhitelist = make([]string, len(ipWhitelistRaw))
-		for i, ip := range ipWhitelistRaw {
+
+		ipWhitelistRaw := v.(*schema.Set)
+		k.IPWhitelist = make([]string, ipWhitelistRaw.Len())
+		for i, ip := range ipWhitelistRaw.List() {
 			k.IPWhitelist[i] = ip.(string)
 		}
 	} else {
