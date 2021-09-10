@@ -59,7 +59,7 @@ resource "ns1_team" "example2" {
 The following arguments are supported:
 
 * `name` - (Required) The free form name of the team.
-* `ip_whitelist` - (Optional) The IP addresses to whitelist for this key.
+* `ip_whitelist` - (Optional) Array of IP addresses objects to chich to grant the team access. Each object includes a **name** (string), and **values** (array of strings) associated to each "allow" list.
 * `dns_view_zones` - (Optional) Whether the team can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the team can modify the accounts zones.
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.

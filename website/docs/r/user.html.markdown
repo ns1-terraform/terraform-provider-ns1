@@ -57,8 +57,8 @@ The following arguments are supported:
 * `email` - (Required) The email address of the user.
 * `notify` - (Required) Whether or not to notify the user of specified events. Only `billing` is available currently.
 * `teams` - (Required) The teams that the user belongs to.
-* `ip_whitelist` - (Optional) The IP addresses to whitelist for this key.
-* `ip_whitelist_strict` - (Optional) Sets exclusivity on this IP whitelist.
+* `ip_whitelist` - (Optional) Array of IP addresses/networks to which to grant the user access. 
+* `ip_whitelist_strict` - (Optional) Set to true to restrict access to only those IP addresses and networks listed in the **ip_whitelist** field.
 * `dns_view_zones` - (Optional) Whether the user can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the user can modify the accounts zones.
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.
@@ -97,5 +97,6 @@ additions.
 ## NS1 Documentation
 
 [User Api Docs](https://ns1.com/api#user)
+
 [Managing user permissions](https://help.ns1.com/hc/en-us/articles/360024409034-Managing-user-permissions)
 
