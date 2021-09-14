@@ -2,9 +2,8 @@ package ns1
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"log"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/monitor"
@@ -69,23 +68,63 @@ func resourceDataToNotifyList(nl *monitor.NotifyList, d *schema.ResourceData) er
 			ni := notificationRaw.(map[string]interface{})
 			config := ni["config"].(map[string]interface{})
 
-			switch ni["type"].(string) {
-			case "user":
-				ns[i] = monitor.NewUserNotification(config["user"].(string))
-			case "email":
-				ns[i] = monitor.NewEmailNotification(config["email"].(string))
-			case "datafeed":
-				ns[i] = monitor.NewFeedNotification(config["sourceid"].(string))
-			case "webhook":
-				ns[i] = monitor.NewWebNotification(config["url"].(string))
-			case "pagerduty":
-				ns[i] = monitor.NewPagerDutyNotification(config["service_key"].(string))
-			case "hipchat":
-				ns[i] = monitor.NewHipChatNotification(config["token"].(string), config["room"].(string))
-			case "slack":
-				ns[i] = monitor.NewSlackNotification(config["url"].(string), config["username"].(string), config["channel"].(string))
-			default:
-				return fmt.Errorf("%s is not a valid notifier type", ni["type"])
+			if config != nil {
+				switch ni["type"].(string) {
+				case "user":
+					user := config["user"]
+					if user != nil {
+						ns[i] = monitor.NewUserNotification(user.(string))
+					} else {
+						return fmt.Errorf("wrong config for user expected user field into config")
+					}
+				case "email":
+					email := config["email"]
+					if email != nil {
+						ns[i] = monitor.NewEmailNotification(email.(string))
+					} else {
+						return fmt.Errorf("wrong config for email expected email field into config")
+					}
+				case "datafeed":
+					sourceId := config["sourceid"]
+					if sourceId != nil {
+						ns[i] = monitor.NewFeedNotification(sourceId.(string))
+					} else {
+						return fmt.Errorf("wrong config for datafeed expected sourceid field into config")
+					}
+				case "webhook":
+					url := config["url"]
+					if url != nil {
+						ns[i] = monitor.NewWebNotification(url.(string))
+					} else {
+						return fmt.Errorf("wrong config for webhook expected url field into config")
+					}
+				case "pagerduty":
+					serviceKey := config["service_key"]
+					if serviceKey != nil {
+						ns[i] = monitor.NewPagerDutyNotification(serviceKey.(string))
+					} else {
+						return fmt.Errorf("wrong config for pagerduty expected serviceKey field into config")
+					}
+				case "hipchat":
+					token := config["token"]
+					room := config["room"]
+					if token != nil && room != nil {
+						ns[i] = monitor.NewHipChatNotification(token.(string), room.(string))
+					} else {
+						return fmt.Errorf("wrong config for hipchat expected token and room fields into config")
+					}
+				case "slack":
+					url := config["url"]
+					username := config["username"]
+					channel := config["channel"]
+					if url != nil && username != nil && channel != nil {
+						ns[i] = monitor.NewSlackNotification(url.(string), username.(string), channel.(string))
+					} else {
+						return fmt.Errorf("wrong config for slack expected url, username and channel fields into config")
+					}
+				default:
+					return fmt.Errorf("%s is not a valid notifier type", ni["type"])
+				}
 			}
 		}
 		nl.Notifications = ns
