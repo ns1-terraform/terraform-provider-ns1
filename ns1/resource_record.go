@@ -340,7 +340,8 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 
 			if v, ok := answer["meta"]; ok {
 				log.Println("answer meta", v)
-				if allSubdivisions, ok := v.(map[string]interface{})["subdivisions"]; ok {
+				metaMap := v.(map[string]interface{})
+				if allSubdivisions, ok := metaMap["subdivisions"]; ok {
 					subdivisions := strings.Split(allSubdivisions.(string), ",")
 					subdivisionsMap := make(map[string]interface{})
 					for _, sub := range subdivisions {
@@ -354,9 +355,10 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 						}
 						subdivisionsMap[subp[0]] = append(subdivisionsMap[subp[0]].([]string), subp[1])
 					}
-					v.(map[string]interface{})["subdivisions"] = subdivisionsMap
+					metaMap["subdivisions"] = subdivisionsMap
 				}
-				a.Meta = data.MetaFromMap(v.(map[string]interface{}))
+				removeEmptyMeta(metaMap)
+				a.Meta = data.MetaFromMap(metaMap)
 				log.Println(a.Meta)
 				errs := a.Meta.Validate()
 				if len(errs) > 0 {
@@ -432,6 +434,16 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		}
 	}
 	return nil
+}
+
+func removeEmptyMeta(v map[string]interface{}) {
+	for metaKey, metaValue := range v {
+		if metaValue != nil {
+			if metaValue.(string) == "" {
+				delete(v, metaKey)
+			}
+		}
+	}
 }
 
 // RecordCreate creates DNS record in ns1
