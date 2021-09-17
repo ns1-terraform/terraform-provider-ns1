@@ -386,7 +386,8 @@ func pulsarJobRead(d *schema.ResourceData, meta interface{}) error {
 
 		return ConvertToNs1Error(resp, err)
 	}
-	if err := resourceDataToPulsarJob(j, d); err != nil {
+	// Set Terraform resource data from the job data we just downloaded
+	if err := pulsarJobToResourceData(d, j); err != nil {
 		return err
 	}
 	return nil
