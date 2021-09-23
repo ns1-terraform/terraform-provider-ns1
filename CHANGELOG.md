@@ -1,3 +1,14 @@
+## 1.12.1 (September 23, 2021)
+ENHANCEMENTS:
+* Added additional validation for notify lists [#180](https://github.com/ns1-terraform/terraform-provider-ns1/pull/180)
+
+BUG FIXES:
+* Various documentation updates
+* Fixed an issue with changing the order of record filters [#177](https://github.com/ns1-terraform/terraform-provider-ns1/pull/177)
+* Fixed an issue with ordering in IP whitelists [#178](https://github.com/ns1-terraform/terraform-provider-ns1/pull/178)
+* Fixed an issue with erroneous state on Pulsar jobs [#179](https://github.com/ns1-terraform/terraform-provider-ns1/pull/179)
+* Fixed an issue with empty metadata [#181](https://github.com/ns1-terraform/terraform-provider-ns1/pull/181)
+
 ## 1.12.0 (September 7, 2021)
 ENHANCEMENTS:
 * Adds support for Pulsar applications [#172](https://github.com/ns1-terraform/terraform-provider-ns1/pull/172)
