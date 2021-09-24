@@ -21,7 +21,7 @@ resource "ns1_application" "example" {
 # Create a new Pulsar JavaScript Job with Blend Metric Weights and multiple weights
 resource "ns1_pulsarjob" "example_javascript" {
   name    = "terraform.example_javascript.io"
-  app_id = "${ns1_pulsar_application.example.id}"
+  app_id = ns1_pulsar_application.example.id
   type_id  = "latency"
   
   config = {

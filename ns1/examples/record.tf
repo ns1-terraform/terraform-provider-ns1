@@ -1,6 +1,6 @@
 resource "ns1_record" "it" {
   #required
-  zone   = "${ns1_zone.test.zone}"
+  zone   = ns1_zone.test.zone
   domain = "test.${ns1_zone.test.zone}"
   type   = "CNAME"
 

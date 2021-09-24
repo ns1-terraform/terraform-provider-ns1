@@ -24,7 +24,7 @@ resource "ns1_datasource" "ns1" {
 
 resource "ns1_datafeed" "foo" {
   name      = "foo_feed"
-  source_id = "${ns1_datasource.ns1.id}"
+  source_id = ns1_datasource.ns1.id
   config = {
     label = "foo"
   }
@@ -32,14 +32,14 @@ resource "ns1_datafeed" "foo" {
 
 resource "ns1_datafeed" "bar" {
   name      = "bar_feed"
-  source_id = "${ns1_datasource.ns1.id}"
+  source_id = ns1_datasource.ns1.id
   config = {
     label = "bar"
   }
 }
 
 resource "ns1_record" "www" {
-  zone   = "${ns1_zone.tld.zone}"
+  zone   = ns1_zone.tld.zone
   domain = "www.${ns1_zone.tld.zone}"
   type   = "CNAME"
   ttl    = 60
@@ -114,8 +114,8 @@ resource "external_source" "baz" {
 # In other cases, a domain or zone may be passed in with a preceding dot ('.')
 # character which would likewise lead the system to fail.
 resource "ns1_record" "external" {
-  zone   = replace("${external_source.zone}", "/(^\\.)|(\\.$)/", "")
-  domain = replace("${external_source.domain}", "/(^\\.)|(\\.$)/", "")
+  zone   = replace(external_source.zone, "/(^\\.)|(\\.$)/", "")
+  domain = replace(external_source.domain, "/(^\\.)|(\\.$)/", "")
   type   = "CNAME"
 }
 

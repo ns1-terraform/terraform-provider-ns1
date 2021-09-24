@@ -9,7 +9,7 @@ resource "ns1_user" "u" {
   email    = "tf_acc_test_ns1@hashicorp.com"
 
   #optional
-  teams = ["${ns1_team.t.id}"]
+  teams = [ns1_team.t.id]
   notify = {
     billing = true
   }
