@@ -25,7 +25,7 @@ resource "ns1_datasource" "example_monitoring" {
 
 resource "ns1_datafeed" "uswest_feed" {
   name      = "uswest_feed"
-  source_id = "${ns1_datasource.example.id}"
+  source_id = ns1_datasource.example.id
 
   config = {
     label = "uswest"
@@ -34,7 +34,7 @@ resource "ns1_datafeed" "uswest_feed" {
 
 resource "ns1_datafeed" "useast_feed" {
   name      = "useast_feed"
-  source_id = "${ns1_datasource.example.id}"
+  source_id = ns1_datasource.example.id
 
   config = {
     label = "useast"
@@ -43,10 +43,10 @@ resource "ns1_datafeed" "useast_feed" {
 
 resource "ns1_datafeed" "useast_monitor_feed" {
   name      = "useast_monitor_feed"
-  source_id = "${ns1_datasource.example_monitoring.id}"
+  source_id = ns1_datasource.example_monitoring.id
 
   config = {
-    jobid = "${ns1_monitoringjob.example_job.id}"
+    jobid = ns1_monitoringjob.example_job.id
   }
 }
 

@@ -19,7 +19,7 @@ resource "ns1_team" "example" {
 
 resource "ns1_apikey" "example" {
   name  = "Example key"
-  teams = ["${ns1_team.example.id}"]
+  teams = [ns1_team.example.id]
 
   # Optional IP whitelist
   ip_whitelist = ["1.1.1.1","2.2.2.2"]

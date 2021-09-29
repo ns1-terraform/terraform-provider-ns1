@@ -20,7 +20,7 @@ Use the navigation to the left to read about the available resources.
 ```hcl
 # Configure the NS1 provider
 provider "ns1" {
-  apikey = "${var.ns1_apikey}"
+  apikey = var.ns1_apikey
 }
 
 # Create a new zone
