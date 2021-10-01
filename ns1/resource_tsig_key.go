@@ -32,6 +32,7 @@ func tsigKeyResource() *schema.Resource {
 		Read:          TsigKeyRead,
 		Update:        TsigKeyUpdate,
 		Delete:        TsigKeyDelete,
+		Importer:      &schema.ResourceImporter{State: tsigKeyImportStateFunc},
 		SchemaVersion: 1,
 	}
 }
@@ -108,4 +109,8 @@ func TsigKeyDelete(d *schema.ResourceData, meta interface{}) error {
 	resp, err := client.TSIG.Delete(d.Id())
 	d.SetId("")
 	return ConvertToNs1Error(resp, err)
+}
+
+func tsigKeyImportStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	return []*schema.ResourceData{d}, nil
 }
