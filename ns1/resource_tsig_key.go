@@ -29,7 +29,8 @@ func tsigKeyResource() *schema.Resource {
 	return &schema.Resource{
 		Schema:        s,
 		Create:        TsigKeyCreate,
-		Read:          tsigKeyRead,
+		Read:          TsigKeyRead,
+		Update:        TsigKeyUpdate,
 		SchemaVersion: 1,
 	}
 }
@@ -64,8 +65,8 @@ func TsigKeyCreate(d *schema.ResourceData, meta interface{}) error {
 	return tsigKeyToResourceData(d, &k)
 }
 
-// tsigKeyRead reads the given TSIG key from ns1
-func tsigKeyRead(d *schema.ResourceData, meta interface{}) error {
+// TsigKeyRead reads the given TSIG key from ns1
+func TsigKeyRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	k, resp, err := client.TSIG.Get(d.Id())
 	if err != nil {
@@ -82,4 +83,21 @@ func tsigKeyRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	return nil
+}
+
+// TsigKeyUpdate updates the TSIG Key with given parameters in ns1
+func TsigKeyUpdate(key_schema *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ns1.Client)
+	k := dns.Tsig_key{
+		Name: key_schema.Id(),
+	}
+	if err := resourceDataToTsigKey(&k, key_schema); err != nil {
+		return err
+	}
+
+	if resp, err := client.TSIG.Update(&k); err != nil {
+		return ConvertToNs1Error(resp, err)
+	}
+
+	return tsigKeyToResourceData(key_schema, &k)
 }
