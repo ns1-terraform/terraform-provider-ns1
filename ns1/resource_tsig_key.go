@@ -31,12 +31,14 @@ func tsigKeyResource() *schema.Resource {
 		Create:        TsigKeyCreate,
 		Read:          TsigKeyRead,
 		Update:        TsigKeyUpdate,
+		Delete:        TsigKeyDelete,
 		SchemaVersion: 1,
 	}
 }
 
 func tsigKeyToResourceData(d *schema.ResourceData, k *dns.Tsig_key) error {
 	d.SetId(k.Name)
+	d.Set("name", k.Name)
 	d.Set("algorithm", k.Algorithm)
 	d.Set("secret", k.Secret)
 
@@ -44,7 +46,7 @@ func tsigKeyToResourceData(d *schema.ResourceData, k *dns.Tsig_key) error {
 }
 
 func resourceDataToTsigKey(k *dns.Tsig_key, d *schema.ResourceData) error {
-	k.Name = d.Id()
+	k.Name = d.Get("name").(string)
 	k.Algorithm = d.Get("algorithm").(string)
 	k.Secret = d.Get("secret").(string)
 
@@ -88,9 +90,7 @@ func TsigKeyRead(d *schema.ResourceData, meta interface{}) error {
 // TsigKeyUpdate updates the TSIG Key with given parameters in ns1
 func TsigKeyUpdate(key_schema *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	k := dns.Tsig_key{
-		Name: key_schema.Id(),
-	}
+	k := dns.Tsig_key{}
 	if err := resourceDataToTsigKey(&k, key_schema); err != nil {
 		return err
 	}
@@ -100,4 +100,12 @@ func TsigKeyUpdate(key_schema *schema.ResourceData, meta interface{}) error {
 	}
 
 	return tsigKeyToResourceData(key_schema, &k)
+}
+
+// TsigKeyDelete deletes the given TSIG Key from ns1
+func TsigKeyDelete(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*ns1.Client)
+	resp, err := client.TSIG.Delete(d.Id())
+	d.SetId("")
+	return ConvertToNs1Error(resp, err)
 }
