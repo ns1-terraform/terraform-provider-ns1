@@ -126,6 +126,30 @@ func resourceZone() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"tsig": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:     schema.TypeBool,
+							Required: true,
+						},
+						"name": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"hash": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"key": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+			},
 		},
 		Create:   zoneCreate,
 		Read:     zoneRead,
@@ -164,6 +188,10 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	if z.Secondary != nil && z.Secondary.Enabled {
 		d.Set("primary", z.Secondary.PrimaryIP)
 		d.Set("additional_primaries", z.Secondary.OtherIPs)
+
+		if z.Secondary.TSIG != nil && z.Secondary.TSIG.Enabled {
+			d.Set("tsig", tsigToMap(z.Secondary.TSIG))
+		}
 	}
 	if z.Primary != nil && z.Primary.Enabled {
 		secondaries := make([]map[string]interface{}, 0)
@@ -179,6 +207,17 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 		d.Set("link", *z.Link)
 	}
 	return nil
+}
+
+func tsigToMap(t *dns.TSIG) map[string]interface{} {
+	m := make(map[string]interface{})
+
+	m["enabled"] = t.Enabled
+	m["name"] = t.Name
+	m["hash"] = t.Hash
+	m["key"] = t.Key
+
+	return m
 }
 
 func secondaryToMap(s *dns.ZoneSecondaryServer) map[string]interface{} {
@@ -212,6 +251,17 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 	}
 	if v, ok := d.GetOk("primary"); ok {
 		z.MakeSecondary(v.(string))
+
+		if t, ok := d.GetOk("tsig"); ok {
+			rawtsig := t.(map[string]interface{})
+
+			z.Secondary.TSIG = &dns.TSIG{
+				Enabled: rawtsig["enabled"] == "true",
+				Name:    rawtsig["name"].(string),
+				Hash:    rawtsig["hash"].(string),
+				Key:     rawtsig["key"].(string),
+			}
+		}
 	} else {
 		existing, _ := d.GetChange("primary")
 		if existing != "" {

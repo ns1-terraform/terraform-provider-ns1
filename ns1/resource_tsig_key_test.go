@@ -17,9 +17,9 @@ import (
 func TestAccTsigKey_basic(t *testing.T) {
 	var (
 		key          = dns.Tsig_key{}
-		keyName      = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+		keyName      = fmt.Sprintf("terraform-test-%s.", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 		keyAlgorithm = "hmac-sha256"
-		keySecret    = fmt.Sprintf("terraform-test-%s==", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+		keySecret    = "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLw=="
 	)
 	// Basic test for TSIG Key
 	resource.Test(t, resource.TestCase{
@@ -44,12 +44,12 @@ func TestAccTsigKey_basic(t *testing.T) {
 func TestAccTsigKey_updated(t *testing.T) {
 	var (
 		key          = dns.Tsig_key{}
-		keyName      = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+		keyName      = fmt.Sprintf("terraform-test-%s.", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 		keyAlgorithm = "hmac-sha256"
-		keySecret    = fmt.Sprintf("terraform-test-%s.io==", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+		keySecret    = "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLw=="
 
-		updatedAlgorithm = "hmac-sha1"
-		updatedSecret    = fmt.Sprintf("terraform-test-%s.io==", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+		updatedAlgorithm = "hmac-sha256"
+		updatedSecret    = "Mo1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLw=="
 	)
 
 	// Updating TSIG Key
@@ -83,9 +83,9 @@ func TestAccTsigKey_updated(t *testing.T) {
 func TestAccTsigKey_ManualDelete(t *testing.T) {
 	var (
 		key          = dns.Tsig_key{}
-		keyName      = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+		keyName      = fmt.Sprintf("terraform-test-%s.", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 		keyAlgorithm = "hmac-sha256"
-		keySecret    = fmt.Sprintf("terraform-test-%s.io==", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+		keySecret    = "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLw=="
 	)
 
 	resource.Test(t, resource.TestCase{
@@ -97,6 +97,9 @@ func TestAccTsigKey_ManualDelete(t *testing.T) {
 				Config: testAccTsigKeyBasic(keyName, keyAlgorithm, keySecret),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTsigKeyExists("ns1_tsigkey.it", &key),
+					testAccCheckTsigKeyName(&key, keyName),
+					testAccCheckTsigKeyAlgorithm(&key, keyAlgorithm),
+					testAccCheckTsigKeySecret(&key, keySecret),
 				),
 			},
 			// Simulate a manual deletion of the TSIG key and verify that the plan has a diff.
