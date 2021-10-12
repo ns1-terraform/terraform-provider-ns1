@@ -1,4 +1,4 @@
-# This workflows creates an jira issue for the respective configured account
+# This workflow is triggered by github issue and creates a jira ticket in the respective configured account
 #
 name: issue_notify
 on:
@@ -6,7 +6,7 @@ on:
     types: [opened]
   workflow_dispatch:
 jobs:
-  jira_login:
+  jira_job:
     runs-on: ubuntu-latest
     steps:
       - name: Jira Login
@@ -19,7 +19,7 @@ jobs:
         id: jira_ticket
         uses: atlassian/gajira-create@v2.0.1
         with:
-          project: GIT
+          project: ${{secrets.JIRA_PROJECT_KEY}}
           issuetype: Bug
           summary: '[ns1-terraform] ${{github.event.issue.title}}'
-          description: ${{github.event.issue.body}} see more ${{github.event.issue.html_url}}
+          description: ${{github.event.issue.body}} see more at ${{github.event.issue.html_url}}
