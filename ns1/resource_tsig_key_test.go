@@ -16,7 +16,7 @@ import (
 // Creating TSIG Key
 func TestAccTsigKey_basic(t *testing.T) {
 	var (
-		key          = dns.Tsig_key{}
+		key          = dns.TSIGKey{}
 		keyName      = fmt.Sprintf("terraform-test-%s.", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 		keyAlgorithm = "hmac-sha256"
 		keySecret    = "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLw=="
@@ -43,7 +43,7 @@ func TestAccTsigKey_basic(t *testing.T) {
 // Updating TSIG Keys
 func TestAccTsigKey_updated(t *testing.T) {
 	var (
-		key          = dns.Tsig_key{}
+		key          = dns.TSIGKey{}
 		keyName      = fmt.Sprintf("terraform-test-%s.", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 		keyAlgorithm = "hmac-sha256"
 		keySecret    = "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLw=="
@@ -82,7 +82,7 @@ func TestAccTsigKey_updated(t *testing.T) {
 // Manually deleting TSIG Key
 func TestAccTsigKey_ManualDelete(t *testing.T) {
 	var (
-		key          = dns.Tsig_key{}
+		key          = dns.TSIGKey{}
 		keyName      = fmt.Sprintf("terraform-test-%s.", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 		keyAlgorithm = "hmac-sha256"
 		keySecret    = "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLw=="
@@ -145,7 +145,7 @@ func testAccCheckTsigKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckTsigKeyExists(n string, key *dns.Tsig_key) resource.TestCheckFunc {
+func testAccCheckTsigKeyExists(n string, key *dns.TSIGKey) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -177,7 +177,7 @@ func testAccCheckTsigKeyExists(n string, key *dns.Tsig_key) resource.TestCheckFu
 	}
 }
 
-func testAccCheckTsigKeyName(key *dns.Tsig_key, expected string) resource.TestCheckFunc {
+func testAccCheckTsigKeyName(key *dns.TSIGKey, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if key.Name != expected {
 			return fmt.Errorf("key.Name: got: %s want: %s", key.Name, expected)
@@ -186,7 +186,7 @@ func testAccCheckTsigKeyName(key *dns.Tsig_key, expected string) resource.TestCh
 	}
 }
 
-func testAccCheckTsigKeyAlgorithm(key *dns.Tsig_key, expected string) resource.TestCheckFunc {
+func testAccCheckTsigKeyAlgorithm(key *dns.TSIGKey, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if key.Algorithm != expected {
 			return fmt.Errorf("key.Algorithm: got: %s want: %s", key.Algorithm, expected)
@@ -195,7 +195,7 @@ func testAccCheckTsigKeyAlgorithm(key *dns.Tsig_key, expected string) resource.T
 	}
 }
 
-func testAccCheckTsigKeySecret(key *dns.Tsig_key, expected string) resource.TestCheckFunc {
+func testAccCheckTsigKeySecret(key *dns.TSIGKey, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if key.Secret != expected {
 			return fmt.Errorf("key.Secret: got: %s want: %s", key.Secret, expected)
@@ -204,7 +204,7 @@ func testAccCheckTsigKeySecret(key *dns.Tsig_key, expected string) resource.Test
 	}
 }
 
-func testAccManualDeleteTsigKey(key *dns.Tsig_key) func() {
+func testAccManualDeleteTsigKey(key *dns.TSIGKey) func() {
 	return func() {
 		client := testAccProvider.Meta().(*ns1.Client)
 		_, err := client.TSIG.Delete(key.Name)
