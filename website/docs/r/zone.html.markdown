@@ -61,6 +61,18 @@ resource "ns1_record" "example_ns_management_ns" {
     answer = "some_other_nameserver.example.com"
   }
 }
+
+# Create a new secondary zone with TSIG enabled
+resource "ns1_zone" "example_tsig" {
+  zone     = "terraform-tsig.example.io"
+  primary  = "1.1.1.1"
+  tsig = {
+    enabled = true
+    name = "terraform_tsigKey"
+    hash = "hmac-sha256"
+    key = "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLA=="
+  }
+}
 ```
 
 ## Argument Reference
@@ -96,6 +108,7 @@ The following arguments are supported:
   workflow for creating zones with the NS record in terraform state. See
   above for an example. Note that this option only has an effect when a zone is
   being created.
+* `tsig` - [TSIG](#TSIG-2) is documented below
 
 #### Secondaries
 
@@ -109,6 +122,15 @@ example above. A secondary has the following fields:
 * `networks` - (Computed) - List of network IDs (`int`) for which the zone
   should be made available. Default is network 0, the primary NSONE Global
   Network. Normally, you should not have to worry about this.
+
+#### TSIG
+
+A secondary zone can have the TSIG enabled to use a TSIG Key. TSIG has the following fields:
+
+* `enabled` - (Required) Enables the use of TSIG key.
+* `name` - (Required) TSIG key name.
+* `hash` - (Required) Hash algorithm used.
+* `key` - (Required) The TSIG key secret.
 
 ## Attributes Reference
 
