@@ -65,7 +65,7 @@ func tsigKeyCreate(d *schema.ResourceData, meta interface{}) error {
 		return ConvertToNs1Error(resp, err)
 	}
 
-	return TsigKeyToResourceData(d, &k)
+	return tsigKeyToResourceData(d, &k)
 }
 
 // TsigKeyRead reads the given TSIG key from ns1
@@ -82,7 +82,7 @@ func tsigKeyRead(d *schema.ResourceData, meta interface{}) error {
 		return ConvertToNs1Error(resp, err)
 	}
 	// Set Terraform resource data from the tsig key data we just downloaded
-	if err := TsigKeyToResourceData(d, k); err != nil {
+	if err := tsigKeyToResourceData(d, k); err != nil {
 		return err
 	}
 	return nil
