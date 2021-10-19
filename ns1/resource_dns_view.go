@@ -56,6 +56,7 @@ func dnsView() *schema.Resource {
 		Read:          DNSViewRead,
 		Update:        DNSViewUpdate,
 		Delete:        DNSViewDelete,
+		Importer:      &schema.ResourceImporter{State: DNSViewImportStateFunc},
 		SchemaVersion: 1,
 	}
 }
@@ -166,4 +167,9 @@ func DNSViewDelete(d *schema.ResourceData, meta interface{}) error {
 	resp, err := client.View.Delete(v.Name)
 	d.SetId("")
 	return ConvertToNs1Error(resp, err)
+}
+
+// DNSViewImportStateFunc import the given DNS view from ns1
+func DNSViewImportStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	return []*schema.ResourceData{d}, nil
 }
