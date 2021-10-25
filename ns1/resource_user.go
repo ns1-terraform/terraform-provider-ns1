@@ -70,7 +70,7 @@ func userResource() *schema.Resource {
 	}
 }
 
-func userToResourceData(d *schema.ResourceData, u *account.User) error {
+func userToResourceData(d *schema.ResourceData, u *account.UserV2) error {
 	d.SetId(u.Username)
 	d.Set("name", u.Name)
 	d.Set("email", u.Email)
@@ -84,7 +84,7 @@ func userToResourceData(d *schema.ResourceData, u *account.User) error {
 	return nil
 }
 
-func resourceDataToUser(u *account.User, d *schema.ResourceData) error {
+func resourceDataToUser(u *account.UserV2, d *schema.ResourceData) error {
 	u.Name = d.Get("name").(string)
 	u.Username = d.Get("username").(string)
 	u.Email = d.Get("email").(string)
@@ -115,26 +115,27 @@ func resourceDataToUser(u *account.User, d *schema.ResourceData) error {
 	}
 
 	u.IPWhitelistStrict = d.Get("ip_whitelist_strict").(bool)
-
-	u.Permissions = resourceDataToPermissions(d)
+	p := resourceDataToPermissions(d)
+	u.Permissions = &p
 	return nil
 }
 
 // UserCreate creates the given user in ns1
 func UserCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	u := account.User{}
+	u := account.UserV2{}
 	if err := resourceDataToUser(&u, d); err != nil {
 		return err
 	}
-	if resp, err := client.Users.Create(&u); err != nil {
+
+	if resp, err := client.UsersV2.Create(&u); err != nil {
 		return ConvertToNs1Error(resp, err)
 	}
 
 	// If a user is assigned to at least one team, then it's permissions need to be refreshed
 	// because the current user permissions in Terraform state will be out of date.
 	if len(u.TeamIDs) > 0 {
-		updatedUser, resp, err := client.Users.Get(u.Username)
+		updatedUser, resp, err := client.UsersV2.Get(u.Username)
 		if err != nil {
 			return ConvertToNs1Error(resp, err)
 		}
@@ -148,7 +149,7 @@ func UserCreate(d *schema.ResourceData, meta interface{}) error {
 // UserRead reads the given users data from ns1
 func UserRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	u, resp, err := client.Users.Get(d.Id())
+	u, resp, err := client.UsersV2.Get(d.Id())
 	if err != nil {
 		// No custom error type is currently defined in the SDK for a non-existent user.
 		if strings.Contains(err.Error(), "User not found") {
@@ -165,7 +166,7 @@ func UserRead(d *schema.ResourceData, meta interface{}) error {
 // UserDelete deletes the given user from ns1
 func UserDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	resp, err := client.Users.Delete(d.Id())
+	resp, err := client.UsersV2.Delete(d.Id())
 	d.SetId("")
 	return ConvertToNs1Error(resp, err)
 }
@@ -173,21 +174,21 @@ func UserDelete(d *schema.ResourceData, meta interface{}) error {
 // UserUpdate updates the user with given parameters in ns1
 func UserUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	u := account.User{
+	u := account.UserV2{
 		Username: d.Id(),
 	}
 	if err := resourceDataToUser(&u, d); err != nil {
 		return err
 	}
 
-	if resp, err := client.Users.Update(&u); err != nil {
+	if resp, err := client.UsersV2.Update(&u); err != nil {
 		return ConvertToNs1Error(resp, err)
 	}
 
 	// If a user's teams has changed then the permissions on the user need to be refreshed
 	// because the current user permissions in Terraform state will be out of date.
 	if d.HasChange("teams") {
-		updatedUser, resp, err := client.Users.Get(d.Id())
+		updatedUser, resp, err := client.UsersV2.Get(d.Id())
 		if err != nil {
 			return ConvertToNs1Error(resp, err)
 		}

@@ -54,7 +54,7 @@ func apikeyResource() *schema.Resource {
 	}
 }
 
-func apikeyToResourceData(d *schema.ResourceData, k *account.APIKey) error {
+func apikeyToResourceData(d *schema.ResourceData, k *account.APIKeyV2) error {
 	d.SetId(k.ID)
 	d.Set("name", k.Name)
 	d.Set("key", k.Key)
@@ -65,7 +65,7 @@ func apikeyToResourceData(d *schema.ResourceData, k *account.APIKey) error {
 	return nil
 }
 
-func resourceDataToApikey(k *account.APIKey, d *schema.ResourceData) error {
+func resourceDataToApikey(k *account.APIKeyV2, d *schema.ResourceData) error {
 	k.ID = d.Id()
 	k.Name = d.Get("name").(string)
 	if v, ok := d.GetOk("teams"); ok {
@@ -77,7 +77,8 @@ func resourceDataToApikey(k *account.APIKey, d *schema.ResourceData) error {
 	} else {
 		k.TeamIDs = make([]string, 0)
 	}
-	k.Permissions = resourceDataToPermissions(d)
+	p := resourceDataToPermissions(d)
+	k.Permissions = &p
 
 	if v, ok := d.GetOk("ip_whitelist"); ok {
 
@@ -100,18 +101,18 @@ func resourceDataToApikey(k *account.APIKey, d *schema.ResourceData) error {
 // ApikeyCreate creates ns1 API key
 func ApikeyCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	k := account.APIKey{}
+	k := account.APIKeyV2{}
 	if err := resourceDataToApikey(&k, d); err != nil {
 		return err
 	}
-	if resp, err := client.APIKeys.Create(&k); err != nil {
+	if resp, err := client.APIKeysV2.Create(&k); err != nil {
 		return ConvertToNs1Error(resp, err)
 	}
 
 	// If a key is assigned to at least one team, then it's permissions need to be refreshed
 	// because the current key permissions in Terraform state will be out of date.
 	if len(k.TeamIDs) > 0 {
-		updatedKey, resp, err := client.APIKeys.Get(k.ID)
+		updatedKey, resp, err := client.APIKeysV2.Get(k.ID)
 		if err != nil {
 			return ConvertToNs1Error(resp, err)
 		}
@@ -127,7 +128,7 @@ func ApikeyCreate(d *schema.ResourceData, meta interface{}) error {
 // ApikeyRead reads API key from ns1
 func ApikeyRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	k, resp, err := client.APIKeys.Get(d.Id())
+	k, resp, err := client.APIKeysV2.Get(d.Id())
 	if err != nil {
 		if err == ns1.ErrKeyMissing {
 			log.Printf("[DEBUG] NS1 API key (%s) not found", d.Id())
@@ -143,7 +144,7 @@ func ApikeyRead(d *schema.ResourceData, meta interface{}) error {
 //ApikeyDelete deletes the given ns1 api key
 func ApikeyDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	resp, err := client.APIKeys.Delete(d.Id())
+	resp, err := client.APIKeysV2.Delete(d.Id())
 	d.SetId("")
 	return ConvertToNs1Error(resp, err)
 }
@@ -151,7 +152,7 @@ func ApikeyDelete(d *schema.ResourceData, meta interface{}) error {
 //ApikeyUpdate updates the given api key in ns1
 func ApikeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	k := account.APIKey{
+	k := account.APIKeyV2{
 		ID: d.Id(),
 	}
 
@@ -159,14 +160,14 @@ func ApikeyUpdate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	if resp, err := client.APIKeys.Update(&k); err != nil {
+	if resp, err := client.APIKeysV2.Update(&k); err != nil {
 		return ConvertToNs1Error(resp, err)
 	}
 
 	// If a key's teams have changed then the permissions on the key need to be refreshed
 	// because the current key permissions in Terraform state will be out of date.
 	if d.HasChange("teams") {
-		updatedKey, resp, err := client.APIKeys.Get(d.Id())
+		updatedKey, resp, err := client.APIKeysV2.Get(d.Id())
 		if err != nil {
 			return ConvertToNs1Error(resp, err)
 		}
