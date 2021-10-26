@@ -8,7 +8,6 @@ description: |-
 
 # ns1\_tsigkey
 
-Only supported in S4 and DDI. \
 Provides a NS1 TSIG Key resource. This can be used to create, modify, and delete TSIG keys.
 
 ## Example Usage
@@ -30,7 +29,7 @@ The following arguments are supported:
 
 ## Import
 
-`terraform import ns1_pulsarjob.importTest <name>`
+`terraform import ns1_tsigkey.importTest <name>`
 
 ## NS1 Documentation
 
