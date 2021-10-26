@@ -11,12 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 
+	"gopkg.in/ns1/ns1-go.v2/common/conv"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/account"
 )
 
 func TestAccTeam_basic(t *testing.T) {
-	var team account.Team
+	var team account.TeamV2
 	n := fmt.Sprintf("terraform test team %s", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{
@@ -49,7 +50,7 @@ func TestAccTeam_basic(t *testing.T) {
 }
 
 func TestAccTeam_updated(t *testing.T) {
-	var team account.Team
+	var team account.TeamV2
 	n := fmt.Sprintf("terraform test team %s", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 
 	resource.Test(t, resource.TestCase{
@@ -85,7 +86,7 @@ func TestAccTeam_updated(t *testing.T) {
 
 // Verifies that a team is re-created correctly if it is manually deleted.
 func TestAccTeam_ManualDelete(t *testing.T) {
-	var team account.Team
+	var team account.TeamV2
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -112,7 +113,7 @@ func TestAccTeam_ManualDelete(t *testing.T) {
 	})
 }
 
-func testAccCheckTeamExists(n string, team *account.Team) resource.TestCheckFunc {
+func testAccCheckTeamExists(n string, team *account.TeamV2) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -125,7 +126,7 @@ func testAccCheckTeamExists(n string, team *account.Team) resource.TestCheckFunc
 
 		client := testAccProvider.Meta().(*ns1.Client)
 
-		foundTeam, _, err := client.Teams.Get(rs.Primary.Attributes["id"])
+		foundTeam, _, err := client.TeamsV2.Get(rs.Primary.Attributes["id"])
 		if err != nil {
 			return err
 		}
@@ -135,7 +136,6 @@ func testAccCheckTeamExists(n string, team *account.Team) resource.TestCheckFunc
 		}
 
 		*team = *foundTeam
-
 		return nil
 	}
 }
@@ -148,7 +148,7 @@ func testAccCheckTeamDestroy(s *terraform.State) error {
 			continue
 		}
 
-		team, _, err := client.Teams.Get(rs.Primary.Attributes["id"])
+		team, _, err := client.TeamsV2.Get(rs.Primary.Attributes["id"])
 		if err == nil {
 			return fmt.Errorf("Team still exists: %#v: %#v", err, team.Name)
 		}
@@ -157,7 +157,7 @@ func testAccCheckTeamDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckTeamName(team *account.Team, expected string) resource.TestCheckFunc {
+func testAccCheckTeamName(team *account.TeamV2, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if team.Name != expected {
 			return fmt.Errorf("Name: got: %s want: %s", team.Name, expected)
@@ -166,22 +166,22 @@ func testAccCheckTeamName(team *account.Team, expected string) resource.TestChec
 	}
 }
 
-func testAccCheckTeamDNSPermission(team *account.Team, perm string, expected bool) resource.TestCheckFunc {
+func testAccCheckTeamDNSPermission(team *account.TeamV2, perm string, expected bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		dns := team.Permissions.DNS
 
 		switch perm {
 		case "view_zones":
-			if dns.ViewZones != expected {
-				return fmt.Errorf("DNS.ViewZones: got: %t want: %t", dns.ViewZones, expected)
+			if conv.BoolFromPtr(dns.ViewZones) != expected {
+				return fmt.Errorf("DNS.ViewZones: got: %t want: %t", conv.BoolFromPtr(dns.ViewZones), expected)
 			}
 		case "manage_zones":
-			if dns.ManageZones != expected {
-				return fmt.Errorf("DNS.ManageZones: got: %t want: %t", dns.ManageZones, expected)
+			if conv.BoolFromPtr(dns.ManageZones) != expected {
+				return fmt.Errorf("DNS.ManageZones: got: %t want: %t", conv.BoolFromPtr(dns.ManageZones), expected)
 			}
 		case "zones_allow_by_default":
-			if dns.ZonesAllowByDefault != expected {
-				return fmt.Errorf("DNS.ZonesAllowByDefault: got: %t want: %t", dns.ZonesAllowByDefault, expected)
+			if conv.BoolFromPtr(dns.ZonesAllowByDefault) != expected {
+				return fmt.Errorf("DNS.ZonesAllowByDefault: got: %t want: %t", conv.BoolFromPtr(dns.ZonesAllowByDefault), expected)
 			}
 		}
 
@@ -189,22 +189,22 @@ func testAccCheckTeamDNSPermission(team *account.Team, perm string, expected boo
 	}
 }
 
-func testAccCheckTeamDataPermission(team *account.Team, perm string, expected bool) resource.TestCheckFunc {
+func testAccCheckTeamDataPermission(team *account.TeamV2, perm string, expected bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		data := team.Permissions.Data
 
 		switch perm {
 		case "push_to_datafeeds":
-			if data.PushToDatafeeds != expected {
-				return fmt.Errorf("Data.PushToDatafeeds: got: %t want: %t", data.PushToDatafeeds, expected)
+			if conv.BoolFromPtr(data.PushToDatafeeds) != expected {
+				return fmt.Errorf("Data.PushToDatafeeds: got: %t want: %t", conv.BoolFromPtr(data.PushToDatafeeds), expected)
 			}
 		case "manage_datasources":
-			if data.ManageDatasources != expected {
-				return fmt.Errorf("Data.ManageDatasources: got: %t want: %t", data.ManageDatasources, expected)
+			if conv.BoolFromPtr(data.ManageDatasources) != expected {
+				return fmt.Errorf("Data.ManageDatasources: got: %t want: %t", conv.BoolFromPtr(data.ManageDatasources), expected)
 			}
 		case "manage_datafeeds":
-			if data.ManageDatafeeds != expected {
-				return fmt.Errorf("Data.ManageDatafeeds: got: %t want: %t", data.ManageDatafeeds, expected)
+			if conv.BoolFromPtr(data.ManageDatafeeds) != expected {
+				return fmt.Errorf("Data.ManageDatafeeds: got: %t want: %t", conv.BoolFromPtr(data.ManageDatafeeds), expected)
 			}
 		}
 
@@ -212,7 +212,7 @@ func testAccCheckTeamDataPermission(team *account.Team, perm string, expected bo
 	}
 }
 
-func testAccCheckTeamDNSPermissionZones(team *account.Team, perm string, expected []string) resource.TestCheckFunc {
+func testAccCheckTeamDNSPermissionZones(team *account.TeamV2, perm string, expected []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		dns := team.Permissions.DNS
 
@@ -231,7 +231,7 @@ func testAccCheckTeamDNSPermissionZones(team *account.Team, perm string, expecte
 	}
 }
 
-func testAccCheckTeamDNSPermissionRecords(team *account.Team, perm string, expected []account.PermissionsRecord) resource.TestCheckFunc {
+func testAccCheckTeamDNSPermissionRecords(team *account.TeamV2, perm string, expected []account.PermissionsRecord) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		dns := team.Permissions.DNS
 
@@ -250,14 +250,15 @@ func testAccCheckTeamDNSPermissionRecords(team *account.Team, perm string, expec
 	}
 }
 
-func testAccCheckTeamIPWhitelists(team *account.Team, expected []account.IPWhitelist) resource.TestCheckFunc {
+func testAccCheckTeamIPWhitelists(team *account.TeamV2, expected []account.IPWhitelist) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if len(team.IPWhitelist) != len(expected) {
-			return fmt.Errorf("IPWhitelist: got length: %v want: %v", len(team.IPWhitelist), len(expected))
+		ipWhitelist := team.IPWhitelist
+		if len(ipWhitelist) != len(expected) {
+			return fmt.Errorf("IPWhitelist: got length: %v want: %v", len(ipWhitelist), len(expected))
 		}
 
 		// Sort whitelists by Name
-		actualWhiteLists := team.IPWhitelist
+		actualWhiteLists := ipWhitelist
 		expectedWhiteLists := expected
 
 		sort.Slice(actualWhiteLists, func(i, j int) bool {
@@ -272,7 +273,7 @@ func testAccCheckTeamIPWhitelists(team *account.Team, expected []account.IPWhite
 		for i, l := range expectedWhiteLists {
 			// If names are different, return error
 			if l.Name != actualWhiteLists[i].Name {
-				return fmt.Errorf("IPWhitelist: got name: %v want: %v", team.IPWhitelist[i].Name, l.Name)
+				return fmt.Errorf("IPWhitelist: got name: %v want: %v", ipWhitelist[i].Name, l.Name)
 			}
 
 			// Sort IPs from values
@@ -283,7 +284,7 @@ func testAccCheckTeamIPWhitelists(team *account.Team, expected []account.IPWhite
 			sort.Strings(expectedIPList)
 
 			if !reflect.DeepEqual(expectedIPList, actualIPList) {
-				return fmt.Errorf("IPWhitelist: got values: %v want: %v", team.IPWhitelist[i].Values, l.Values)
+				return fmt.Errorf("IPWhitelist: got values: %v want: %v", ipWhitelist[i].Values, l.Values)
 			}
 		}
 		return nil
@@ -291,10 +292,10 @@ func testAccCheckTeamIPWhitelists(team *account.Team, expected []account.IPWhite
 }
 
 // Simulate a manual deletion of a team.
-func testAccManualDeleteTeam(team *account.Team) func() {
+func testAccManualDeleteTeam(team *account.TeamV2) func() {
 	return func() {
 		client := testAccProvider.Meta().(*ns1.Client)
-		_, err := client.Teams.Delete(team.ID)
+		_, err := client.TeamsV2.Delete(team.ID)
 		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
 		if err != nil {
 			log.Printf("failed to delete team: %v", err)

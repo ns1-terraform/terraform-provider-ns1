@@ -15,7 +15,7 @@ import (
 )
 
 func TestAccAPIKey_basic(t *testing.T) {
-	var apiKey account.APIKey
+	var apiKey account.APIKeyV2
 	name := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -37,7 +37,7 @@ func TestAccAPIKey_basic(t *testing.T) {
 }
 
 func TestAccAPIKey_updated(t *testing.T) {
-	var apiKey account.APIKey
+	var apiKey account.APIKeyV2
 	name := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 	updatedName := fmt.Sprintf("%s-updated", name)
 
@@ -69,7 +69,7 @@ func TestAccAPIKey_updated(t *testing.T) {
 }
 
 func TestAccAPIKey_ManualDelete(t *testing.T) {
-	var apiKey account.APIKey
+	var apiKey account.APIKeyV2
 	name := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -98,7 +98,7 @@ func TestAccAPIKey_ManualDelete(t *testing.T) {
 }
 
 func TestAccAPIKey_teamKey(t *testing.T) {
-	var apiKey account.APIKey
+	var apiKey account.APIKeyV2
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 	name := fmt.Sprintf("terraform acc test key %s", rString)
 
@@ -121,7 +121,7 @@ func TestAccAPIKey_teamKey(t *testing.T) {
 }
 
 func TestAccAPIKey_permissions(t *testing.T) {
-	var apiKey account.APIKey
+	var apiKey account.APIKeyV2
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 	name := fmt.Sprintf("terraform acc test key %s", rString)
 
@@ -135,6 +135,8 @@ func TestAccAPIKey_permissions(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, name),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_ip_whitelist", "true"),
 				),
 			},
 			{
@@ -142,6 +144,8 @@ func TestAccAPIKey_permissions(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, name),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_ip_whitelist", "false"),
 				),
 			},
 			{
@@ -150,10 +154,9 @@ func TestAccAPIKey_permissions(t *testing.T) {
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, name),
 					// The key should still have this permission, it would have inherited it from the team.
-					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_account_settings", "true"),
-					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_ip_whitelist", "true"),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_ip_whitelist", "false"),
 				),
-				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: testAccAPIKeyPermissionsNoTeam(rString),
@@ -169,7 +172,7 @@ func TestAccAPIKey_permissions(t *testing.T) {
 	})
 }
 
-func testAccCheckAPIKeyExists(n string, apiKey *account.APIKey) resource.TestCheckFunc {
+func testAccCheckAPIKeyExists(n string, apiKey *account.APIKeyV2) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -183,7 +186,7 @@ func testAccCheckAPIKeyExists(n string, apiKey *account.APIKey) resource.TestChe
 
 		client := testAccProvider.Meta().(*ns1.Client)
 
-		foundAPIKey, _, err := client.APIKeys.Get(rs.Primary.Attributes["id"])
+		foundAPIKey, _, err := client.APIKeysV2.Get(rs.Primary.Attributes["id"])
 
 		p := rs.Primary
 
@@ -201,7 +204,7 @@ func testAccCheckAPIKeyExists(n string, apiKey *account.APIKey) resource.TestChe
 	}
 }
 
-func testAccCheckAPIKeyName(apiKey *account.APIKey, expected string) resource.TestCheckFunc {
+func testAccCheckAPIKeyName(apiKey *account.APIKeyV2, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if apiKey.Name != expected {
 			return fmt.Errorf("apiKey: got: %s want: %s", apiKey.Name, expected)
@@ -222,7 +225,7 @@ func testAccCheckAPIKeyDestroy(s *terraform.State) error {
 		}
 	}
 
-	key, _, _ := client.APIKeys.Get(apiKey)
+	key, _, _ := client.APIKeysV2.Get(apiKey)
 	if key != nil {
 		return fmt.Errorf("apiKey still exists: %#v", key)
 	}
@@ -230,7 +233,7 @@ func testAccCheckAPIKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckAPIKeyIPWhitelists(k *account.APIKey, expected []string) resource.TestCheckFunc {
+func testAccCheckAPIKeyIPWhitelists(k *account.APIKeyV2, expected []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		actualList := k.IPWhitelist
 		expectedList := expected
@@ -246,10 +249,10 @@ func testAccCheckAPIKeyIPWhitelists(k *account.APIKey, expected []string) resour
 }
 
 // Simulate a manual deletion of an API key.
-func testAccManualDeleteAPIKey(apiKey *account.APIKey) func() {
+func testAccManualDeleteAPIKey(apiKey *account.APIKeyV2) func() {
 	return func() {
 		client := testAccProvider.Meta().(*ns1.Client)
-		_, err := client.APIKeys.Delete(apiKey.ID)
+		_, err := client.APIKeysV2.Delete(apiKey.ID)
 		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
 		if err != nil {
 			log.Printf("failed to delete api key: %v", err)
@@ -277,8 +280,8 @@ func testAccAPIKeyUpdated(apiKeyName string) string {
 func testAccAPIKeyPermissionsOnTeam(rString string) string {
 	return fmt.Sprintf(`resource "ns1_team" "t" {
   name = "terraform acc test team %s"
-  account_manage_account_settings = true
-  account_manage_ip_whitelist = true
+  account_manage_account_settings = false
+  account_manage_ip_whitelist = false
 }
 
 resource "ns1_apikey" "it" {

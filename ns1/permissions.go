@@ -37,16 +37,19 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["dns_view_zones"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dns_manage_zones"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dns_zones_allow_by_default"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dns_zones_deny"] = &schema.Schema{
@@ -62,87 +65,104 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["data_push_to_datafeeds"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["data_manage_datasources"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["data_manage_datafeeds"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_manage_users"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_manage_payment_methods"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_manage_plan"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 		Deprecated:       "obsolete, should no longer be used",
 	}
 	s["account_manage_teams"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_manage_apikeys"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_manage_account_settings"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_view_activity_log"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_view_invoices"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["account_manage_ip_whitelist"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["monitoring_manage_lists"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["monitoring_manage_jobs"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["monitoring_view_jobs"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["security_manage_global_2fa"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["security_manage_active_directory"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dhcp_manage_dhcp"] = &schema.Schema{
@@ -206,79 +226,96 @@ func permissionsToResourceData(d *schema.ResourceData, permissions *account.Perm
 	if permissions == nil {
 		permissions = &account.PermissionsMapV2{}
 	}
-	if permissions.Account != nil {
-		if permissions.Account.ManageUsers != nil {
-			d.Set("account_manage_users", conv.BoolFromPtr(permissions.Account.ManageUsers))
-		}
-		if permissions.Account.ManagePaymentMethods != nil {
-			d.Set("account_manage_payment_methods", conv.BoolFromPtr(permissions.Account.ManagePaymentMethods))
-		}
-		if permissions.Account.ManagePlan != nil {
-			d.Set("account_manage_plan", conv.BoolFromPtr(permissions.Account.ManagePlan))
-		}
-		if permissions.Account.ManageTeams != nil {
-			d.Set("account_manage_teams", conv.BoolFromPtr(permissions.Account.ManageTeams))
-		}
-		if permissions.Account.ManageApikeys != nil {
-			d.Set("account_manage_apikeys", conv.BoolFromPtr(permissions.Account.ManageApikeys))
-		}
-		if permissions.Account.ManageAccountSettings != nil {
-			d.Set("account_manage_account_settings", conv.BoolFromPtr(permissions.Account.ManageAccountSettings))
-		}
-		if permissions.Account.ViewActivityLog != nil {
-			d.Set("account_view_activity_log", conv.BoolFromPtr(permissions.Account.ViewActivityLog))
-		}
-		if permissions.Account.ViewInvoices != nil {
-			d.Set("account_view_invoices", conv.BoolFromPtr(permissions.Account.ViewInvoices))
-		}
-		if permissions.Account.ManageIPWhitelist != nil {
-			d.Set("account_manage_ip_whitelist", conv.BoolFromPtr(permissions.Account.ManageIPWhitelist))
-		}
-	}
-	if permissions.DNS != nil {
-		if permissions.DNS.ViewZones != nil {
-			d.Set("dns_view_zones", conv.BoolFromPtr(permissions.DNS.ViewZones))
-		}
-		if permissions.DNS.ManageZones != nil {
-			d.Set("dns_manage_zones", conv.BoolFromPtr(permissions.DNS.ManageZones))
-		}
-		if permissions.DNS.ZonesAllowByDefault != nil {
-			d.Set("dns_zones_allow_by_default", conv.BoolFromPtr(permissions.DNS.ZonesAllowByDefault))
-		}
 
-		d.Set("dns_zones_deny", permissions.DNS.ZonesDeny)
-		d.Set("dns_zones_allow", permissions.DNS.ZonesAllow)
+	if permissions.Account == nil {
+		permissions.Account = &account.PermissionsAccountV2{}
 	}
-	if permissions.Data != nil {
-		if permissions.Data.PushToDatafeeds != nil {
-			d.Set("data_push_to_datafeeds", conv.BoolFromPtr(permissions.Data.PushToDatafeeds))
-		}
-		if permissions.Data.ManageDatasources != nil {
-			d.Set("data_manage_datasources", conv.BoolFromPtr(permissions.Data.ManageDatasources))
-		}
-		if permissions.Data.ManageDatafeeds != nil {
-			d.Set("data_manage_datafeeds", conv.BoolFromPtr(permissions.Data.ManageDatafeeds))
-		}
+
+	// Forced default value:
+	// If permission == nil -> return true; else -> return permission
+	// Default field is not used because, if user or APIKey is in a team, there's a chance this will change.
+	p := (permissions.Account.ManageUsers == nil || conv.BoolFromPtr(permissions.Account.ManageUsers))
+	d.Set("account_manage_users", p)
+
+	p = (permissions.Account.ManagePaymentMethods == nil || conv.BoolFromPtr(permissions.Account.ManagePaymentMethods))
+	d.Set("account_manage_payment_methods", p)
+
+	p = (permissions.Account.ManagePlan == nil || conv.BoolFromPtr(permissions.Account.ManagePlan))
+	d.Set("account_manage_plan", p)
+
+	p = (permissions.Account.ManageTeams == nil || conv.BoolFromPtr(permissions.Account.ManageTeams))
+	d.Set("account_manage_teams", p)
+
+	p = (permissions.Account.ManageApikeys == nil || conv.BoolFromPtr(permissions.Account.ManageApikeys))
+	d.Set("account_manage_apikeys", p)
+
+	p = (permissions.Account.ManageAccountSettings == nil || conv.BoolFromPtr(permissions.Account.ManageAccountSettings))
+	d.Set("account_manage_account_settings", p)
+
+	p = (permissions.Account.ViewActivityLog == nil || conv.BoolFromPtr(permissions.Account.ViewActivityLog))
+	d.Set("account_view_activity_log", p)
+
+	p = (permissions.Account.ViewInvoices == nil || conv.BoolFromPtr(permissions.Account.ViewInvoices))
+	d.Set("account_view_invoices", p)
+
+	p = (permissions.Account.ManageIPWhitelist == nil || conv.BoolFromPtr(permissions.Account.ManageIPWhitelist))
+	d.Set("account_manage_ip_whitelist", p)
+
+	if permissions.DNS == nil {
+		permissions.DNS = &account.PermissionsDNSV2{}
 	}
-	if permissions.Monitoring != nil {
-		if permissions.Monitoring.ManageLists != nil {
-			d.Set("monitoring_manage_lists", conv.BoolFromPtr(permissions.Monitoring.ManageLists))
-		}
-		if permissions.Monitoring.ManageJobs != nil {
-			d.Set("monitoring_manage_jobs", conv.BoolFromPtr(permissions.Monitoring.ManageJobs))
-		}
-		if permissions.Monitoring.ViewJobs != nil {
-			d.Set("monitoring_view_jobs", conv.BoolFromPtr(permissions.Monitoring.ViewJobs))
-		}
+
+	p = (permissions.DNS.ViewZones == nil || conv.BoolFromPtr(permissions.DNS.ViewZones))
+	d.Set("dns_view_zones", p)
+
+	p = (permissions.DNS.ManageZones == nil || conv.BoolFromPtr(permissions.DNS.ManageZones))
+	d.Set("dns_manage_zones", p)
+
+	p = (permissions.DNS.ZonesAllowByDefault == nil || conv.BoolFromPtr(permissions.DNS.ZonesAllowByDefault))
+	d.Set("dns_zones_allow_by_default", p)
+
+	d.Set("dns_zones_deny", permissions.DNS.ZonesDeny)
+	d.Set("dns_zones_allow", permissions.DNS.ZonesAllow)
+
+	d.Set("dns_records_deny", permissions.DNS.RecordsDeny)
+	d.Set("dns_records_allow", permissions.DNS.RecordsAllow)
+
+	if permissions.Data == nil {
+		permissions.Data = &account.PermissionsDataV2{}
 	}
-	if permissions.Security != nil {
-		if permissions.Security.ManageGlobal2FA != nil {
-			d.Set("security_manage_global_2fa", conv.BoolFromPtr(permissions.Security.ManageGlobal2FA))
-		}
-		if permissions.Security.ManageActiveDirectory != nil {
-			d.Set("security_manage_active_directory", conv.BoolFromPtr(permissions.Security.ManageActiveDirectory))
-		}
+
+	p = (permissions.Data.PushToDatafeeds == nil || conv.BoolFromPtr(permissions.Data.PushToDatafeeds))
+	d.Set("data_push_to_datafeeds", p)
+
+	p = (permissions.Data.ManageDatasources == nil || conv.BoolFromPtr(permissions.Data.ManageDatasources))
+	d.Set("data_manage_datasources", p)
+
+	p = (permissions.Data.ManageDatafeeds == nil || conv.BoolFromPtr(permissions.Data.ManageDatafeeds))
+	d.Set("data_manage_datafeeds", p)
+
+	if permissions.Monitoring == nil {
+		permissions.Monitoring = &account.PermissionsMonitoringV2{}
 	}
+
+	p = (permissions.Monitoring.ManageLists == nil || conv.BoolFromPtr(permissions.Monitoring.ManageLists))
+	d.Set("monitoring_manage_lists", p)
+
+	p = (permissions.Monitoring.ManageJobs == nil || conv.BoolFromPtr(permissions.Monitoring.ManageJobs))
+	d.Set("monitoring_manage_jobs", p)
+
+	p = (permissions.Monitoring.ViewJobs == nil || conv.BoolFromPtr(permissions.Monitoring.ViewJobs))
+	d.Set("monitoring_view_jobs", p)
+
+	if permissions.Security == nil {
+		permissions.Security = &account.PermissionsSecurityV2{}
+	}
+
+	p = (permissions.Security.ManageGlobal2FA == nil || conv.BoolFromPtr(permissions.Security.ManageGlobal2FA))
+	d.Set("security_manage_global_2fa", p)
+
+	p = (permissions.Security.ManageActiveDirectory == nil || conv.BoolFromPtr(permissions.Security.ManageActiveDirectory))
+	d.Set("security_manage_active_directory", p)
+
 	if permissions.DHCP != nil {
 		if permissions.DHCP.ManageDHCP != nil {
 			d.Set("dhcp_manage_dhcp", conv.BoolFromPtr(permissions.DHCP.ManageDHCP))
@@ -303,15 +340,15 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMapV2 
 		p.DNS = &account.PermissionsDNSV2{}
 	}
 
-	if v, ok := d.GetOkExists("dns_records_allow"); ok {
+	if v, ok := d.GetOk("dns_records_allow"); ok {
 		p.DNS.RecordsAllow = SchemaToRecordArray(v)
 	} else {
 		p.DNS.RecordsAllow = []account.PermissionsRecord{}
 	}
-	if v, ok := d.GetOkExists("dns_records_deny"); ok {
+	if v, ok := d.GetOk("dns_records_deny"); ok {
 		p.DNS.RecordsDeny = SchemaToRecordArray(v)
 	} else {
-		p.DNS.RecordsAllow = []account.PermissionsRecord{}
+		p.DNS.RecordsDeny = []account.PermissionsRecord{}
 	}
 	if v, ok := d.GetOkExists("dns_view_zones"); ok {
 		p.DNS.ViewZones = conv.BoolPtrFrom(v.(bool))
@@ -322,7 +359,7 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMapV2 
 	if v, ok := d.GetOkExists("dns_zones_allow_by_default"); ok {
 		p.DNS.ZonesAllowByDefault = conv.BoolPtrFrom(v.(bool))
 	}
-	if v, ok := d.GetOkExists("dns_zones_deny"); ok {
+	if v, ok := d.GetOk("dns_zones_deny"); ok {
 		denyRaw := v.([]interface{})
 		p.DNS.ZonesDeny = make([]string, len(denyRaw))
 		for i, deny := range denyRaw {
@@ -331,7 +368,7 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMapV2 
 	} else {
 		p.DNS.ZonesDeny = []string{}
 	}
-	if v, ok := d.GetOkExists("dns_zones_allow"); ok {
+	if v, ok := d.GetOk("dns_zones_allow"); ok {
 		allowRaw := v.([]interface{})
 		p.DNS.ZonesAllow = make([]string, len(allowRaw))
 		for i, allow := range allowRaw {
