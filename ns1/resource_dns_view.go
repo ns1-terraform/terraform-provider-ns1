@@ -24,12 +24,12 @@ func dnsView() *schema.Resource {
 			Computed: true,
 		},
 		"read_acls": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 			Optional: true,
 		},
 		"update_acls": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 			Optional: true,
 		},
@@ -79,19 +79,19 @@ func resourceDataToDNSView(v *dns.DNSView, d *schema.ResourceData) error {
 	v.Name = d.Get("name").(string)
 	v.Created_at = d.Get("created_at").(int)
 	v.Updated_at = d.Get("updated_at").(int)
-	if a, ok := d.GetOk("read_acls"); ok {
-		readAclsRaw := a.(*schema.Set)
-		v.Read_acls = make([]string, readAclsRaw.Len())
-		for i, readAcls := range readAclsRaw.List() {
+	if acls, ok := d.GetOk("read_acls"); ok {
+		readAclsRaw := acls.([]interface{})
+		v.Read_acls = make([]string, len(readAclsRaw))
+		for i, readAcls := range readAclsRaw {
 			v.Read_acls[i] = readAcls.(string)
 		}
 	} else {
 		v.Read_acls = []string{}
 	}
-	if a, ok := d.GetOk("update_acls"); ok {
-		updateAclsRaw := a.(*schema.Set)
-		v.Update_acls = make([]string, updateAclsRaw.Len())
-		for i, updateAcls := range updateAclsRaw.List() {
+	if acls, ok := d.GetOk("update_acls"); ok {
+		updateAclsRaw := acls.([]interface{})
+		v.Update_acls = make([]string, len(updateAclsRaw))
+		for i, updateAcls := range updateAclsRaw {
 			v.Update_acls[i] = updateAcls.(string)
 		}
 	} else {
