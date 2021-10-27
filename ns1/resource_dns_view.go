@@ -85,6 +85,8 @@ func resourceDataToDNSView(v *dns.DNSView, d *schema.ResourceData) error {
 		for i, readAcls := range readAclsRaw.List() {
 			v.Read_acls[i] = readAcls.(string)
 		}
+	} else {
+		v.Read_acls = []string{}
 	}
 	if a, ok := d.GetOk("update_acls"); ok {
 		updateAclsRaw := a.(*schema.Set)
@@ -92,6 +94,8 @@ func resourceDataToDNSView(v *dns.DNSView, d *schema.ResourceData) error {
 		for i, updateAcls := range updateAclsRaw.List() {
 			v.Update_acls[i] = updateAcls.(string)
 		}
+	} else {
+		v.Update_acls = []string{}
 	}
 	if z, ok := d.GetOk("zones"); ok {
 		zonesRaw := z.(*schema.Set)
@@ -99,6 +103,8 @@ func resourceDataToDNSView(v *dns.DNSView, d *schema.ResourceData) error {
 		for i, zone := range zonesRaw.List() {
 			v.Zones[i] = zone.(string)
 		}
+	} else {
+		v.Zones = []string{}
 	}
 	if n, ok := d.GetOk("networks"); ok {
 		networksRaw := n.(*schema.Set)
@@ -106,6 +112,8 @@ func resourceDataToDNSView(v *dns.DNSView, d *schema.ResourceData) error {
 		for i, network := range networksRaw.List() {
 			v.Networks[i] = network.(int)
 		}
+	} else {
+		v.Networks = []int{}
 	}
 	v.Preference = d.Get("preference").(int)
 
