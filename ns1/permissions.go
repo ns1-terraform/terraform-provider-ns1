@@ -2,7 +2,6 @@ package ns1
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"gopkg.in/ns1/ns1-go.v2/common/conv"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/account"
 )
 
@@ -222,57 +221,37 @@ func suppressPermissionDiff(k, old, new string, d *schema.ResourceData) bool {
 	return false
 }
 
-func permissionsToResourceData(d *schema.ResourceData, permissions *account.PermissionsMapV2) {
+func permissionsToResourceData(d *schema.ResourceData, permissions *account.PermissionsMap) {
 	if permissions == nil {
-		permissions = &account.PermissionsMapV2{}
-	}
-
-	if permissions.Account == nil {
-		permissions.Account = &account.PermissionsAccountV2{}
+		permissions = &account.PermissionsMap{}
 	}
 
 	// Forced default value:
 	// If permission == nil -> return true; else -> return permission
 	// Default field is not used because, if user or APIKey is in a team, there's a chance this will change.
-	p := (permissions.Account.ManageUsers == nil || conv.BoolFromPtr(permissions.Account.ManageUsers))
-	d.Set("account_manage_users", p)
+	d.Set("account_manage_users", permissions.Account.ManageUsers)
 
-	p = (permissions.Account.ManagePaymentMethods == nil || conv.BoolFromPtr(permissions.Account.ManagePaymentMethods))
-	d.Set("account_manage_payment_methods", p)
+	d.Set("account_manage_payment_methods", permissions.Account.ManagePaymentMethods)
 
-	p = (permissions.Account.ManagePlan == nil || conv.BoolFromPtr(permissions.Account.ManagePlan))
-	d.Set("account_manage_plan", p)
+	d.Set("account_manage_plan", permissions.Account.ManagePlan)
 
-	p = (permissions.Account.ManageTeams == nil || conv.BoolFromPtr(permissions.Account.ManageTeams))
-	d.Set("account_manage_teams", p)
+	d.Set("account_manage_teams", permissions.Account.ManageTeams)
 
-	p = (permissions.Account.ManageApikeys == nil || conv.BoolFromPtr(permissions.Account.ManageApikeys))
-	d.Set("account_manage_apikeys", p)
+	d.Set("account_manage_apikeys", permissions.Account.ManageApikeys)
 
-	p = (permissions.Account.ManageAccountSettings == nil || conv.BoolFromPtr(permissions.Account.ManageAccountSettings))
-	d.Set("account_manage_account_settings", p)
+	d.Set("account_manage_account_settings", permissions.Account.ManageAccountSettings)
 
-	p = (permissions.Account.ViewActivityLog == nil || conv.BoolFromPtr(permissions.Account.ViewActivityLog))
-	d.Set("account_view_activity_log", p)
+	d.Set("account_view_activity_log", permissions.Account.ViewActivityLog)
 
-	p = (permissions.Account.ViewInvoices == nil || conv.BoolFromPtr(permissions.Account.ViewInvoices))
-	d.Set("account_view_invoices", p)
+	d.Set("account_view_invoices", permissions.Account.ViewInvoices)
 
-	p = (permissions.Account.ManageIPWhitelist == nil || conv.BoolFromPtr(permissions.Account.ManageIPWhitelist))
-	d.Set("account_manage_ip_whitelist", p)
+	d.Set("account_manage_ip_whitelist", permissions.Account.ManageIPWhitelist)
 
-	if permissions.DNS == nil {
-		permissions.DNS = &account.PermissionsDNSV2{}
-	}
+	d.Set("dns_view_zones", permissions.DNS.ViewZones)
 
-	p = (permissions.DNS.ViewZones == nil || conv.BoolFromPtr(permissions.DNS.ViewZones))
-	d.Set("dns_view_zones", p)
+	d.Set("dns_manage_zones", permissions.DNS.ManageZones)
 
-	p = (permissions.DNS.ManageZones == nil || conv.BoolFromPtr(permissions.DNS.ManageZones))
-	d.Set("dns_manage_zones", p)
-
-	p = (permissions.DNS.ZonesAllowByDefault == nil || conv.BoolFromPtr(permissions.DNS.ZonesAllowByDefault))
-	d.Set("dns_zones_allow_by_default", p)
+	d.Set("dns_zones_allow_by_default", permissions.DNS.ZonesAllowByDefault)
 
 	d.Set("dns_zones_deny", permissions.DNS.ZonesDeny)
 	d.Set("dns_zones_allow", permissions.DNS.ZonesAllow)
@@ -280,66 +259,34 @@ func permissionsToResourceData(d *schema.ResourceData, permissions *account.Perm
 	d.Set("dns_records_deny", permissions.DNS.RecordsDeny)
 	d.Set("dns_records_allow", permissions.DNS.RecordsAllow)
 
-	if permissions.Data == nil {
-		permissions.Data = &account.PermissionsDataV2{}
+	d.Set("data_push_to_datafeeds", permissions.Data.PushToDatafeeds)
+
+	d.Set("data_manage_datasources", permissions.Data.ManageDatasources)
+
+	d.Set("data_manage_datafeeds", permissions.Data.ManageDatafeeds)
+
+	d.Set("monitoring_manage_lists", permissions.Monitoring.ManageLists)
+
+	d.Set("monitoring_manage_jobs", permissions.Monitoring.ManageJobs)
+
+	d.Set("monitoring_view_jobs", permissions.Monitoring.ViewJobs)
+
+	if permissions.Security != nil {
+		d.Set("security_manage_global_2fa", permissions.Security.ManageGlobal2FA)
+		d.Set("security_manage_active_directory", permissions.Security.ManageActiveDirectory)
 	}
-
-	p = (permissions.Data.PushToDatafeeds == nil || conv.BoolFromPtr(permissions.Data.PushToDatafeeds))
-	d.Set("data_push_to_datafeeds", p)
-
-	p = (permissions.Data.ManageDatasources == nil || conv.BoolFromPtr(permissions.Data.ManageDatasources))
-	d.Set("data_manage_datasources", p)
-
-	p = (permissions.Data.ManageDatafeeds == nil || conv.BoolFromPtr(permissions.Data.ManageDatafeeds))
-	d.Set("data_manage_datafeeds", p)
-
-	if permissions.Monitoring == nil {
-		permissions.Monitoring = &account.PermissionsMonitoringV2{}
-	}
-
-	p = (permissions.Monitoring.ManageLists == nil || conv.BoolFromPtr(permissions.Monitoring.ManageLists))
-	d.Set("monitoring_manage_lists", p)
-
-	p = (permissions.Monitoring.ManageJobs == nil || conv.BoolFromPtr(permissions.Monitoring.ManageJobs))
-	d.Set("monitoring_manage_jobs", p)
-
-	p = (permissions.Monitoring.ViewJobs == nil || conv.BoolFromPtr(permissions.Monitoring.ViewJobs))
-	d.Set("monitoring_view_jobs", p)
-
-	if permissions.Security == nil {
-		permissions.Security = &account.PermissionsSecurityV2{}
-	}
-
-	p = (permissions.Security.ManageGlobal2FA == nil || conv.BoolFromPtr(permissions.Security.ManageGlobal2FA))
-	d.Set("security_manage_global_2fa", p)
-
-	p = (permissions.Security.ManageActiveDirectory == nil || conv.BoolFromPtr(permissions.Security.ManageActiveDirectory))
-	d.Set("security_manage_active_directory", p)
-
 	if permissions.DHCP != nil {
-		if permissions.DHCP.ManageDHCP != nil {
-			d.Set("dhcp_manage_dhcp", conv.BoolFromPtr(permissions.DHCP.ManageDHCP))
-		}
-		if permissions.DHCP.ViewDHCP != nil {
-			d.Set("dhcp_view_dhcp", conv.BoolFromPtr(permissions.DHCP.ViewDHCP))
-		}
+		d.Set("dhcp_manage_dhcp", permissions.DHCP.ManageDHCP)
+		d.Set("dhcp_view_dhcp", permissions.DHCP.ViewDHCP)
 	}
 	if permissions.IPAM != nil {
-		if permissions.IPAM.ManageIPAM != nil {
-			d.Set("ipam_manage_ipam", conv.BoolFromPtr(permissions.IPAM.ManageIPAM))
-		}
-		if permissions.IPAM.ViewIPAM != nil {
-			d.Set("ipam_view_ipam", conv.BoolFromPtr(permissions.IPAM.ViewIPAM))
-		}
+		d.Set("ipam_manage_ipam", permissions.IPAM.ManageIPAM)
+		d.Set("ipam_view_ipam", permissions.IPAM.ViewIPAM)
 	}
 }
 
-func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMapV2 {
-	p := account.PermissionsMapV2{}
-	if p.DNS == nil {
-		p.DNS = &account.PermissionsDNSV2{}
-	}
-
+func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
+	p := account.DefaultPermissions()
 	if v, ok := d.GetOk("dns_records_allow"); ok {
 		p.DNS.RecordsAllow = SchemaToRecordArray(v)
 	} else {
@@ -351,13 +298,13 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMapV2 
 		p.DNS.RecordsDeny = []account.PermissionsRecord{}
 	}
 	if v, ok := d.GetOkExists("dns_view_zones"); ok {
-		p.DNS.ViewZones = conv.BoolPtrFrom(v.(bool))
+		p.DNS.ViewZones = v.(bool)
 	}
 	if v, ok := d.GetOkExists("dns_manage_zones"); ok {
-		p.DNS.ManageZones = conv.BoolPtrFrom(v.(bool))
+		p.DNS.ManageZones = v.(bool)
 	}
 	if v, ok := d.GetOkExists("dns_zones_allow_by_default"); ok {
-		p.DNS.ZonesAllowByDefault = conv.BoolPtrFrom(v.(bool))
+		p.DNS.ZonesAllowByDefault = v.(bool)
 	}
 	if v, ok := d.GetOk("dns_zones_deny"); ok {
 		denyRaw := v.([]interface{})
@@ -378,130 +325,85 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMapV2 
 		p.DNS.ZonesAllow = []string{}
 	}
 	if v, ok := d.GetOkExists("data_push_to_datafeeds"); ok {
-		if p.Data == nil {
-			p.Data = &account.PermissionsDataV2{}
-		}
-		p.Data.PushToDatafeeds = conv.BoolPtrFrom(v.(bool))
+		p.Data.PushToDatafeeds = v.(bool)
 	}
 	if v, ok := d.GetOkExists("data_manage_datasources"); ok {
-		if p.Data == nil {
-			p.Data = &account.PermissionsDataV2{}
-		}
-		p.Data.ManageDatasources = conv.BoolPtrFrom(v.(bool))
+		p.Data.ManageDatasources = v.(bool)
 	}
 	if v, ok := d.GetOkExists("data_manage_datafeeds"); ok {
-		if p.Data == nil {
-			p.Data = &account.PermissionsDataV2{}
-		}
-		p.Data.ManageDatafeeds = conv.BoolPtrFrom(v.(bool))
+		p.Data.ManageDatafeeds = v.(bool)
 	}
 	if v, ok := d.GetOkExists("account_manage_users"); ok {
-		if p.Account == nil {
-			p.Account = &account.PermissionsAccountV2{}
-		}
-		p.Account.ManageUsers = conv.BoolPtrFrom(v.(bool))
+		p.Account.ManageUsers = v.(bool)
 	}
 	if v, ok := d.GetOkExists("account_manage_payment_methods"); ok {
-		if p.Account == nil {
-			p.Account = &account.PermissionsAccountV2{}
-		}
-		p.Account.ManagePaymentMethods = conv.BoolPtrFrom(v.(bool))
+		p.Account.ManagePaymentMethods = v.(bool)
 	}
 	if v, ok := d.GetOkExists("account_manage_plan"); ok {
-		if p.Account == nil {
-			p.Account = &account.PermissionsAccountV2{}
-		}
-		p.Account.ManagePlan = conv.BoolPtrFrom(v.(bool))
+		p.Account.ManagePlan = v.(bool)
 	}
 	if v, ok := d.GetOkExists("account_manage_teams"); ok {
-		if p.Account == nil {
-			p.Account = &account.PermissionsAccountV2{}
-		}
-		p.Account.ManageTeams = conv.BoolPtrFrom(v.(bool))
+		p.Account.ManageTeams = v.(bool)
 	}
 	if v, ok := d.GetOkExists("account_manage_apikeys"); ok {
-		if p.Account == nil {
-			p.Account = &account.PermissionsAccountV2{}
-		}
-		p.Account.ManageApikeys = conv.BoolPtrFrom(v.(bool))
+		p.Account.ManageApikeys = v.(bool)
 	}
 	if v, ok := d.GetOkExists("account_manage_account_settings"); ok {
-		if p.Account == nil {
-			p.Account = &account.PermissionsAccountV2{}
-		}
-		p.Account.ManageAccountSettings = conv.BoolPtrFrom(v.(bool))
+		p.Account.ManageAccountSettings = v.(bool)
 	}
 	if v, ok := d.GetOkExists("account_view_activity_log"); ok {
-		if p.Account == nil {
-			p.Account = &account.PermissionsAccountV2{}
-		}
-		p.Account.ViewActivityLog = conv.BoolPtrFrom(v.(bool))
+		p.Account.ViewActivityLog = v.(bool)
 	}
 	if v, ok := d.GetOkExists("account_view_invoices"); ok {
-		if p.Account == nil {
-			p.Account = &account.PermissionsAccountV2{}
-		}
-		p.Account.ViewInvoices = conv.BoolPtrFrom(v.(bool))
+		p.Account.ViewInvoices = v.(bool)
 	}
 	if v, ok := d.GetOkExists("account_manage_ip_whitelist"); ok {
-		if p.Account == nil {
-			p.Account = &account.PermissionsAccountV2{}
-		}
-		p.Account.ManageIPWhitelist = conv.BoolPtrFrom(v.(bool))
+		p.Account.ManageIPWhitelist = v.(bool)
 	}
 	if v, ok := d.GetOkExists("monitoring_manage_lists"); ok {
-		if p.Monitoring == nil {
-			p.Monitoring = &account.PermissionsMonitoringV2{}
-		}
-		p.Monitoring.ManageLists = conv.BoolPtrFrom(v.(bool))
+		p.Monitoring.ManageLists = v.(bool)
 	}
 	if v, ok := d.GetOkExists("monitoring_manage_jobs"); ok {
-		if p.Monitoring == nil {
-			p.Monitoring = &account.PermissionsMonitoringV2{}
-		}
-		p.Monitoring.ManageJobs = conv.BoolPtrFrom(v.(bool))
+		p.Monitoring.ManageJobs = v.(bool)
 	}
 	if v, ok := d.GetOkExists("monitoring_view_jobs"); ok {
-		if p.Monitoring == nil {
-			p.Monitoring = &account.PermissionsMonitoringV2{}
-		}
-		p.Monitoring.ViewJobs = conv.BoolPtrFrom(v.(bool))
+		p.Monitoring.ViewJobs = v.(bool)
 	}
 	if v, ok := d.GetOkExists("security_manage_global_2fa"); ok {
 		if p.Security == nil {
-			p.Security = &account.PermissionsSecurityV2{}
+			p.Security = &account.PermissionsSecurity{}
 		}
-		p.Security.ManageGlobal2FA = conv.BoolPtrFrom(v.(bool))
+		p.Security.ManageGlobal2FA = v.(bool)
 	}
 	if v, ok := d.GetOkExists("security_manage_active_directory"); ok {
 		if p.Security == nil {
-			p.Security = &account.PermissionsSecurityV2{}
+			p.Security = &account.PermissionsSecurity{}
 		}
-		p.Security.ManageActiveDirectory = conv.BoolPtrFrom(v.(bool))
+		p.Security.ManageActiveDirectory = v.(bool)
 	}
 	if v, ok := d.GetOkExists("dhcp_manage_dhcp"); ok {
 		if p.DHCP == nil {
-			p.DHCP = &account.PermissionsDHCPV2{}
+			p.DHCP = &account.PermissionsDHCP{}
 		}
-		p.DHCP.ManageDHCP = conv.BoolPtrFrom(v.(bool))
+		p.DHCP.ManageDHCP = v.(bool)
 	}
 	if v, ok := d.GetOkExists("dhcp_view_dhcp"); ok {
 		if p.DHCP == nil {
-			p.DHCP = &account.PermissionsDHCPV2{}
+			p.DHCP = &account.PermissionsDHCP{}
 		}
-		p.DHCP.ViewDHCP = conv.BoolPtrFrom(v.(bool))
+		p.DHCP.ViewDHCP = v.(bool)
 	}
 	if v, ok := d.GetOkExists("ipam_manage_ipam"); ok {
 		if p.IPAM == nil {
-			p.IPAM = &account.PermissionsIPAMV2{}
+			p.IPAM = &account.PermissionsIPAM{}
 		}
-		p.IPAM.ManageIPAM = conv.BoolPtrFrom(v.(bool))
+		p.IPAM.ManageIPAM = v.(bool)
 	}
 	if v, ok := d.GetOkExists("ipam_view_ipam"); ok {
 		if p.IPAM == nil {
-			p.IPAM = &account.PermissionsIPAMV2{}
+			p.IPAM = &account.PermissionsIPAM{}
 		}
-		p.IPAM.ViewIPAM = conv.BoolPtrFrom(v.(bool))
+		p.IPAM.ViewIPAM = v.(bool)
 	}
 
 	return p

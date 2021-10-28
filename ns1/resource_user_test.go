@@ -18,7 +18,7 @@ import (
 )
 
 func TestAccUser_basic(t *testing.T) {
-	var user account.UserV2
+	var user account.User
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 	name := fmt.Sprintf("terraform acc test user %s", rString)
 	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
@@ -61,7 +61,7 @@ func TestAccUser_basic(t *testing.T) {
 }
 
 func TestAccUser_ManualDelete(t *testing.T) {
-	var user account.UserV2
+	var user account.User
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
 
@@ -91,7 +91,7 @@ func TestAccUser_ManualDelete(t *testing.T) {
 }
 
 func TestAccUser_permissions(t *testing.T) {
-	var user account.UserV2
+	var user account.User
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 	name := fmt.Sprintf("terraform acc test user %s", rString)
 	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
@@ -108,7 +108,7 @@ func TestAccUser_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
@@ -119,9 +119,9 @@ func TestAccUser_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
-					resource.TestCheckResourceAttr("ns1_user.u", "security_manage_global_2fa", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "security_manage_global_2fa", "true"),
 				),
 			},
 			{
@@ -156,7 +156,7 @@ func TestAccUser_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					// But if an apply is ran again, the permission will be removed.
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
@@ -165,7 +165,7 @@ func TestAccUser_permissions(t *testing.T) {
 }
 
 func TestAccUser_permissions_empty_team(t *testing.T) {
-	var user account.UserV2
+	var user account.User
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 	name := fmt.Sprintf("terraform acc test user %s", rString)
 	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
@@ -207,7 +207,7 @@ func TestAccUser_permissions_empty_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					// But if an apply is ran again, the permission will be removed.
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
@@ -217,7 +217,7 @@ func TestAccUser_permissions_empty_team(t *testing.T) {
 
 // Edge cases exist with starting a user on a team vs. on no team, so test for this as well.
 func TestAccUser_permissions_start_no_team(t *testing.T) {
-	var user account.UserV2
+	var user account.User
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 	name := fmt.Sprintf("terraform acc test user %s", rString)
 	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
@@ -234,7 +234,7 @@ func TestAccUser_permissions_start_no_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
@@ -270,7 +270,7 @@ func TestAccUser_permissions_start_no_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					// But if an apply is ran again, the permission will be removed.
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
@@ -280,7 +280,7 @@ func TestAccUser_permissions_start_no_team(t *testing.T) {
 
 // Case when a user starts on a single team and is added to another team.
 func TestAccUser_permissions_multiple_teams(t *testing.T) {
-	var user account.UserV2
+	var user account.User
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 	name := fmt.Sprintf("terraform acc test user %s", rString)
 	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
@@ -321,7 +321,7 @@ func TestAccUser_permissions_multiple_teams(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 			},
@@ -334,7 +334,7 @@ func TestAccUser_permissions_multiple_teams(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					// The user should still have this permission, it would have inherited it from the team.
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 			},
@@ -346,8 +346,8 @@ func TestAccUser_permissions_multiple_teams(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					// But if an apply is ran again, the permission will be removed.
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
@@ -357,7 +357,7 @@ func TestAccUser_permissions_multiple_teams(t *testing.T) {
 
 // Case when a user starts on no teams and is added to multiple teams at once.
 func TestAccUser_permissions_multiple_teams_start_no_team(t *testing.T) {
-	var user account.UserV2
+	var user account.User
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 	name := fmt.Sprintf("terraform acc test user %s", rString)
 	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
@@ -374,7 +374,7 @@ func TestAccUser_permissions_multiple_teams_start_no_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
@@ -398,7 +398,7 @@ func TestAccUser_permissions_multiple_teams_start_no_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
 				),
 			},
@@ -411,8 +411,21 @@ func TestAccUser_permissions_multiple_teams_start_no_team(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					// The user should still have this permission, it would have inherited it from the team.
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
-					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
+				),
+			},
+			{
+				Config: testAccUserPermissionsNoTeam(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					// But if an apply is ran again, the permission will be removed.
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_apikeys", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 				),
 			},
 		},
@@ -529,7 +542,7 @@ func testAccCheckUserDestroy(s *terraform.State) error {
 			continue
 		}
 
-		user, _, err := client.UsersV2.Get(rs.Primary.Attributes["id"])
+		user, _, err := client.Users.Get(rs.Primary.Attributes["id"])
 		if err == nil {
 			return fmt.Errorf("user still exists: %#v: %#v", err, user.Name)
 		}
@@ -538,7 +551,7 @@ func testAccCheckUserDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckUserExists(n string, user *account.UserV2) resource.TestCheckFunc {
+func testAccCheckUserExists(n string, user *account.User) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -551,7 +564,7 @@ func testAccCheckUserExists(n string, user *account.UserV2) resource.TestCheckFu
 
 		client := testAccProvider.Meta().(*ns1.Client)
 
-		foundUser, _, err := client.UsersV2.Get(rs.Primary.ID)
+		foundUser, _, err := client.Users.Get(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -566,7 +579,7 @@ func testAccCheckUserExists(n string, user *account.UserV2) resource.TestCheckFu
 	}
 }
 
-func testAccCheckUserIPWhitelists(user *account.UserV2, expected []string) resource.TestCheckFunc {
+func testAccCheckUserIPWhitelists(user *account.User, expected []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		sort.Strings(user.IPWhitelist)
 		sort.Strings(expected)
@@ -582,7 +595,7 @@ func testAccCheckUserIPWhitelists(user *account.UserV2, expected []string) resou
 func testAccManualDeleteUser(user string) func() {
 	return func() {
 		client := testAccProvider.Meta().(*ns1.Client)
-		_, err := client.UsersV2.Delete(user)
+		_, err := client.Users.Delete(user)
 		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
 		if err != nil {
 			log.Printf("failed to delete user: %v", err)
@@ -635,7 +648,6 @@ func testAccUserPermissionsOnTeam(rString string) string {
   name = "terraform acc test team %s"
   account_manage_account_settings = true
   account_manage_ip_whitelist = false
-  account_manage_apikeys = false
 }
 
 resource "ns1_user" "u" {
@@ -667,9 +679,7 @@ resource "ns1_user" "u" {
     billing = false
   }
 
-  account_manage_account_settings = false
   account_manage_ip_whitelist = true
-  account_manage_apikeys = false
 }
 `, rString, rString, rString)
 }
@@ -677,7 +687,7 @@ resource "ns1_user" "u" {
 func testAccUserSecurityPermissionsNoTeam(rString string) string {
 	return fmt.Sprintf(`resource "ns1_team" "t" {
   name = "terraform acc test team %s"
-  account_manage_account_settings = true
+  account_manage_account_settings = false
 }
 
 resource "ns1_user" "u" {
@@ -689,9 +699,8 @@ resource "ns1_user" "u" {
     billing = false
   }
 
-  account_manage_account_settings = false
   account_manage_ip_whitelist = true
-  security_manage_global_2fa = false
+  security_manage_global_2fa = true
 }
 `, rString, rString, rString)
 }
@@ -720,7 +729,6 @@ resource "ns1_user" "u" {
 func testAccUserPermissionsOnTwoTeam(rString string) string {
 	return fmt.Sprintf(`resource "ns1_team" "t" {
   name = "terraform acc test team %s"
-  account_manage_apikeys = false
   account_manage_account_settings = true
 }
 

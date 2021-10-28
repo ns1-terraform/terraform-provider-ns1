@@ -54,7 +54,7 @@ func teamResource() *schema.Resource {
 	}
 }
 
-func teamToResourceData(d *schema.ResourceData, t *account.TeamV2) error {
+func teamToResourceData(d *schema.ResourceData, t *account.Team) error {
 	d.SetId(t.ID)
 	d.Set("name", t.Name)
 
@@ -71,12 +71,12 @@ func teamToResourceData(d *schema.ResourceData, t *account.TeamV2) error {
 		}
 	}
 
-	permissionsToResourceData(d, t.Permissions)
+	permissionsToResourceData(d, &t.Permissions)
 
 	return nil
 }
 
-func resourceDataToTeam(t *account.TeamV2, d *schema.ResourceData) error {
+func resourceDataToTeam(t *account.Team, d *schema.ResourceData) error {
 	t.ID = d.Id()
 	t.Name = d.Get("name").(string)
 
@@ -103,19 +103,18 @@ func resourceDataToTeam(t *account.TeamV2, d *schema.ResourceData) error {
 		t.IPWhitelist = []account.IPWhitelist{}
 	}
 
-	p := resourceDataToPermissions(d)
-	t.Permissions = &p
+	t.Permissions = resourceDataToPermissions(d)
 	return nil
 }
 
 // TeamCreate creates the given team in ns1
 func TeamCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	t := account.TeamV2{}
+	t := account.Team{}
 	if err := resourceDataToTeam(&t, d); err != nil {
 		return err
 	}
-	if resp, err := client.TeamsV2.Create(&t); err != nil {
+	if resp, err := client.Teams.Create(&t); err != nil {
 		return ConvertToNs1Error(resp, err)
 	}
 	return teamToResourceData(d, &t)
@@ -124,7 +123,7 @@ func TeamCreate(d *schema.ResourceData, meta interface{}) error {
 // TeamRead reads the team data from ns1
 func TeamRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	t, resp, err := client.TeamsV2.Get(d.Id())
+	t, resp, err := client.Teams.Get(d.Id())
 	if err != nil {
 		if err == ns1.ErrTeamMissing {
 			log.Printf("[DEBUG] NS1 team (%s) not found", d.Id())
@@ -140,7 +139,7 @@ func TeamRead(d *schema.ResourceData, meta interface{}) error {
 // TeamDelete deletes the given team from ns1
 func TeamDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	resp, err := client.TeamsV2.Delete(d.Id())
+	resp, err := client.Teams.Delete(d.Id())
 	d.SetId("")
 	return ConvertToNs1Error(resp, err)
 }
@@ -148,13 +147,13 @@ func TeamDelete(d *schema.ResourceData, meta interface{}) error {
 // TeamUpdate updates the given team in ns1
 func TeamUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	t := account.TeamV2{
+	t := account.Team{
 		ID: d.Id(),
 	}
 	if err := resourceDataToTeam(&t, d); err != nil {
 		return err
 	}
-	if resp, err := client.TeamsV2.Update(&t); err != nil {
+	if resp, err := client.Teams.Update(&t); err != nil {
 		return ConvertToNs1Error(resp, err)
 	}
 
