@@ -59,6 +59,7 @@ func userResource() *schema.Resource {
 		Read:          UserRead,
 		Update:        UserUpdate,
 		Delete:        UserDelete,
+		Importer:      &schema.ResourceImporter{State: userImportStateFunc},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
@@ -213,4 +214,8 @@ func validateUsername(
 		)
 	}
 	return warns, errs
+}
+
+func userImportStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	return []*schema.ResourceData{d}, nil
 }
