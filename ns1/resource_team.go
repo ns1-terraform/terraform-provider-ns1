@@ -43,6 +43,7 @@ func teamResource() *schema.Resource {
 		Read:          TeamRead,
 		Update:        TeamUpdate,
 		Delete:        TeamDelete,
+		Importer:      &schema.ResourceImporter{State: teamImportStateFunc},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
@@ -154,4 +155,8 @@ func TeamUpdate(d *schema.ResourceData, meta interface{}) error {
 	// should have their Terraform state refreshed, there is not a particularly nice way to implement this
 	// because teams don't have a concept of what users and keys are assigned to them, only the other way around.
 	return teamToResourceData(d, &t)
+}
+
+func teamImportStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	return []*schema.ResourceData{d}, nil
 }

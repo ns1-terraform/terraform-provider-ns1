@@ -94,6 +94,10 @@ Only relevant for the DDI product.
 * `ipam_view_ipam` - (Optional) Whether the team can view IPAM.
 Only relevant for the DDI product.
 
+## Import
+
+`terraform import ns1_team.<name> <team_id>`
+
 ## Attributes Reference
 
 All of the arguments listed above are exported as attributes, with no
