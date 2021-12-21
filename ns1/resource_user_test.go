@@ -435,6 +435,45 @@ func TestAccUser_permissions_multiple_teams_start_no_team(t *testing.T) {
 	})
 }
 
+// Import user test
+func TestAccUser_import_test(t *testing.T) {
+	var user account.User
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	name := fmt.Sprintf("terraform acc test user %s", rString)
+	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
+	ignored_fields := []string{"dhcp_manage_dhcp", "dhcp_view_dhcp", "ipam_manage_ipam", "ipam_view_ipam"}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccUserBasic(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "teams.#", "1"),
+					resource.TestCheckResourceAttr("ns1_user.u", "notify.%", "1"),
+					resource.TestCheckResourceAttr("ns1_user.u", "notify.billing", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					testAccCheckUserIPWhitelists(&user, []string{"1.1.1.1", "2.2.2.2"}),
+					resource.TestCheckResourceAttr("ns1_user.u", "ip_whitelist_strict", "true"),
+				),
+			},
+			{
+				ResourceName:      "ns1_user.u",
+				ImportState:       true,
+				ImportStateId:     username,
+				ImportStateVerify: true,
+				// Ignoring some fields because of how the permissions work right now
+				ImportStateVerifyIgnore: ignored_fields,
+			},
+		},
+	})
+}
+
 // Case when a user is on a team and that team updates it's permissions.
 // This test is currently failing, as this is not implemented yet - this doesn't
 // actually cause any issues because it's just Terraforms state that doesn't have the
@@ -515,11 +554,6 @@ func TestValidateUsername(t *testing.T) {
 			"valid - email",
 			"valid_us3r@example.com",
 			0,
-		},
-		{
-			"invalid - dash",
-			"inv4lid-user",
-			1,
 		},
 		{
 			"invalid - punctuation",

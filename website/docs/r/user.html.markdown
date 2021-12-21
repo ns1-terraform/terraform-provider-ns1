@@ -89,6 +89,10 @@ Only relevant for the DDI product.
 * `ipam_manage_ipam` - (Optional) Whether the user can manage IPAM.
 Only relevant for the DDI product.
 
+## Import
+
+`terraform import ns1_user.<name> <username>`
+
 ## Attributes Reference
 
 All of the arguments listed above are exported as attributes, with no

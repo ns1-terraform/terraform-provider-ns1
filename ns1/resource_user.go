@@ -12,7 +12,7 @@ import (
 	"gopkg.in/ns1/ns1-go.v2/rest/model/account"
 )
 
-var usernameRegex = regexp.MustCompile(`^([a-zA-Z0-9_+.@]+)$`)
+var usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9@$&'*+\-=? ^_.{|}~]{3,320}$`)
 
 func userResource() *schema.Resource {
 	s := map[string]*schema.Schema{
@@ -59,6 +59,7 @@ func userResource() *schema.Resource {
 		Read:          UserRead,
 		Update:        UserUpdate,
 		Delete:        UserDelete,
+		Importer:      &schema.ResourceImporter{State: userImportStateFunc},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
@@ -72,6 +73,7 @@ func userResource() *schema.Resource {
 
 func userToResourceData(d *schema.ResourceData, u *account.User) error {
 	d.SetId(u.Username)
+	d.Set("username", u.Username)
 	d.Set("name", u.Name)
 	d.Set("email", u.Email)
 	d.Set("teams", u.TeamIDs)
@@ -213,4 +215,8 @@ func validateUsername(
 		)
 	}
 	return warns, errs
+}
+
+func userImportStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	return []*schema.ResourceData{d}, nil
 }
