@@ -73,6 +73,7 @@ func userResource() *schema.Resource {
 
 func userToResourceData(d *schema.ResourceData, u *account.User) error {
 	d.SetId(u.Username)
+	d.Set("username", u.Username)
 	d.Set("name", u.Name)
 	d.Set("email", u.Email)
 	d.Set("teams", u.TeamIDs)

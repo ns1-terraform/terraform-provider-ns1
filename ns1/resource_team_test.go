@@ -112,6 +112,48 @@ func TestAccTeam_ManualDelete(t *testing.T) {
 	})
 }
 
+// Import user test
+func TestAccTeam_import_test(t *testing.T) {
+	var team account.Team
+	n := fmt.Sprintf("terraform test team %s", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+	ignored_fields := []string{"dhcp_manage_dhcp", "dhcp_view_dhcp", "ipam_manage_ipam", "ipam_view_ipam", "dns_records"}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckTeamDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(testAccTeamBasic, n),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTeamExists("ns1_team.foobar", &team),
+					testAccCheckTeamName(&team, n),
+					testAccCheckTeamDNSPermission(&team, "view_zones", true),
+					testAccCheckTeamDNSPermission(&team, "zones_allow_by_default", true),
+					testAccCheckTeamDNSPermissionZones(&team, "zones_allow", []string{"mytest.zone"}),
+					testAccCheckTeamDNSPermissionZones(&team, "zones_deny", []string{"myother.zone"}),
+					testAccCheckTeamDNSPermissionRecords(&team, "dns_records_allow", []account.PermissionsRecord{
+						{Domain: "my.ns1.com", Subdomains: false, Zone: "ns1.com", RecordType: "A"}}),
+					testAccCheckTeamDNSPermissionRecords(&team, "dns_records_deny", []account.PermissionsRecord{
+						{Domain: "my.test.com", Subdomains: true, Zone: "test.com", RecordType: "A"}}),
+					testAccCheckTeamDataPermission(&team, "manage_datasources", true),
+					testAccCheckTeamIPWhitelists(&team, []account.IPWhitelist{
+						{Name: "whitelist-1", Values: []string{"1.1.1.1", "2.2.2.2"}},
+						{Name: "whitelist-2", Values: []string{"3.3.3.3", "4.4.4.4"}},
+					}),
+				),
+			},
+			{
+				ResourceName:      "ns1_team.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Ignoring some fields because of how the dns_records work right now
+				ImportStateVerifyIgnore: ignored_fields,
+			},
+		},
+	})
+}
+
 func testAccCheckTeamExists(n string, team *account.Team) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
