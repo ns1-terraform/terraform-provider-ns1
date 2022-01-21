@@ -1,6 +1,7 @@
 package ns1
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -281,10 +282,8 @@ func recordMapValueToString(configMap map[string]interface{}) map[string]interfa
 			} else {
 				config[configKey] = "0"
 			}
-			break
 		case float64:
 			config[configKey] = strconv.FormatFloat(configValue.(float64), 'f', -1, 64)
-			break
 		default:
 			config[configKey] = configValue
 		}
@@ -342,18 +341,22 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 				log.Println("answer meta", v)
 				metaMap := v.(map[string]interface{})
 				if allSubdivisions, ok := metaMap["subdivisions"]; ok {
-					subdivisions := strings.Split(allSubdivisions.(string), ",")
 					subdivisionsMap := make(map[string]interface{})
-					for _, sub := range subdivisions {
-						sub = strings.Join(strings.Fields(sub), "")
-						subp := strings.Split(sub, "-")
-						if len(subp) != 2 {
-							return fmt.Errorf("invalid subidivision format. expecting (\"Country-Subdivision\") got %s", sub)
+					if isJson(allSubdivisions.(string)) {
+						json.Unmarshal([]byte(allSubdivisions.(string)), &subdivisionsMap)
+					} else {
+						subdivisions := strings.Split(allSubdivisions.(string), ",")
+						for _, sub := range subdivisions {
+							sub = strings.Join(strings.Fields(sub), "")
+							subp := strings.Split(sub, "-")
+							if len(subp) != 2 {
+								return fmt.Errorf("invalid subidivision format. expecting (\"Country-Subdivision\") got %s", sub)
+							}
+							if subdivisionsMap[subp[0]] == nil {
+								subdivisionsMap[subp[0]] = []string{}
+							}
+							subdivisionsMap[subp[0]] = append(subdivisionsMap[subp[0]].([]string), subp[1])
 						}
-						if subdivisionsMap[subp[0]] == nil {
-							subdivisionsMap[subp[0]] = []string{}
-						}
-						subdivisionsMap[subp[0]] = append(subdivisionsMap[subp[0]].([]string), subp[1])
 					}
 					metaMap["subdivisions"] = subdivisionsMap
 				}
@@ -438,9 +441,12 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 
 func removeEmptyMeta(v map[string]interface{}) {
 	for metaKey, metaValue := range v {
-		if metaValue != nil {
-			if metaValue.(string) == "" {
-				delete(v, metaKey)
+		switch metaValue.(type) {
+		case string:
+			if metaValue != nil {
+				if metaValue.(string) == "" {
+					delete(v, metaKey)
+				}
 			}
 		}
 	}
@@ -594,4 +600,9 @@ func metaToMapString(m *data.Meta) map[string]interface{} {
 		}
 	}
 	return stringMap
+}
+
+func isJson(s string) bool {
+	var js interface{}
+	return json.Unmarshal([]byte(s), &js) == nil
 }
