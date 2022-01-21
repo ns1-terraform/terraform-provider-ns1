@@ -341,23 +341,11 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 				log.Println("answer meta", v)
 				metaMap := v.(map[string]interface{})
 				if allSubdivisions, ok := metaMap["subdivisions"]; ok {
-					subdivisionsMap := make(map[string]interface{})
-					if isJson(allSubdivisions.(string)) {
-						json.Unmarshal([]byte(allSubdivisions.(string)), &subdivisionsMap)
-					} else {
-						subdivisions := strings.Split(allSubdivisions.(string), ",")
-						for _, sub := range subdivisions {
-							sub = strings.Join(strings.Fields(sub), "")
-							subp := strings.Split(sub, "-")
-							if len(subp) != 2 {
-								return fmt.Errorf("invalid subidivision format. expecting (\"Country-Subdivision\") got %s", sub)
-							}
-							if subdivisionsMap[subp[0]] == nil {
-								subdivisionsMap[subp[0]] = []string{}
-							}
-							subdivisionsMap[subp[0]] = append(subdivisionsMap[subp[0]].([]string), subp[1])
-						}
+					subdivisionsMap, err := subdivisionConverter(allSubdivisions.(string))
+					if err != nil {
+						return err
 					}
+
 					metaMap["subdivisions"] = subdivisionsMap
 				}
 				removeEmptyMeta(metaMap)
@@ -522,6 +510,17 @@ func recordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.Resour
 // since the API often changes the order.
 // boolean fields are normalized for string representations of bools.
 func metaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+	if strings.HasSuffix(k, ".subdivisions") {
+		// Converting and sorting string 'new'
+		newSubdivMap, _ := subdivisionConverter(new)
+		newJsonStr, _ := json.Marshal(newSubdivMap)
+
+		// Converting and sorting string 'old'
+		oldSubdivMap, _ := subdivisionConverter(old)
+		oldJsonStr, _ := json.Marshal(oldSubdivMap)
+		return string(oldJsonStr) == string(newJsonStr)
+	}
+
 	if strings.HasSuffix(k, ".georegion") ||
 		strings.HasSuffix(k, ".country") ||
 		strings.HasSuffix(k, ".us_state") ||
@@ -605,4 +604,40 @@ func metaToMapString(m *data.Meta) map[string]interface{} {
 func isJson(s string) bool {
 	var js interface{}
 	return json.Unmarshal([]byte(s), &js) == nil
+}
+
+func subdivisionConverter(s string) (map[string]interface{}, error) {
+	// Get a string in "Country-Subdivision" or Json format, sort and return a map[string]interface{}
+	subdivisionsMap := make(map[string]interface{})
+	subdivisions := strings.Split(s, ",")
+	if isJson(s) {
+		json.Unmarshal([]byte(s), &subdivisionsMap)
+		for k, v := range subdivisionsMap {
+			strSlice := []string{}
+			for _, str := range v.([]interface{}) {
+				strSlice = append(strSlice, str.(string))
+			}
+			subdivisionsMap[k] = strSlice
+		}
+	} else {
+		for _, sub := range subdivisions {
+			sub = strings.Join(strings.Fields(sub), "")
+			subp := strings.Split(sub, "-")
+			if len(subp) != 2 {
+				return nil, fmt.Errorf("invalid subdivision format. expecting (\"Country-Subdivision\") got %s", sub)
+			}
+			if subdivisionsMap[subp[0]] == nil {
+				subdivisionsMap[subp[0]] = []string{}
+			}
+			subdivisionsMap[subp[0]] = append(subdivisionsMap[subp[0]].([]string), subp[1])
+		}
+	}
+
+	for _, slices := range subdivisionsMap {
+		sort.Slice(slices, func(i, j int) bool {
+			return slices.([]string)[i] < slices.([]string)[j]
+		})
+	}
+
+	return subdivisionsMap, nil
 }
