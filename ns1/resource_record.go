@@ -431,10 +431,8 @@ func removeEmptyMeta(v map[string]interface{}) {
 	for metaKey, metaValue := range v {
 		switch metaValue.(type) {
 		case string:
-			if metaValue != nil {
-				if metaValue.(string) == "" {
-					delete(v, metaKey)
-				}
+			if metaValue.(string) == "" {
+				delete(v, metaKey)
 			}
 		}
 	}
@@ -613,9 +611,17 @@ func subdivisionConverter(s string) (map[string]interface{}, error) {
 	if isJson(s) {
 		json.Unmarshal([]byte(s), &subdivisionsMap)
 		for k, v := range subdivisionsMap {
+			vals, ok := v.([]interface{})
+			if !ok {
+				return nil, fmt.Errorf("error to convert interface{} to []interface{}")
+			}
 			strSlice := []string{}
-			for _, str := range v.([]interface{}) {
-				strSlice = append(strSlice, str.(string))
+			for _, s := range vals {
+				str, ok := s.(string)
+				if !ok {
+					return nil, fmt.Errorf("couldn't get subdivision value correctly")
+				}
+				strSlice = append(strSlice, str)
 			}
 			subdivisionsMap[k] = strSlice
 		}
