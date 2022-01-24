@@ -1,3 +1,7 @@
+## 1.12.3 (January 24, 2022)
+ENHANCEMENTS:
+* Resolves subdivision formatting inconsistency
+
 ## 1.12.2 (January 07, 2022)
 ENHANCEMENTS:
 * Various documentation updates
