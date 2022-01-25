@@ -18,7 +18,7 @@ func TestAccPulsarJob_basic(t *testing.T) {
 	var (
 		job     = pulsar.PulsarJob{}
 		jobName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
-		app_id  = "yv5kfn"
+		appName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 	)
 	// Basic test for JavaScript jobs
 	resource.Test(t, resource.TestCase{
@@ -27,12 +27,11 @@ func TestAccPulsarJob_basic(t *testing.T) {
 		CheckDestroy: testAccCheckPulsarJobDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccJSPulsarJobBasic(jobName, app_id),
+				Config: testAccJSPulsarJobBasic(appName, jobName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPulsarJobExists("ns1_pulsarjob.it", &job),
 					testAccCheckPulsarJobName(&job, jobName),
 					testAccCheckPulsarJobTypeID(&job, "latency"),
-					testAccCheckPulsarJobAppID(&job, app_id),
 					testAccCheckPulsarJobActive(&job, true),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
@@ -50,12 +49,11 @@ func TestAccPulsarJob_basic(t *testing.T) {
 		CheckDestroy: testAccCheckPulsarJobDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBBPulsarJobBasic(jobName, app_id),
+				Config: testAccBBPulsarJobBasic(appName, jobName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPulsarJobExists("ns1_pulsarjob.it", &job),
 					testAccCheckPulsarJobName(&job, jobName),
 					testAccCheckPulsarJobTypeID(&job, "custom"),
-					testAccCheckPulsarJobAppID(&job, "yv5kfn"),
 					testAccCheckPulsarJobActive(&job, true),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
@@ -68,11 +66,12 @@ func TestAccPulsarJob_basic(t *testing.T) {
 // Updating pulsar jobs without changing its type (JavaScript or Bulk Beacon)
 func TestAccPulsarJob_updated_same_type(t *testing.T) {
 	var (
+		app     = pulsar.Application{}
 		job     = pulsar.PulsarJob{}
 		jobName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
-		app_id  = "yv5kfn"
+		appName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 
-		updatedJobName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+		// updatedJobName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 	)
 	// Update test for JavaScript jobs
 	resource.Test(t, resource.TestCase{
@@ -81,12 +80,13 @@ func TestAccPulsarJob_updated_same_type(t *testing.T) {
 		CheckDestroy: testAccCheckPulsarJobDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccJSPulsarJobBasic(jobName, app_id),
+				Config: testAccJSPulsarJobBasic(appName, jobName),
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckApplicationExists("ns1_application.app", &app),
 					testAccCheckPulsarJobExists("ns1_pulsarjob.it", &job),
 					testAccCheckPulsarJobName(&job, jobName),
 					testAccCheckPulsarJobTypeID(&job, "latency"),
-					testAccCheckPulsarJobAppID(&job, app_id),
+					testAccCheckPulsarJobAppID(&job, app.ID),
 					testAccCheckPulsarJobActive(&job, true),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
@@ -94,55 +94,54 @@ func TestAccPulsarJob_updated_same_type(t *testing.T) {
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccURLPath"),
 				),
 			},
-			{
-				Config: testAccJSPulsarJobUpdated(updatedJobName, app_id),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckPulsarJobExists("ns1_pulsarjob.it", &job),
-					testAccCheckPulsarJobName(&job, updatedJobName),
-					testAccCheckPulsarJobTypeID(&job, "latency"),
-					testAccCheckPulsarJobAppID(&job, app_id),
-					testAccCheckPulsarJobActive(&job, false),
-					testAccCheckPulsarJobShared(&job, false),
-					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccUpdatedHost"),
-					testAccCheckPulsarJobSUrlPath(&job, "/testAccUpdatedURLPath"),
-				),
-			},
+			// {
+			// 	Config: testAccJSPulsarJobUpdated(updatedJobName, app.ID),
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		testAccCheckPulsarJobExists("ns1_pulsarjob.it", &job),
+			// 		testAccCheckPulsarJobName(&job, updatedJobName),
+			// 		testAccCheckPulsarJobTypeID(&job, "latency"),
+			// 		testAccCheckPulsarJobActive(&job, false),
+			// 		testAccCheckPulsarJobShared(&job, false),
+			// 		testAccCheckPulsarJobSCommunity(&job, false),
+			// 		testAccCheckPulsarJobSHost(&job, "testAccUpdatedHost"),
+			// 		testAccCheckPulsarJobSUrlPath(&job, "/testAccUpdatedURLPath"),
+			// 	),
+			// },
 		},
 	})
 
-	// update test for Bulk Beacon jobs
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckPulsarJobDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccBBPulsarJobBasic(jobName, app_id),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckPulsarJobExists("ns1_pulsarjob.it", &job),
-					testAccCheckPulsarJobName(&job, jobName),
-					testAccCheckPulsarJobTypeID(&job, "custom"),
-					testAccCheckPulsarJobAppID(&job, "yv5kfn"),
-					testAccCheckPulsarJobActive(&job, true),
-					testAccCheckPulsarJobShared(&job, false),
-					testAccCheckPulsarJobSCommunity(&job, false),
-				),
-			},
-			{
-				Config: testAccBBPulsarJobUpdated(updatedJobName, app_id),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckPulsarJobExists("ns1_pulsarjob.it", &job),
-					testAccCheckPulsarJobName(&job, updatedJobName),
-					testAccCheckPulsarJobTypeID(&job, "custom"),
-					testAccCheckPulsarJobAppID(&job, "yv5kfn"),
-					testAccCheckPulsarJobActive(&job, false),
-					testAccCheckPulsarJobShared(&job, false),
-					testAccCheckPulsarJobSCommunity(&job, false),
-				),
-			},
-		},
-	})
+	// // update test for Bulk Beacon jobs
+	// resource.Test(t, resource.TestCase{
+	// 	PreCheck:     func() { testAccPreCheck(t) },
+	// 	Providers:    testAccProviders,
+	// 	CheckDestroy: testAccCheckPulsarJobDestroy,
+	// 	Steps: []resource.TestStep{
+	// 		{
+	// 			Config: testAccBBPulsarJobBasic(appName, jobName),
+	// 			Check: resource.ComposeTestCheckFunc(
+	// 				testAccCheckPulsarJobExists("ns1_pulsarjob.it", &job),
+	// 				testAccCheckPulsarJobName(&job, jobName),
+	// 				testAccCheckPulsarJobTypeID(&job, "custom"),
+	// 				testAccCheckPulsarJobAppID(&job, "yv5kfn"),
+	// 				testAccCheckPulsarJobActive(&job, true),
+	// 				testAccCheckPulsarJobShared(&job, false),
+	// 				testAccCheckPulsarJobSCommunity(&job, false),
+	// 			),
+	// 		},
+	// 		{
+	// 			Config: testAccBBPulsarJobUpdated(updatedJobName, job.AppID),
+	// 			Check: resource.ComposeTestCheckFunc(
+	// 				testAccCheckPulsarJobExists("ns1_pulsarjob.it", &job),
+	// 				testAccCheckPulsarJobName(&job, updatedJobName),
+	// 				testAccCheckPulsarJobTypeID(&job, "custom"),
+	// 				testAccCheckPulsarJobAppID(&job, "yv5kfn"),
+	// 				testAccCheckPulsarJobActive(&job, false),
+	// 				testAccCheckPulsarJobShared(&job, false),
+	// 				testAccCheckPulsarJobSCommunity(&job, false),
+	// 			),
+	// 		},
+	// 	},
+	// })
 }
 
 // Updating pulsar jobs changing its type (JavaScript <-> Bulk Beacon)
@@ -362,17 +361,21 @@ func TestAccPulsarJob_ManualDelete(t *testing.T) {
 	})
 }
 
-func testAccJSPulsarJobBasic(jobName string, app_id string) string {
-	return fmt.Sprintf(`resource "ns1_pulsarjob" "it" {
+func testAccJSPulsarJobBasic(appName, jobName string) string {
+	return fmt.Sprintf(`resource "ns1_application" "app" {
+	name = "%s"
+}
+
+	resource "ns1_pulsarjob" "it" {
   		name = "%s"
 		type_id = "latency"
-		app_id = "%s"
+		app_id = "${ns1_application.app.id}"
 		config = {
 			host = "testAccHost"
 			url_path = "/testAccURLPath"
 		}
 }
-`, jobName, app_id)
+`, appName, jobName)
 }
 
 func testAccJSPulsarJobUpdated(jobName string, app_id string) string {
@@ -418,16 +421,20 @@ func testAccJSPulsarJobBlendMetricWeights(jobName string, app_id string) string 
 `, jobName, app_id)
 }
 
-func testAccBBPulsarJobBasic(jobName string, app_id string) string {
-	return fmt.Sprintf(`resource "ns1_pulsarjob" "it" {
+func testAccBBPulsarJobBasic(appName string, jobName string) string {
+	return fmt.Sprintf(`
+	resource "ns1_application" "app" {
+		name = "%s"
+	}
+	resource "ns1_pulsarjob" "it" {
   		name = "%s"
 		type_id = "custom"
-		app_id = "%s"
+		app_id = "${ns1_application.app.id}"
 }
-`, jobName, app_id)
+`, appName, jobName)
 }
 
-func testAccBBPulsarJobUpdated(jobName string, app_id string) string {
+func testAccBBPulsarJobUpdated(jobName, appId string) string {
 	return fmt.Sprintf(`resource "ns1_pulsarjob" "it" {
   		name = "%s"
 		type_id = "custom"
@@ -435,7 +442,7 @@ func testAccBBPulsarJobUpdated(jobName string, app_id string) string {
 		active = false
 		shared = false
 }
-`, jobName, app_id)
+`, jobName, appId)
 }
 
 func testAccBBPulsarJobConverted(jobName string, app_id string) string {
