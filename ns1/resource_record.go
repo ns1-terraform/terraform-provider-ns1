@@ -70,7 +70,7 @@ func recordResource() *schema.Resource {
 			"meta": {
 				Type:             schema.TypeMap,
 				Optional:         true,
-				DiffSuppressFunc: metaDiffSuppressUp,
+				DiffSuppressFunc: metaDiffSuppress,
 			},
 			"link": {
 				Type:     schema.TypeString,
@@ -339,22 +339,12 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 
 			if v, ok := answer["meta"]; ok {
 				log.Println("answer meta", v)
-				metaMap := v.(map[string]interface{})
-				if allSubdivisions, ok := metaMap["subdivisions"]; ok {
-					subdivisionsMap, err := subdivisionConverter(allSubdivisions.(string))
-					if err != nil {
-						return err
-					}
+				meta, err := metaHandler(v)
+				if err != nil {
+					return err
+				}
 
-					metaMap["subdivisions"] = subdivisionsMap
-				}
-				removeEmptyMeta(metaMap)
-				a.Meta = data.MetaFromMap(metaMap)
-				log.Println(a.Meta)
-				errs := a.Meta.Validate()
-				if len(errs) > 0 {
-					return errJoin(append([]error{errors.New("found error/s in answer metadata")}, errs...), ",")
-				}
+				a.Meta = meta
 			}
 
 			r.AddAnswer(a)
@@ -374,12 +364,12 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 
 	if v, ok := d.GetOk("meta"); ok {
 		log.Println("record meta", v)
-		r.Meta = data.MetaFromMap(v.(map[string]interface{}))
-		log.Println(r.Meta)
-		errs := r.Meta.Validate()
-		if len(errs) > 0 {
-			return errJoin(append([]error{errors.New("found error/s in record metadata")}, errs...), ",")
+		meta, err := metaHandler(v)
+		if err != nil {
+			return err
 		}
+		r.Meta = meta
+		log.Println(r.Meta)
 	}
 	useClientSubnet := d.Get("use_client_subnet").(bool)
 	r.UseClientSubnet = &useClientSubnet
@@ -411,15 +401,13 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			}
 
 			if v, ok := region["meta"]; ok {
-				log.Println("region meta", v)
-				meta := data.MetaFromMap(v.(map[string]interface{}))
-				log.Println("region meta object", meta)
-				ns1R.Meta = *meta
-				log.Println(ns1R.Meta)
-				errs := ns1R.Meta.Validate()
-				if len(errs) > 0 {
-					return errJoin(append([]error{errors.New("found error/s in region/group metadata")}, errs...), ",")
+				meta, err := metaHandler(v)
+				if err != nil {
+					return err
 				}
+				log.Println("region meta object", meta)
+
+				ns1R.Meta = *meta
 			}
 			r.Regions[region["name"].(string)] = ns1R
 		}
@@ -602,6 +590,32 @@ func metaToMapString(m *data.Meta) map[string]interface{} {
 func isJson(s string) bool {
 	var js interface{}
 	return json.Unmarshal([]byte(s), &js) == nil
+}
+
+func metaHandler(meta interface{}) (*data.Meta, error) {
+	metaMap, ok := meta.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("error to convert meta to map")
+	}
+
+	if v, ok := metaMap["subdivisions"]; ok {
+		subdivisionsMap, err := subdivisionConverter(v.(string))
+		if err != nil {
+			return nil, err
+		}
+
+		metaMap["subdivisions"] = subdivisionsMap
+	}
+
+	removeEmptyMeta(metaMap)
+	metaData := data.MetaFromMap(metaMap)
+	log.Println(metaData)
+	errs := metaData.Validate()
+	if len(errs) > 0 {
+		return nil, errJoin(append([]error{errors.New("found error/s in answer metadata")}, errs...), ",")
+	}
+
+	return metaData, nil
 }
 
 func subdivisionConverter(s string) (map[string]interface{}, error) {
