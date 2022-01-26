@@ -77,10 +77,11 @@ resource "ns1_record" "www" {
     }
   }
 
-  # Example of setting pulsar metadata on an answer. Note the use of
+  # Example of setting pulsar and subdivision metadata on an answer. Note the use of
   # jsonencode (available in terraform 0.12+). This is preferable to the
   # "quoted JSON" style used for feeds above, both for readability, and
-  # because it handles ordering issues as well.
+  # because it handles ordering issues as well. 
+  # Note: This is also true for the metadata on a record and on a region.
   answers {
     answer = "sub3.${ns1_zone.tld.zone}"
     meta   = {
@@ -89,6 +90,10 @@ resource "ns1_record" "www" {
         "bias"       = "*0.55",
         "a5m_cutoff" = 0.9
       }])
+      subdivisions = jsonencode({
+			  "BR" = ["SP", "SC"],
+			  "DZ" = ["01", "02", "03"]
+		  })
     }
   }
 
