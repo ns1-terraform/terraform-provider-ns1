@@ -1,3 +1,12 @@
+## 1.12.3 (January 24, 2022)
+ENHANCEMENTS:
+* Resolves subdivision formatting inconsistency
+
+## 1.12.2 (January 07, 2022)
+ENHANCEMENTS:
+* Various documentation updates
+* Added support for team and user import [#193](https://github.com/ns1-terraform/terraform-provider-ns1/pull/193)
+
 ## 1.12.1 (September 23, 2021)
 ENHANCEMENTS:
 * Added additional validation for notify lists [#180](https://github.com/ns1-terraform/terraform-provider-ns1/pull/180)

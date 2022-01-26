@@ -108,6 +108,52 @@ func TestAccRecord_meta(t *testing.T) {
 	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
 	domainName := fmt.Sprintf("test.%s", zoneName)
 	sub := make(map[string]interface{}, 2)
+	sub["BR"] = []string{"SP", "SC"}
+	sub["DZ"] = []string{"01", "02", "03"}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordAnswerMeta(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordAnswerMetaSubdivisions(&record, sub),
+					testAccCheckRecordAnswerMetaIPPrefixes(&record, []string{
+						"3.248.0.0/13",
+						"13.248.96.0/24",
+						"13.248.113.0/24",
+						"13.248.118.0/24",
+						"13.248.119.0/24",
+						"13.248.121.0/24",
+					}),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.it",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/A", zoneName, domainName),
+				ImportStateVerify: true,
+			},
+			{
+				Config: testAccRecordAnswerMetaDataFeed(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordAnswerMetaUp("ns1_datafeed.test", &record),
+				),
+			},
+		},
+	})
+}
+
+func TestAccRecord_meta_with_json(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("test.%s", zoneName)
+	sub := make(map[string]interface{}, 2)
 	sub["DZ"] = []string{"01", "02", "03"}
 	sub["BR"] = []string{"SP", "SC"}
 	resource.Test(t, resource.TestCase{
@@ -116,7 +162,7 @@ func TestAccRecord_meta(t *testing.T) {
 		CheckDestroy: testAccCheckRecordDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRecordAnswerMeta(rString),
+				Config: testAccRecordAnswerMetaWithJson(rString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
 					testAccCheckRecordDomain(&record, domainName),
@@ -722,8 +768,8 @@ resource "ns1_record" "it" {
     answer = "1.2.3.4"
 
     meta = {
-    up = true
-    subdivisions = "DZ-01,DZ-02,DZ-03,BR-SP,BR-SC"
+	  up = true
+	  subdivisions = "BR-SP,BR-SC,DZ-01,DZ-02,DZ-03"
       weight = 5
       ip_prefixes = "3.248.0.0/13,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24"
       pulsar = jsonencode([{
@@ -734,6 +780,38 @@ resource "ns1_record" "it" {
     }
   }
 }
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordAnswerMetaWithJson(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+	zone              = "${ns1_zone.test.zone}"
+	domain            = "test.${ns1_zone.test.zone}"
+	type              = "A"
+	answers {
+	  answer = "1.2.3.4"
+  
+	  meta = {
+		up = true
+		subdivisions = jsonencode({
+			"DZ" = ["01", "02", "03"],
+			"BR" = ["SP", "SC"]
+		})
+		weight = 5
+		ip_prefixes = "3.248.0.0/13,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24"
+		pulsar = jsonencode([{
+		  "job_id"     = "abcdef",
+		  "bias"       = "*0.55",
+		  "a5m_cutoff" = 0.9
+		}])
+	  }
+	}
+  }
 
 resource "ns1_zone" "test" {
   zone = "terraform-test-%s.io"

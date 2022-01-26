@@ -1,6 +1,7 @@
 package ns1
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -281,10 +282,8 @@ func recordMapValueToString(configMap map[string]interface{}) map[string]interfa
 			} else {
 				config[configKey] = "0"
 			}
-			break
 		case float64:
 			config[configKey] = strconv.FormatFloat(configValue.(float64), 'f', -1, 64)
-			break
 		default:
 			config[configKey] = configValue
 		}
@@ -342,19 +341,11 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 				log.Println("answer meta", v)
 				metaMap := v.(map[string]interface{})
 				if allSubdivisions, ok := metaMap["subdivisions"]; ok {
-					subdivisions := strings.Split(allSubdivisions.(string), ",")
-					subdivisionsMap := make(map[string]interface{})
-					for _, sub := range subdivisions {
-						sub = strings.Join(strings.Fields(sub), "")
-						subp := strings.Split(sub, "-")
-						if len(subp) != 2 {
-							return fmt.Errorf("invalid subidivision format. expecting (\"Country-Subdivision\") got %s", sub)
-						}
-						if subdivisionsMap[subp[0]] == nil {
-							subdivisionsMap[subp[0]] = []string{}
-						}
-						subdivisionsMap[subp[0]] = append(subdivisionsMap[subp[0]].([]string), subp[1])
+					subdivisionsMap, err := subdivisionConverter(allSubdivisions.(string))
+					if err != nil {
+						return err
 					}
+
 					metaMap["subdivisions"] = subdivisionsMap
 				}
 				removeEmptyMeta(metaMap)
@@ -438,7 +429,8 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 
 func removeEmptyMeta(v map[string]interface{}) {
 	for metaKey, metaValue := range v {
-		if metaValue != nil {
+		switch metaValue.(type) {
+		case string:
 			if metaValue.(string) == "" {
 				delete(v, metaKey)
 			}
@@ -516,6 +508,17 @@ func recordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.Resour
 // since the API often changes the order.
 // boolean fields are normalized for string representations of bools.
 func metaDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+	if strings.HasSuffix(k, ".subdivisions") {
+		// Converting and sorting string 'new'
+		newSubdivMap, _ := subdivisionConverter(new)
+		newJsonStr, _ := json.Marshal(newSubdivMap)
+
+		// Converting and sorting string 'old'
+		oldSubdivMap, _ := subdivisionConverter(old)
+		oldJsonStr, _ := json.Marshal(oldSubdivMap)
+		return string(oldJsonStr) == string(newJsonStr)
+	}
+
 	if strings.HasSuffix(k, ".georegion") ||
 		strings.HasSuffix(k, ".country") ||
 		strings.HasSuffix(k, ".us_state") ||
@@ -594,4 +597,53 @@ func metaToMapString(m *data.Meta) map[string]interface{} {
 		}
 	}
 	return stringMap
+}
+
+func isJson(s string) bool {
+	var js interface{}
+	return json.Unmarshal([]byte(s), &js) == nil
+}
+
+func subdivisionConverter(s string) (map[string]interface{}, error) {
+	// Get a string in "Country-Subdivision" or Json format, sort and return a map[string]interface{}
+	subdivisionsMap := make(map[string]interface{})
+	subdivisions := strings.Split(s, ",")
+	if isJson(s) {
+		json.Unmarshal([]byte(s), &subdivisionsMap)
+		for k, v := range subdivisionsMap {
+			vals, ok := v.([]interface{})
+			if !ok {
+				return nil, fmt.Errorf("error to convert interface{} to []interface{}")
+			}
+			strSlice := []string{}
+			for _, s := range vals {
+				str, ok := s.(string)
+				if !ok {
+					return nil, fmt.Errorf("couldn't get subdivision value correctly")
+				}
+				strSlice = append(strSlice, str)
+			}
+			subdivisionsMap[k] = strSlice
+		}
+	} else {
+		for _, sub := range subdivisions {
+			sub = strings.Join(strings.Fields(sub), "")
+			subp := strings.Split(sub, "-")
+			if len(subp) != 2 {
+				return nil, fmt.Errorf("invalid subdivision format. expecting (\"Country-Subdivision\") got %s", sub)
+			}
+			if subdivisionsMap[subp[0]] == nil {
+				subdivisionsMap[subp[0]] = []string{}
+			}
+			subdivisionsMap[subp[0]] = append(subdivisionsMap[subp[0]].([]string), subp[1])
+		}
+	}
+
+	for _, slices := range subdivisionsMap {
+		sort.Slice(slices, func(i, j int) bool {
+			return slices.([]string)[i] < slices.([]string)[j]
+		})
+	}
+
+	return subdivisionsMap, nil
 }
