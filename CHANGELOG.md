@@ -1,3 +1,7 @@
+## 1.12.4 (January 27, 2022)
+ENHANCEMENTS:
+* Resolves subdivision formatting inconsistency with answers meta and regions meta
+
 ## 1.12.3 (January 24, 2022)
 ENHANCEMENTS:
 * Resolves subdivision formatting inconsistency
