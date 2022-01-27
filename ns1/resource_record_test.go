@@ -108,8 +108,8 @@ func TestAccRecord_meta(t *testing.T) {
 	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
 	domainName := fmt.Sprintf("test.%s", zoneName)
 	sub := make(map[string]interface{}, 2)
-	sub["BR"] = []string{"SP", "SC"}
-	sub["DZ"] = []string{"01", "02", "03"}
+	sub["BR"] = []interface{}{"SP", "SC"}
+	sub["DZ"] = []interface{}{"01", "02", "03"}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -154,8 +154,8 @@ func TestAccRecord_meta_with_json(t *testing.T) {
 	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
 	domainName := fmt.Sprintf("test.%s", zoneName)
 	sub := make(map[string]interface{}, 2)
-	sub["DZ"] = []string{"01", "02", "03"}
-	sub["BR"] = []string{"SP", "SC"}
+	sub["BR"] = []interface{}{"SP", "SC"}
+	sub["DZ"] = []interface{}{"01", "02", "03"}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -565,12 +565,29 @@ func testAccCheckRecordAnswerMetaSubdivisions(r *dns.Record, expected map[string
 	return func(s *terraform.State) error {
 		recordAnswer := r.Answers[0]
 		recordMetas := recordAnswer.Meta
-		sub := recordMetas.Subdivisions.(map[string]interface{})
-		if reflect.DeepEqual(sub, expected) {
-			return fmt.Errorf("r.Answers[0].Meta.Subdivisions: got: %#v want: %#v", sub, expected)
+		recordSubdiv := recordMetas.Subdivisions.(map[string]interface{})
+
+		recordSlice := mapToSlice(recordSubdiv)
+		expectedSlice := mapToSlice(expected)
+
+		if !reflect.DeepEqual(recordSlice, expectedSlice) {
+			return fmt.Errorf("r.Answers[0].Meta.Subdivisions: got: %#v want: %#v", recordSubdiv, expected)
 		}
+
 		return nil
 	}
+}
+
+func mapToSlice(m map[string]interface{}) []string {
+	sliceString := make([]string, 0)
+	for key, slice := range m {
+		for _, v := range slice.([]interface{}) {
+			sliceString = append(sliceString, fmt.Sprintf("%v-%v", key, v))
+		}
+	}
+
+	sort.Strings(sliceString)
+	return sliceString
 }
 
 func testAccCheckRecordAnswerMetaWeight(r *dns.Record, expected float64) resource.TestCheckFunc {
@@ -799,8 +816,8 @@ resource "ns1_record" "it" {
 	  meta = {
 		up = true
 		subdivisions = jsonencode({
-			"DZ" = ["01", "02", "03"],
-			"BR" = ["SP", "SC"]
+			"BR" = ["SP", "SC"],
+			"DZ" = ["01", "02", "03"]
 		})
 		weight = 5
 		ip_prefixes = "3.248.0.0/13,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24"
@@ -828,7 +845,7 @@ resource "ns1_monitoringjob" "test" {
     "ams"
   ]
   job_type = "http"
-  frequency = 30
+  frequency = 60
   rapid_recheck = true
   policy = "all"
   config = {
