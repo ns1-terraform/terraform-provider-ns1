@@ -1,3 +1,7 @@
+## 1.12.5 (February 01, 2022)
+ENHANCEMENTS:
+* Updates go version to 1.17 to provide release binaries for darwin arm64
+
 ## 1.12.4 (January 27, 2022)
 ENHANCEMENTS:
 * Resolves subdivision formatting inconsistency with answers meta and regions meta
