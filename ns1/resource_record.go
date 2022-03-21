@@ -642,7 +642,7 @@ func subdivisionConverter(s string) (map[string]interface{}, error) {
 	} else {
 		for _, sub := range subdivisions {
 			sub = strings.Join(strings.Fields(sub), "")
-			subp := strings.Split(sub, "-")
+			subp := strings.SplitN(sub, "-", 2)
 			if len(subp) != 2 {
 				return nil, fmt.Errorf("invalid subdivision format. expecting (\"Country-Subdivision\") got %s", sub)
 			}
