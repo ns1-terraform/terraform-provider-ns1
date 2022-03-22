@@ -110,6 +110,8 @@ func TestAccRecord_meta(t *testing.T) {
 	sub := make(map[string]interface{}, 2)
 	sub["BR"] = []interface{}{"SP", "SC"}
 	sub["DZ"] = []interface{}{"01", "02", "03"}
+	sub["NO"] = []interface{}{"NO-01", "NO-11"}
+	sub["SG"] = []interface{}{"SG-03"}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -156,6 +158,8 @@ func TestAccRecord_meta_with_json(t *testing.T) {
 	sub := make(map[string]interface{}, 2)
 	sub["BR"] = []interface{}{"SP", "SC"}
 	sub["DZ"] = []interface{}{"01", "02", "03"}
+	sub["NO"] = []interface{}{"NO-01", "NO-11"}
+	sub["SG"] = []interface{}{"SG-03"}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -786,7 +790,7 @@ resource "ns1_record" "it" {
 
     meta = {
 	  up = true
-	  subdivisions = "BR-SP,BR-SC,DZ-01,DZ-02,DZ-03"
+	  subdivisions = "BR-SP,BR-SC,DZ-01,DZ-02,DZ-03,NO-NO-01,NO-NO-11,SG-SG-03"
       weight = 5
       ip_prefixes = "3.248.0.0/13,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24"
       pulsar = jsonencode([{
@@ -817,7 +821,9 @@ resource "ns1_record" "it" {
 		up = true
 		subdivisions = jsonencode({
 			"BR" = ["SP", "SC"],
-			"DZ" = ["01", "02", "03"]
+			"DZ" = ["01", "02", "03"],
+			"NO" = ["NO-01", "NO-11"],
+			"SG" = ["SG-03"]
 		})
 		weight = 5
 		ip_prefixes = "3.248.0.0/13,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24"
