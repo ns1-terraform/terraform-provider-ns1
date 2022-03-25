@@ -44,16 +44,18 @@ func recordResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Required
 			"zone": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validateFQDN,
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateFunc:     validateFQDN,
+				DiffSuppressFunc: caseSensitivityDiffSuppress,
 			},
 			"domain": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validateFQDN,
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateFunc:     validateFQDN,
+				DiffSuppressFunc: caseSensitivityDiffSuppress,
 			},
 			"type": {
 				Type:         schema.TypeString,
@@ -489,6 +491,12 @@ func recordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.Resour
 	d.Set("type", parts[2])
 
 	return []*schema.ResourceData{d}, nil
+}
+
+// ignores case difference between state and resoruce written in terraform file
+// so we can keep data consistency between tf state and ddi since ddi is case insensitive
+func caseSensitivityDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+	return strings.EqualFold(old, new)
 }
 
 // metaDiffSuppress evaluates fields in the meta attribute.
