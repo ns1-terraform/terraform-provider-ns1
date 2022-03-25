@@ -206,16 +206,16 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	d.Set("zone", r.Zone)
 	d.Set("type", r.Type)
 	d.Set("ttl", r.TTL)
-	if r.Type == "ALIAS" {
-		if r.Override_TTL != nil {
-			err := d.Set("override_ttl", *r.Override_TTL)
-			if err != nil {
-				return fmt.Errorf("[DEBUG] Error setting override_ttl for: %s, error: %#v", r.Domain, err)
-			}
+
+	d.Set("override_ttl", nil)
+	if r.Type == "ALIAS" && r.Override_TTL != nil {
+		err := d.Set("override_ttl", *r.Override_TTL)
+
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error setting override_ttl for: %s, error: %#v", r.Domain, err)
 		}
-	} else {
-		d.Set("override_ttl", nil)
 	}
+
 	if r.Link != "" {
 		err := d.Set("link", r.Link)
 		if err != nil {
