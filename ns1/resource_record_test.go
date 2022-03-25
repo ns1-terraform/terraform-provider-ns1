@@ -516,6 +516,105 @@ func TestAccRecord_CaseInsensitive(t *testing.T) {
 
 }
 
+func TestAccRecord_OverrideTTL(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	//zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	//domainName := zoneName
+
+	tfFileBasicALIAS := testAccRecordBasicALIAS(rString)
+	tfFileOverrideTtlALIAS := testAccRecordBasicALIASOverrideTTL(rString, true)
+	tfFileDoNotOverrideTtlALIAS := testAccRecordBasicALIASOverrideTTL(rString, false)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			// Create an ALIAS record with override_ttl not set
+			{
+				Config: tfFileBasicALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileBasicALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			// Change override TTL to true Plan and Apply
+			{
+				Config:             tfFileOverrideTtlALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: tfFileOverrideTtlALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNotNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileOverrideTtlALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			// Change override TTL to false setting to false Plan and Apply
+			{
+				Config:             tfFileDoNotOverrideTtlALIAS,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: tfFileDoNotOverrideTtlALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileDoNotOverrideTtlALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			// Change override TTL to true
+			{
+				Config: tfFileOverrideTtlALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNotNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileOverrideTtlALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			// Change override TTL to false setting to "null"
+			{
+				Config: tfFileBasicALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileBasicALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
 // See if URLFWD permission exist by trying to create a record with it.
 func testAccURLFWDPreCheck(t *testing.T) {
 	client, err := sharedClient()
@@ -628,6 +727,29 @@ func testAccCheckRecordUseClientSubnet(r *dns.Record, expected bool) resource.Te
 	return func(s *terraform.State) error {
 		if *r.UseClientSubnet != expected {
 			return fmt.Errorf("UseClientSubnet: got: %#v want: %#v", *r.UseClientSubnet, expected)
+		}
+		return nil
+	}
+}
+
+func ExpectOverrideTTLNil() bool {
+	return true
+}
+
+func ExpectOverrideTTLNotNil() bool {
+	return false
+}
+
+func testAccCheckRecordOverrideTTL(r *dns.Record, expectedNil bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if expectedNil {
+			if r.Override_TTL != nil {
+				return fmt.Errorf("Override TTL: got: %#v want: null", *r.Override_TTL)
+			}
+			return nil
+		}
+		if r.Override_TTL == nil {
+			return fmt.Errorf("Override TTL: got: %v want: notNil", r.Override_TTL)
 		}
 		return nil
 	}
@@ -842,6 +964,43 @@ resource "ns1_zone" "test" {
   zone = "%s"
 }
 `, domain, zone)
+}
+
+func testAccRecordBasicALIASOverrideTTL(rString string, overridettl bool) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "${ns1_zone.test.zone}"
+  type              = "ALIAS"
+  ttl               = 60
+  override_ttl 		= %v
+  answers {
+    answer = "test.${ns1_zone.test.zone}"
+  }
+}
+
+resource "ns1_zone" "test" {
+	zone = "terraform-test-%s.io"
+}
+`, overridettl, rString)
+}
+
+func testAccRecordBasicALIAS(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "${ns1_zone.test.zone}"
+  type              = "ALIAS"
+  ttl               = 60
+  answers {
+    answer = "test.${ns1_zone.test.zone}"
+  }
+}
+
+resource "ns1_zone" "test" {
+	zone = "terraform-test-%s.io"
+}
+`, rString)
 }
 
 func testAccRecordUpdated(rString string) string {

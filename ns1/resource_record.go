@@ -208,7 +208,7 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	d.Set("ttl", r.TTL)
 	if r.Type == "ALIAS" {
 		if r.Override_TTL != nil {
-			err := d.Set("override_ttl", r.Override_TTL)
+			err := d.Set("override_ttl", *r.Override_TTL)
 			if err != nil {
 				return fmt.Errorf("[DEBUG] Error setting override_ttl for: %s, error: %#v", r.Domain, err)
 			}
