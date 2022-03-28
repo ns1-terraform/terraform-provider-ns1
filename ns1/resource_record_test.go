@@ -519,8 +519,6 @@ func TestAccRecord_CaseInsensitive(t *testing.T) {
 func TestAccRecord_OverrideTTL(t *testing.T) {
 	var record dns.Record
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
-	//zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
-	//domainName := zoneName
 
 	tfFileBasicALIAS := testAccRecordBasicALIAS(rString)
 	tfFileOverrideTtlALIAS := testAccRecordBasicALIASOverrideTTL(rString, true)
