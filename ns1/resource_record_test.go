@@ -516,13 +516,12 @@ func TestAccRecord_CaseInsensitive(t *testing.T) {
 
 }
 
-func TestAccRecord_OverrideTTL(t *testing.T) {
+func TestAccRecord_OverrideTTLNilToTrue(t *testing.T) {
 	var record dns.Record
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 
 	tfFileBasicALIAS := testAccRecordBasicALIAS(rString)
 	tfFileOverrideTtlALIAS := testAccRecordBasicALIASOverrideTTL(rString, true)
-	tfFileDoNotOverrideTtlALIAS := testAccRecordBasicALIASOverrideTTL(rString, false)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -562,6 +561,85 @@ func TestAccRecord_OverrideTTL(t *testing.T) {
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
+		},
+	})
+}
+
+func TestAccRecord_OverrideTTLTrueToNil(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	tfFileBasicALIAS := testAccRecordBasicALIAS(rString)
+	tfFileOverrideTtlALIAS := testAccRecordBasicALIASOverrideTTL(rString, true)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			// Create an ALIAS record with override_ttl true
+			{
+				Config: tfFileOverrideTtlALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNotNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileOverrideTtlALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				Config:             tfFileBasicALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// Change override TTL to false setting to "null"
+			{
+				Config: tfFileBasicALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileBasicALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+func TestAccRecord_OverrideTTLTrueToFalse(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	tfFileOverrideTtlALIAS := testAccRecordBasicALIASOverrideTTL(rString, true)
+	tfFileDoNotOverrideTtlALIAS := testAccRecordBasicALIASOverrideTTL(rString, false)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			// Create an ALIAS record with override_ttl true
+			{
+				Config: tfFileOverrideTtlALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNotNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileOverrideTtlALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
 			// Change override TTL to false setting to false Plan and Apply
 			{
 				Config:             tfFileDoNotOverrideTtlALIAS,
@@ -578,34 +656,6 @@ func TestAccRecord_OverrideTTL(t *testing.T) {
 			// Plan again to detect "loop" conditions
 			{
 				Config:             tfFileDoNotOverrideTtlALIAS,
-				PlanOnly:           true,
-				ExpectNonEmptyPlan: false,
-			},
-			// Change override TTL to true
-			{
-				Config: tfFileOverrideTtlALIAS,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.it", &record),
-					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNotNil()),
-				),
-			},
-			// Plan again to detect "loop" conditions
-			{
-				Config:             tfFileOverrideTtlALIAS,
-				PlanOnly:           true,
-				ExpectNonEmptyPlan: false,
-			},
-			// Change override TTL to false setting to "null"
-			{
-				Config: tfFileBasicALIAS,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.it", &record),
-					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNil()),
-				),
-			},
-			// Plan again to detect "loop" conditions
-			{
-				Config:             tfFileBasicALIAS,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
