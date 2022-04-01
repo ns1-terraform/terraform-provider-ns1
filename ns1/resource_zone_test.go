@@ -101,14 +101,14 @@ func TestAccZone_primary_to_secondary_to_normal(t *testing.T) {
 	)
 	// sorted by IP please
 	expected := []*dns.ZoneSecondaryServer{
-		&dns.ZoneSecondaryServer{
-			NetworkIDs: []int{0},
+		{
+			NetworkIDs: []int{},
 			IP:         "2.2.2.2",
 			Port:       53,
 			Notify:     false,
 		},
-		&dns.ZoneSecondaryServer{
-			NetworkIDs: []int{0},
+		{
+			NetworkIDs: []int{},
 			IP:         "3.3.3.3",
 			Port:       5353,
 			Notify:     true,
@@ -180,13 +180,13 @@ func TestAccZone_secondary_to_primary_to_normal(t *testing.T) {
 	)
 	// sorted by IP please
 	expected := []*dns.ZoneSecondaryServer{
-		&dns.ZoneSecondaryServer{
+		{
 			NetworkIDs: []int{0},
 			IP:         "2.2.2.2",
 			Port:       53,
 			Notify:     false,
 		},
-		&dns.ZoneSecondaryServer{
+		{
 			NetworkIDs: []int{0},
 			IP:         "3.3.3.3",
 			Port:       5353,
@@ -309,7 +309,7 @@ func TestAccZone_TSIG(t *testing.T) {
 					testAccCheckZoneTsigEnabled(&zone, tsig.Enabled),
 					testAccCheckZoneTsigName(&zone, tsig.Name),
 					testAccCheckZoneTsigHash(&zone, tsig.Hash),
-					// testAccCheckZoneTsigKey(&zone, tsig.Key),
+					testAccCheckZoneTsigKey(&zone, tsig.Key),
 				),
 			},
 		},
@@ -652,7 +652,7 @@ func testAccCheckZoneNotSecondary(z *dns.Zone) resource.TestCheckFunc {
 func testAccCheckZoneDNSSEC(zone *dns.Zone, expected bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if zone.DNSSEC == nil {
-			return fmt.Errorf("DNSSEC field not defined. Expected in S4 (18/10/2021)")
+			return fmt.Errorf("DNSSEC field not defined.")
 		}
 		if *zone.DNSSEC != expected {
 			return fmt.Errorf("DNSSEC: got: %t want: %t", *zone.DNSSEC, expected)
