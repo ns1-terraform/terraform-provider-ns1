@@ -438,26 +438,6 @@ func TestAccRecord_CaseInsensitive(t *testing.T) {
 		zone   string
 	}{
 		{
-			"root level record no cap letters",
-			"terraform-test-#.io",
-			"terraform-test-#.io",
-		},
-		{
-			"root level record domain as title",
-			"Terraform-test-#.io",
-			"terraform-test-#.io",
-		},
-		{
-			"root level record zone as title",
-			"terraform-test-#.io",
-			"Terraform-test-#.io",
-		},
-		{
-			"root level record zone and domain as title",
-			"Terraform-test-#.io",
-			"Terraform-test-#.io",
-		},
-		{
 			"record no cap letters",
 			"test.terraform-test-#.io",
 			"terraform-test-#.io",
@@ -475,6 +455,71 @@ func TestAccRecord_CaseInsensitive(t *testing.T) {
 		{
 			"record zone and domain as title",
 			"test.Terraform-test-#.io",
+			"Terraform-test-#.io",
+		},
+	}
+	var wg sync.WaitGroup
+	for _, tt := range CapitalLettersCases {
+		wg.Add(1)
+		var record dns.Record
+
+		rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+		zoneName := strings.Replace(tt.zone, "#", rString, 1)
+		domainName := strings.Replace(tt.domain, "#", rString, 1)
+
+		tfFile := testAccRecordBasicCaseSensitive(domainName, zoneName)
+
+		go func() {
+			resource.Test(t, resource.TestCase{
+				PreCheck:     func() { testAccPreCheck(t) },
+				Providers:    testAccProviders,
+				CheckDestroy: testAccCheckRecordDestroy,
+				Steps: []resource.TestStep{
+					// Simulate an apply
+					{
+						Config: tfFile,
+						Check:  testAccCheckRecordExists("ns1_record.it", &record),
+					},
+					// Simulate a plan to check if has any diff
+					{
+						Config:             tfFile,
+						PlanOnly:           true,
+						ExpectNonEmptyPlan: false,
+					},
+				},
+			})
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+
+}
+
+func TestAccRecord_CaseInsensitive1(t *testing.T) {
+	var CapitalLettersCases = []struct {
+		name   string
+		domain string
+		zone   string
+	}{
+		{
+			"root level record no cap letters",
+			"terraform-test-#.io",
+			"terraform-test-#.io",
+		},
+		{
+			"root level record domain as title",
+			"Terraform-test-#.io",
+			"terraform-test-#.io",
+		},
+		{
+			"root level record zone as title",
+			"terraform-test-#.io",
+			"Terraform-test-#.io",
+		},
+		{
+			"root level record zone and domain as title",
+			"Terraform-test-#.io",
 			"Terraform-test-#.io",
 		},
 	}
