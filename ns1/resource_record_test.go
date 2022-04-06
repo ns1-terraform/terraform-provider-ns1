@@ -110,6 +110,8 @@ func TestAccRecord_meta(t *testing.T) {
 	sub := make(map[string]interface{}, 2)
 	sub["BR"] = []interface{}{"SP", "SC"}
 	sub["DZ"] = []interface{}{"01", "02", "03"}
+	sub["NO"] = []interface{}{"NO-01", "NO-11"}
+	sub["SG"] = []interface{}{"SG-03"}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -156,6 +158,8 @@ func TestAccRecord_meta_with_json(t *testing.T) {
 	sub := make(map[string]interface{}, 2)
 	sub["BR"] = []interface{}{"SP", "SC"}
 	sub["DZ"] = []interface{}{"01", "02", "03"}
+	sub["NO"] = []interface{}{"NO-01", "NO-11"}
+	sub["SG"] = []interface{}{"SG-03"}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -426,6 +430,238 @@ func TestAccRecord_ManualDelete(t *testing.T) {
 	})
 }
 
+func TestAccRecord_CaseInsensitive(t *testing.T) {
+	var CapitalLettersCases = []struct {
+		name   string
+		domain string
+		zone   string
+	}{
+		{
+			"root level record no cap letters",
+			"terraform-test-#.io",
+			"terraform-test-#.io",
+		},
+		{
+			"root level record domain as title",
+			"Terraform-test-#.io",
+			"terraform-test-#.io",
+		},
+		{
+			"root level record zone as title",
+			"terraform-test-#.io",
+			"Terraform-test-#.io",
+		},
+		{
+			"root level record zone and domain as title",
+			"Terraform-test-#.io",
+			"Terraform-test-#.io",
+		},
+		{
+			"root level record zone and domain random capitalization",
+			"TerrAForm-test-#.io",
+			"TerrafORm-test-#.io",
+		},
+		{
+			"record no cap letters",
+			"test.terraform-test-#.io",
+			"terraform-test-#.io",
+		},
+		{
+			"record domain as title",
+			"test.Terraform-test-#.io",
+			"terraform-test-#.io",
+		},
+		{
+			"record zone as title",
+			"test.terraform-test-#.io",
+			"Terraform-test-#.io",
+		},
+		{
+			"record zone and domain as title",
+			"test.Terraform-test-#.io",
+			"Terraform-test-#.io",
+		},
+	}
+	for _, tt := range CapitalLettersCases {
+		var record dns.Record
+
+		rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+		zoneName := strings.Replace(tt.zone, "#", rString, 1)
+		domainName := strings.Replace(tt.domain, "#", rString, 1)
+
+		tfFile := testAccRecordBasicCaseSensitive(domainName, zoneName)
+
+		resource.Test(t, resource.TestCase{
+			PreCheck:     func() { testAccPreCheck(t) },
+			Providers:    testAccProviders,
+			CheckDestroy: testAccCheckRecordDestroy,
+			Steps: []resource.TestStep{
+				// Simulate an apply
+				{
+					Config: tfFile,
+					Check:  testAccCheckRecordExists("ns1_record.it", &record),
+				},
+				// Simulate a plan to check if has any diff
+				{
+					Config:             tfFile,
+					PlanOnly:           true,
+					ExpectNonEmptyPlan: false,
+				},
+			},
+		})
+
+	}
+
+}
+
+func TestAccRecord_OverrideTTLNilToTrue(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	tfFileBasicALIAS := testAccRecordBasicALIAS(rString)
+	tfFileOverrideTtlALIAS := testAccRecordBasicALIASOverrideTTL(rString, true)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			// Create an ALIAS record with override_ttl not set
+			{
+				Config: tfFileBasicALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileBasicALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			// Change override TTL to true Plan and Apply
+			{
+				Config:             tfFileOverrideTtlALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: tfFileOverrideTtlALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNotNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileOverrideTtlALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+func TestAccRecord_OverrideTTLTrueToNil(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	tfFileBasicALIAS := testAccRecordBasicALIAS(rString)
+	tfFileOverrideTtlALIAS := testAccRecordBasicALIASOverrideTTL(rString, true)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			// Create an ALIAS record with override_ttl true
+			{
+				Config: tfFileOverrideTtlALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNotNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileOverrideTtlALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				Config:             tfFileBasicALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// Change override TTL to false setting to "null"
+			{
+				Config: tfFileBasicALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileBasicALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+func TestAccRecord_OverrideTTLTrueToFalse(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	tfFileOverrideTtlALIAS := testAccRecordBasicALIASOverrideTTL(rString, true)
+	tfFileDoNotOverrideTtlALIAS := testAccRecordBasicALIASOverrideTTL(rString, false)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			// Create an ALIAS record with override_ttl true
+			{
+				Config: tfFileOverrideTtlALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNotNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileOverrideTtlALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			// Change override TTL to false setting to false Plan and Apply
+			{
+				Config:             tfFileDoNotOverrideTtlALIAS,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: tfFileDoNotOverrideTtlALIAS,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideTTL(&record, ExpectOverrideTTLNil()),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileDoNotOverrideTtlALIAS,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
 // See if URLFWD permission exist by trying to create a record with it.
 func testAccURLFWDPreCheck(t *testing.T) {
 	client, err := sharedClient()
@@ -538,6 +774,29 @@ func testAccCheckRecordUseClientSubnet(r *dns.Record, expected bool) resource.Te
 	return func(s *terraform.State) error {
 		if *r.UseClientSubnet != expected {
 			return fmt.Errorf("UseClientSubnet: got: %#v want: %#v", *r.UseClientSubnet, expected)
+		}
+		return nil
+	}
+}
+
+func ExpectOverrideTTLNil() bool {
+	return true
+}
+
+func ExpectOverrideTTLNotNil() bool {
+	return false
+}
+
+func testAccCheckRecordOverrideTTL(r *dns.Record, expectedNil bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if expectedNil {
+			if r.Override_TTL != nil {
+				return fmt.Errorf("Override TTL: got: %#v want: null", *r.Override_TTL)
+			}
+			return nil
+		}
+		if r.Override_TTL == nil {
+			return fmt.Errorf("Override TTL: got: %v want: notNil", r.Override_TTL)
 		}
 		return nil
 	}
@@ -720,6 +979,77 @@ resource "ns1_zone" "test" {
 `, rString)
 }
 
+func testAccRecordBasicCaseSensitive(domain string, zone string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "%s"
+  type              = "CNAME"
+  ttl               = 60
+
+  answers {
+    answer = "test1.${ns1_zone.test.zone}"
+    region = "cal"
+
+    // meta {
+    //   weight = 10
+    //   up = true
+    // }
+  }
+
+  regions {
+    name = "cal"
+    // meta {
+    //   up = true
+    //   us_state = ["CA"]
+    // }
+  }
+
+}
+
+resource "ns1_zone" "test" {
+  zone = "%s"
+}
+`, domain, zone)
+}
+
+func testAccRecordBasicALIASOverrideTTL(rString string, overridettl bool) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "${ns1_zone.test.zone}"
+  type              = "ALIAS"
+  ttl               = 60
+  override_ttl 		= %v
+  answers {
+    answer = "test.${ns1_zone.test.zone}"
+  }
+}
+
+resource "ns1_zone" "test" {
+	zone = "terraform-test-%s.io"
+}
+`, overridettl, rString)
+}
+
+func testAccRecordBasicALIAS(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "${ns1_zone.test.zone}"
+  type              = "ALIAS"
+  ttl               = 60
+  answers {
+    answer = "test.${ns1_zone.test.zone}"
+  }
+}
+
+resource "ns1_zone" "test" {
+	zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
 func testAccRecordUpdated(rString string) string {
 	return fmt.Sprintf(`
 resource "ns1_record" "it" {
@@ -786,7 +1116,7 @@ resource "ns1_record" "it" {
 
     meta = {
 	  up = true
-	  subdivisions = "BR-SP,BR-SC,DZ-01,DZ-02,DZ-03"
+	  subdivisions = "BR-SP,BR-SC,DZ-01,DZ-02,DZ-03,NO-NO-01,NO-NO-11,SG-SG-03"
       weight = 5
       ip_prefixes = "3.248.0.0/13,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24"
       pulsar = jsonencode([{
@@ -817,7 +1147,9 @@ resource "ns1_record" "it" {
 		up = true
 		subdivisions = jsonencode({
 			"BR" = ["SP", "SC"],
-			"DZ" = ["01", "02", "03"]
+			"DZ" = ["01", "02", "03"],
+			"NO" = ["NO-01", "NO-11"],
+			"SG" = ["SG-03"]
 		})
 		weight = 5
 		ip_prefixes = "3.248.0.0/13,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24"
