@@ -101,14 +101,14 @@ func TestAccZone_primary_to_secondary_to_normal(t *testing.T) {
 	)
 	// sorted by IP please
 	expected := []*dns.ZoneSecondaryServer{
-		&dns.ZoneSecondaryServer{
-			NetworkIDs: []int{0},
+		{
+			NetworkIDs: []int{},
 			IP:         "2.2.2.2",
 			Port:       53,
 			Notify:     false,
 		},
-		&dns.ZoneSecondaryServer{
-			NetworkIDs: []int{0},
+		{
+			NetworkIDs: []int{},
 			IP:         "3.3.3.3",
 			Port:       5353,
 			Notify:     true,
@@ -180,13 +180,13 @@ func TestAccZone_secondary_to_primary_to_normal(t *testing.T) {
 	)
 	// sorted by IP please
 	expected := []*dns.ZoneSecondaryServer{
-		&dns.ZoneSecondaryServer{
+		{
 			NetworkIDs: []int{0},
 			IP:         "2.2.2.2",
 			Port:       53,
 			Notify:     false,
 		},
-		&dns.ZoneSecondaryServer{
+		{
 			NetworkIDs: []int{0},
 			IP:         "3.3.3.3",
 			Port:       5353,
@@ -278,6 +278,38 @@ func TestAccZone_dnssec(t *testing.T) {
 					testAccCheckZoneExists("ns1_zone.it", &zone),
 					testAccCheckZoneName(&zone, zoneName),
 					testAccCheckZoneDNSSEC(&zone, false),
+				),
+			},
+		},
+	})
+}
+
+func TestAccZone_TSIG(t *testing.T) {
+	var zone dns.Zone
+	zoneName := fmt.Sprintf(
+		"terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
+	tsig := &dns.TSIG{
+		Enabled: true,
+		Name:    fmt.Sprintf("terraform-test-%s.", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)),
+		Hash:    "hmac-sha256",
+		Key:     "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLA==",
+	}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccZoneSecondaryTSIG(zoneName, tsig.Name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneTsigEnabled(&zone, tsig.Enabled),
+					testAccCheckZoneTsigName(&zone, tsig.Name),
+					testAccCheckZoneTsigHash(&zone, tsig.Hash),
+					testAccCheckZoneTsigKey(&zone, tsig.Key),
 				),
 			},
 		},
@@ -493,6 +525,42 @@ func testAccCheckZoneDestroy(s *terraform.State) error {
 	return nil
 }
 
+func testAccCheckZoneTsigEnabled(zone *dns.Zone, expected bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if zone.Secondary.TSIG.Enabled != expected {
+			return fmt.Errorf("zone.Secondary.TSIG.Enabled: got: %v %T want: %v %T", zone.Secondary.TSIG.Enabled, zone.Secondary.TSIG.Enabled, expected, expected)
+		}
+		return nil
+	}
+}
+
+func testAccCheckZoneTsigName(zone *dns.Zone, expected string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if zone.Secondary.TSIG.Name != expected {
+			return fmt.Errorf("zone.Secondary.TSIG.Name: got: %s want: %s", zone.Secondary.TSIG.Name, expected)
+		}
+		return nil
+	}
+}
+
+func testAccCheckZoneTsigHash(zone *dns.Zone, expected string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if zone.Secondary.TSIG.Hash != expected {
+			return fmt.Errorf("zone.Secondary.TSIG.Hash: got: %s want: %s", zone.Secondary.TSIG.Hash, expected)
+		}
+		return nil
+	}
+}
+
+func testAccCheckZoneTsigKey(zone *dns.Zone, expected string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if zone.Secondary.TSIG.Key != expected {
+			return fmt.Errorf("zone.Secondary.TSIG.Key: got: %s want: %s .", zone.Secondary.TSIG.Key, expected)
+		}
+		return nil
+	}
+}
+
 func testAccCheckZoneName(zone *dns.Zone, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if zone.Zone != expected {
@@ -583,6 +651,9 @@ func testAccCheckZoneNotSecondary(z *dns.Zone) resource.TestCheckFunc {
 
 func testAccCheckZoneDNSSEC(zone *dns.Zone, expected bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		if zone.DNSSEC == nil {
+			return fmt.Errorf("DNSSEC field not defined.")
+		}
 		if *zone.DNSSEC != expected {
 			return fmt.Errorf("DNSSEC: got: %t want: %t", *zone.DNSSEC, expected)
 		}
@@ -648,6 +719,20 @@ func testAccZoneSecondary(zoneName string) string {
   additional_primaries = ["2.2.2.2", "3.3.3.3"]
 }
 `, zoneName)
+}
+
+func testAccZoneSecondaryTSIG(zoneName, tsigName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone    = "%s"
+  primary = "1.1.1.1"
+  tsig = {
+    enabled = true
+    name = "%s"
+    hash = "hmac-sha256"
+    key = "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLA=="
+  }
+}
+`, zoneName, tsigName)
 }
 
 func testAccZoneDNSSEC(zoneName string) string {
