@@ -3,6 +3,7 @@ package ns1
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
@@ -126,6 +127,13 @@ func resourceZone() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"tsig": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 		Create:   zoneCreate,
 		Read:     zoneRead,
@@ -164,6 +172,10 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	if z.Secondary != nil && z.Secondary.Enabled {
 		d.Set("primary", z.Secondary.PrimaryIP)
 		d.Set("additional_primaries", z.Secondary.OtherIPs)
+
+		if z.Secondary.TSIG != nil && z.Secondary.TSIG.Enabled {
+			d.Set("tsig", tsigToMap(z.Secondary.TSIG))
+		}
 	}
 	if z.Primary != nil && z.Primary.Enabled {
 		secondaries := make([]map[string]interface{}, 0)
@@ -179,6 +191,17 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 		d.Set("link", *z.Link)
 	}
 	return nil
+}
+
+func tsigToMap(t *dns.TSIG) map[string]interface{} {
+	m := make(map[string]interface{})
+
+	m["enabled"] = strconv.FormatBool(t.Enabled)
+	m["name"] = t.Name
+	m["hash"] = t.Hash
+	m["key"] = t.Key
+
+	return m
 }
 
 func secondaryToMap(s *dns.ZoneSecondaryServer) map[string]interface{} {
@@ -212,6 +235,10 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 	}
 	if v, ok := d.GetOk("primary"); ok {
 		z.MakeSecondary(v.(string))
+
+		if t, ok := d.GetOk("tsig"); ok {
+			z.Secondary.TSIG = setTSIG(t)
+		}
 	} else {
 		existing, _ := d.GetChange("primary")
 		if existing != "" {
@@ -280,6 +307,29 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 		networkIDSet := v.(*schema.Set)
 		z.NetworkIDs = setToInts(networkIDSet)
 	}
+}
+
+func setTSIG(raw interface{}) *dns.TSIG {
+	m := raw.(map[string]interface{})
+	tsig := &dns.TSIG{}
+
+	for k, v := range m {
+		switch k {
+		case "enabled":
+			tsig.Enabled, _ = strconv.ParseBool(v.(string))
+
+		case "name":
+			tsig.Name = v.(string)
+
+		case "hash":
+			tsig.Hash = v.(string)
+
+		case "key":
+			tsig.Key = v.(string)
+		}
+	}
+
+	return tsig
 }
 
 // zoneCreate creates the given zone in ns1

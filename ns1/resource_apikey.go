@@ -16,8 +16,9 @@ func apikeyResource() *schema.Resource {
 			Required: true,
 		},
 		"key": {
-			Type:     schema.TypeString,
-			Computed: true,
+			Type:      schema.TypeString,
+			Computed:  true,
+			Sensitive: true,
 		},
 		"teams": {
 			Type:     schema.TypeList,

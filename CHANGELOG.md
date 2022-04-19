@@ -1,3 +1,13 @@
+## 1.12.6 (April 11, 2022)
+ENHANCEMENTS:
+* Adds support to override TTL [#209](https://github.com/ns1-terraform/terraform-provider-ns1/pull/209)
+* Adds TSIG support [#188](https://github.com/ns1-terraform/terraform-provider-ns1/pull/188)
+* Mark API keys as sensitive fields [#192](https://github.com/ns1-terraform/terraform-provider-ns1/pull/192)
+
+BUG FIXES:
+* Fixes an issue with subdivision parsing [#207](https://github.com/ns1-terraform/terraform-provider-ns1/pull/207)
+* Fixes capitalization issue [#208](https://github.com/ns1-terraform/terraform-provider-ns1/pull/208)
+
 ## 1.12.5 (February 01, 2022)
 ENHANCEMENTS:
 * Updates go version to 1.17 to provide release binaries for darwin arm64

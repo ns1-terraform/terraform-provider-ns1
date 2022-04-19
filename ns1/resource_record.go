@@ -44,16 +44,18 @@ func recordResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Required
 			"zone": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validateFQDN,
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateFunc:     validateFQDN,
+				DiffSuppressFunc: caseSensitivityDiffSuppress,
 			},
 			"domain": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				ValidateFunc: validateFQDN,
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateFunc:     validateFQDN,
+				DiffSuppressFunc: caseSensitivityDiffSuppress,
 			},
 			"type": {
 				Type:         schema.TypeString,
@@ -66,6 +68,11 @@ func recordResource() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 				Computed: true,
+			},
+			"override_ttl": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 			"meta": {
 				Type:             schema.TypeMap,
@@ -199,6 +206,16 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	d.Set("zone", r.Zone)
 	d.Set("type", r.Type)
 	d.Set("ttl", r.TTL)
+
+	d.Set("override_ttl", nil)
+	if r.Type == "ALIAS" && r.Override_TTL != nil {
+		err := d.Set("override_ttl", *r.Override_TTL)
+
+		if err != nil {
+			return fmt.Errorf("[DEBUG] Error setting override_ttl for: %s, error: %#v", r.Domain, err)
+		}
+	}
+
 	if r.Link != "" {
 		err := d.Set("link", r.Link)
 		if err != nil {
@@ -355,6 +372,12 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 	if v, ok := d.GetOk("ttl"); ok {
 		r.TTL = v.(int)
 	}
+
+	if r.Type == "ALIAS" {
+		Override_TTL := d.Get("override_ttl").(bool)
+		r.Override_TTL = &Override_TTL
+	}
+
 	if v, ok := d.GetOk("link"); ok {
 		if len(r.Answers) > 0 {
 			return errors.New("cannot have both link and answers in a record")
@@ -489,6 +512,12 @@ func recordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.Resour
 	d.Set("type", parts[2])
 
 	return []*schema.ResourceData{d}, nil
+}
+
+// ignores case difference between state and resoruce written in terraform file
+// so we can keep data consistency between tf state and ddi since ddi is case insensitive
+func caseSensitivityDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+	return strings.EqualFold(old, new)
 }
 
 // metaDiffSuppress evaluates fields in the meta attribute.
