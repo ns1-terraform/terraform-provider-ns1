@@ -68,10 +68,10 @@ func resourceSubnet() *schema.Resource {
 				Computed: true,
 			},
 		},
-		Create:   subnetCreate,
-		Read:     subnetRead,
-		Update:   subnetUpdate,
-		Delete:   subnetDelete,
+		Create: subnetCreate,
+		Read:   subnetRead,
+		Update: subnetUpdate,
+		Delete: subnetDelete,
 	}
 }
 
@@ -151,7 +151,7 @@ func subnetCreate(d *schema.ResourceData, meta interface{}) error {
 func subnetRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	id, _ := strconv.Atoi(d.Id())
-	s,resp, err := client.IPAM.GetSubnet(id)
+	s, resp, err := client.IPAM.GetSubnet(id)
 
 	if err != nil {
 		return ConvertToNs1Error(resp, err)
@@ -186,4 +186,3 @@ func subnetUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 	return nil
 }
-
