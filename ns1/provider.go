@@ -62,6 +62,7 @@ func Provider() terraform.ResourceProvider {
 			"ns1_application":   resourceApplication(),
 			"ns1_pulsarjob":     pulsarJobResource(),
 			"ns1_tsigkey":       tsigKeyResource(),
+			"ns1_subnet":        resourceSubnet(),
 		},
 		ConfigureFunc: ns1Configure,
 	}
