@@ -81,6 +81,7 @@ func resourceZone() *schema.Resource {
 			"hostmaster": {
 				Type:     schema.TypeString,
 				Computed: true,
+				Optional: true,
 			},
 			"networks": {
 				Type:     schema.TypeSet,
