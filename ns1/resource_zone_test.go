@@ -18,6 +18,7 @@ import (
 
 func TestAccZone_basic(t *testing.T) {
 	var zone dns.Zone
+	defaultHostmaster := "hostmaster@example.net"
 	zoneName := fmt.Sprintf(
 		"terraform-test-%s.io",
 		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
@@ -40,6 +41,7 @@ func TestAccZone_basic(t *testing.T) {
 					testAccCheckZoneNotPrimary(&zone),
 					testAccCheckZoneDNSSEC(&zone, false),
 					testAccCheckNSRecord("ns1_zone.it", true),
+					testAccCheckZoneHostmaster(&zone, defaultHostmaster),
 				),
 			},
 		},
@@ -279,6 +281,50 @@ func TestAccZone_dnssec(t *testing.T) {
 					testAccCheckZoneName(&zone, zoneName),
 					testAccCheckZoneDNSSEC(&zone, false),
 				),
+			},
+		},
+	})
+}
+
+func TestAccZone_hostmaster(t *testing.T) {
+	var zone dns.Zone
+	defaultHostmaster := "hostmaster@example.net"
+	zoneHostmaster := "hostmaster@rname.test"
+	zoneName := fmt.Sprintf(
+		"terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccZoneBasic(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneHostmaster(&zone, defaultHostmaster),
+				),
+			},
+			{
+				Config:             testAccZoneHostmaster(zoneName, zoneHostmaster),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: testAccZoneHostmaster(zoneName, zoneHostmaster),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneHostmaster(&zone, zoneHostmaster),
+				),
+			},
+			//detect loop conditions
+			{
+				Config:             testAccZoneHostmaster(zoneName, zoneHostmaster),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -661,6 +707,15 @@ func testAccCheckZoneDNSSEC(zone *dns.Zone, expected bool) resource.TestCheckFun
 	}
 }
 
+func testAccCheckZoneHostmaster(zone *dns.Zone, expected string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if zone.Hostmaster != expected {
+			return fmt.Errorf("Hostmaster: got: %s want: %s", zone.Hostmaster, expected)
+		}
+		return nil
+	}
+}
+
 // Simulate a manual deletion of a zone.
 func testAccManualDeleteZone(zone string) func() {
 	return func() {
@@ -678,6 +733,14 @@ func testAccZoneBasic(zoneName string) string {
   zone = "%s"
 }
 `, zoneName)
+}
+
+func testAccZoneHostmaster(zoneName string, hostmaster string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone = "%s"
+  hostmaster = "%s"
+}
+`, zoneName, hostmaster)
 }
 
 func testAccZoneUpdated(zoneName string) string {
