@@ -1,3 +1,8 @@
+## 1.12.7 (May 25, 2022)
+
+ENCHANCEMENTS:
+* Makes hostmaster field available for use
+
 ## 1.12.6 (April 11, 2022)
 ENHANCEMENTS:
 * Adds support to override TTL [#209](https://github.com/ns1-terraform/terraform-provider-ns1/pull/209)
