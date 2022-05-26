@@ -1,7 +1,8 @@
-## 1.12.7 (May 25, 2022)
+## 1.12.7 (May 26, 2022)
 
 ENCHANCEMENTS:
-* Makes hostmaster field available for use
+* Makes hostmaster field available for use [#213](https://github.com/ns1-terraform/terraform-provider-ns1/pull/213)
+* Adds support for CRUD operations on subnets [#210](https://github.com/ns1-terraform/terraform-provider-ns1/pull/210)
 
 ## 1.12.6 (April 11, 2022)
 ENHANCEMENTS:
