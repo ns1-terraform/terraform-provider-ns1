@@ -2,8 +2,9 @@ package ns1
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"log"
+
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/monitor"
@@ -70,13 +71,6 @@ func resourceDataToNotifyList(nl *monitor.NotifyList, d *schema.ResourceData) er
 
 			if config != nil {
 				switch ni["type"].(string) {
-				case "user":
-					user := config["user"]
-					if user != nil {
-						ns[i] = monitor.NewUserNotification(user.(string))
-					} else {
-						return fmt.Errorf("wrong config for user expected user field into config")
-					}
 				case "email":
 					email := config["email"]
 					if email != nil {
@@ -104,14 +98,6 @@ func resourceDataToNotifyList(nl *monitor.NotifyList, d *schema.ResourceData) er
 						ns[i] = monitor.NewPagerDutyNotification(serviceKey.(string))
 					} else {
 						return fmt.Errorf("wrong config for pagerduty expected serviceKey field into config")
-					}
-				case "hipchat":
-					token := config["token"]
-					room := config["room"]
-					if token != nil && room != nil {
-						ns[i] = monitor.NewHipChatNotification(token.(string), room.(string))
-					} else {
-						return fmt.Errorf("wrong config for hipchat expected token and room fields into config")
 					}
 				case "slack":
 					url := config["url"]
