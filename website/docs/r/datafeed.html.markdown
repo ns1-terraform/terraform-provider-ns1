@@ -66,6 +66,10 @@ The following arguments are supported:
 All of the arguments listed above are exported as attributes, with no
 additions.
 
+## Import
+
+`terraform import ns1_datafeed.<name> <datasource_id>/<datafeed_id>`
+
 ## NS1 Documentation
 
 [Datafeed Api Doc](https://ns1.com/api#data-feeds)
