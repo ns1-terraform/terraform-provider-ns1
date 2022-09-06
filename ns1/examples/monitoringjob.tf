@@ -3,7 +3,7 @@ resource "ns1_monitoringjob" "it" {
   job_type = "tcp"
   name     = "terraform test"
 
-  regions   = ["lga"]
+  regions   = ["lga","sjc","sin"]
   frequency = 60
 
   config = {
