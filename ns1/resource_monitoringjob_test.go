@@ -26,7 +26,7 @@ func TestAccMonitoringJob_basic(t *testing.T) {
 					testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),
 					testAccCheckMonitoringJobName(&mj, "terraform test"),
 					testAccCheckMonitoringJobActive(&mj, true),
-					testAccCheckMonitoringJobRegions(&mj, []string{"lga"}),
+					testAccCheckMonitoringJobRegions(&mj, []string{"lga", "sjc", "sin"}),
 					testAccCheckMonitoringJobType(&mj, "tcp"),
 					testAccCheckMonitoringJobFrequency(&mj, 60),
 					testAccCheckMonitoringJobRapidRecheck(&mj, false),
@@ -46,7 +46,7 @@ func TestAccMonitoringJob_basic(t *testing.T) {
 					testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),
 					testAccCheckMonitoringJobName(&mj, "terraform http test"),
 					testAccCheckMonitoringJobActive(&mj, true),
-					testAccCheckMonitoringJobRegions(&mj, []string{"sjc"}),
+					testAccCheckMonitoringJobRegions(&mj, []string{"lga", "sjc", "sin"}),
 					testAccCheckMonitoringJobType(&mj, "http"),
 					testAccCheckMonitoringJobFrequency(&mj, 60),
 					testAccCheckMonitoringJobRapidRecheck(&mj, false),
@@ -71,7 +71,7 @@ func TestAccMonitoringJob_updated(t *testing.T) {
 					testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),
 					testAccCheckMonitoringJobName(&mj, "terraform test"),
 					testAccCheckMonitoringJobActive(&mj, true),
-					testAccCheckMonitoringJobRegions(&mj, []string{"lga"}),
+					testAccCheckMonitoringJobRegions(&mj, []string{"lga", "sjc", "sin"}),
 					testAccCheckMonitoringJobType(&mj, "tcp"),
 					testAccCheckMonitoringJobFrequency(&mj, 60),
 					testAccCheckMonitoringJobRapidRecheck(&mj, false),
@@ -361,7 +361,7 @@ resource "ns1_monitoringjob" "it" {
   job_type = "tcp"
   name     = "terraform test"
 
-  regions   = ["lga"]
+  regions   = ["sin","sjc","lga"]
   frequency = 60
   mute      = true
 
@@ -383,7 +383,7 @@ resource "ns1_monitoringjob" "it" {
   job_type = "http"
   name     = "terraform http test"
 
-  regions   = ["sjc"]
+  regions   = ["sin","sjc","lga"]
   frequency = 60
   mute      = true
 
@@ -400,7 +400,7 @@ resource "ns1_monitoringjob" "it" {
   name     = "terraform test"
 
   active        = true
-  regions       = ["lga"]
+  regions       = ["sin","sjc","lga"]
   frequency     = 120
   rapid_recheck = true
   policy        = "all"
