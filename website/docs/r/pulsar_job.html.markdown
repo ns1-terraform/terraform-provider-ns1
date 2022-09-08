@@ -6,7 +6,7 @@ description: |-
   Provides a Pulsar Job resource.
 ---
 
-# ns1\_pulsar\_job
+# ns1\_pulsarjob
 
 Provides a Pulsar job resource. This can be used to create, modify, and delete zones.
 
