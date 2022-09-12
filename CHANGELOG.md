@@ -1,3 +1,9 @@
+## 1.12.8 (September 12, 2022)
+
+BUG FIXES:
+* Sort monitoring job region names alphabetically to avoid unnecessary state pushes [#224](https://github.com/ns1-terraform/terraform-provider-ns1/pull/224)
+
+
 ## 1.12.7 (May 26, 2022)
 
 ENCHANCEMENTS:
