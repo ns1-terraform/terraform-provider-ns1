@@ -196,6 +196,9 @@ func resourceDataToMonitoringJob(r *monitor.Job, d *schema.ResourceData) error {
 	for i, v := range rawRegions {
 		r.Regions[i] = v.(string)
 	}
+	if len(r.Regions) > 1 {
+		sort.Strings(r.Regions)
+	}
 	r.Frequency = d.Get("frequency").(int)
 	r.RapidRecheck = d.Get("rapid_recheck").(bool)
 	var rawRules []interface{}
