@@ -18,7 +18,7 @@ import (
 
 func TestAccZone_basic(t *testing.T) {
 	var zone dns.Zone
-	defaultHostmaster := "hostmaster@example.net"
+	defaultHostmaster := "hostmaster@nsone.net"
 	zoneName := fmt.Sprintf(
 		"terraform-test-%s.io",
 		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
@@ -288,7 +288,7 @@ func TestAccZone_dnssec(t *testing.T) {
 
 func TestAccZone_hostmaster(t *testing.T) {
 	var zone dns.Zone
-	defaultHostmaster := "hostmaster@example.net"
+	defaultHostmaster := "hostmaster@nsone.net"
 	zoneHostmaster := "hostmaster@rname.test"
 	zoneName := fmt.Sprintf(
 		"terraform-test-%s.io",
