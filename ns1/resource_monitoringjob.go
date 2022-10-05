@@ -28,7 +28,7 @@ func monitoringJobResource() *schema.Resource {
 				ForceNew: true,
 			},
 			"regions": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -191,7 +191,7 @@ func resourceDataToMonitoringJob(r *monitor.Job, d *schema.ResourceData) error {
 	r.Type = d.Get("job_type").(string)
 	r.Active = d.Get("active").(bool)
 	r.Mute = d.Get("mute").(bool)
-	rawRegions := d.Get("regions").([]interface{})
+	rawRegions := d.Get("regions").(*schema.Set).List()
 	r.Regions = make([]string, len(rawRegions))
 	for i, v := range rawRegions {
 		r.Regions[i] = v.(string)
