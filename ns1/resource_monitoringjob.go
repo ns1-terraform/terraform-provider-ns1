@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -130,10 +129,7 @@ func monitoringJobToResourceData(d *schema.ResourceData, r *monitor.Job) error {
 	d.Set("job_type", r.Type)
 	d.Set("active", r.Active)
 	d.Set("mute", r.Mute)
-	if len(r.Regions) > 0 {
-		sort.Strings(r.Regions)
-		d.Set("regions", r.Regions)
-	}
+	d.Set("regions", r.Regions)
 	d.Set("frequency", r.Frequency)
 	d.Set("rapid_recheck", r.RapidRecheck)
 	config := make(map[string]string)
