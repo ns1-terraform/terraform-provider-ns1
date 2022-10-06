@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -28,7 +27,7 @@ func monitoringJobResource() *schema.Resource {
 				ForceNew: true,
 			},
 			"regions": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -130,10 +129,7 @@ func monitoringJobToResourceData(d *schema.ResourceData, r *monitor.Job) error {
 	d.Set("job_type", r.Type)
 	d.Set("active", r.Active)
 	d.Set("mute", r.Mute)
-	if len(r.Regions) > 0 {
-		sort.Strings(r.Regions)
-		d.Set("regions", r.Regions)
-	}
+	d.Set("regions", r.Regions)
 	d.Set("frequency", r.Frequency)
 	d.Set("rapid_recheck", r.RapidRecheck)
 	config := make(map[string]string)
@@ -191,7 +187,7 @@ func resourceDataToMonitoringJob(r *monitor.Job, d *schema.ResourceData) error {
 	r.Type = d.Get("job_type").(string)
 	r.Active = d.Get("active").(bool)
 	r.Mute = d.Get("mute").(bool)
-	rawRegions := d.Get("regions").([]interface{})
+	rawRegions := d.Get("regions").(*schema.Set).List()
 	r.Regions = make([]string, len(rawRegions))
 	for i, v := range rawRegions {
 		r.Regions[i] = v.(string)
