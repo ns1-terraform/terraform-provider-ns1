@@ -146,6 +146,14 @@ func monitoringJobToResourceData(d *schema.ResourceData, r *monitor.Job) error {
 			} else {
 				config[k] = "false"
 			}
+		} else if k == "send" {
+			unquoted, err := strconv.Unquote(`"` + v.(string) + `"`)
+			if err != nil {
+				log.Printf("[ERROR] send string %v cannot be unquoted (%v), using original value", v.(string), err)
+				config[k] = v.(string)
+			} else {
+				config[k] = unquoted
+			}
 		} else {
 			switch t := v.(type) {
 			case string:
