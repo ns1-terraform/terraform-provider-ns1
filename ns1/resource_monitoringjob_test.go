@@ -26,7 +26,7 @@ func TestAccMonitoringJob_basic(t *testing.T) {
 					testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),
 					testAccCheckMonitoringJobName(&mj, "terraform test"),
 					testAccCheckMonitoringJobActive(&mj, true),
-					testAccCheckMonitoringJobRegions(&mj, []string{"lga", "sjc", "sin"}),
+					testAccCheckMonitoringJobRegions(&mj, []string{"sjc", "lga", "sin"}),
 					testAccCheckMonitoringJobType(&mj, "tcp"),
 					testAccCheckMonitoringJobFrequency(&mj, 60),
 					testAccCheckMonitoringJobRapidRecheck(&mj, false),
