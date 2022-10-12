@@ -8,9 +8,13 @@ resource "ns1_monitoringjob" "it" {
 
   config = {
     ssl  = "1",
-    send = "HEAD / HTTP/1.0\r\n\r\n"
+    send = "HEAD / HTTP/1.0\\r\\n\\r\\n"
     port = 443
     host = "1.2.3.4"
+    connect_timeout = 2000
+    ipv6 = false
+    response_timeout = 1000
+    tls_add_verify = false
   }
 
   #optional
