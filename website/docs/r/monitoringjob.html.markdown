@@ -25,7 +25,7 @@ resource "ns1_monitoringjob" "uswest_monitor" {
 
   config = {
     ssl  = 1
-    send = "HEAD / HTTP/1.0\r\n\r\n"
+    send = "HEAD / HTTP/1.0\\r\\n\\r\\n"
     port = 443
     host = "example-elb-uswest.aws.amazon.com"
   }
