@@ -103,6 +103,7 @@ func TestAccMonitoringJob_updated(t *testing.T) {
 					testAccCheckMonitoringJobRuleComparison(&mj, "<="),
 					testAccCheckMonitoringJobRuleKey(&mj, "connect"),
 					testAccCheckMonitoringJobMute(&mj, false),
+					testAccCheckMonitoringConnectTimeout(&mj, 2000),
 				),
 			},
 		},
@@ -127,7 +128,7 @@ func TestAccMonitoringJob_ManualDelete(t *testing.T) {
 				Config:             testAccMonitoringJobBasic,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
-				ExpectError: regexp.MustCompile("GET .*/monitoring/jobs/.* was not found"),
+				ExpectError:        regexp.MustCompile("GET .*/monitoring/jobs/.* was not found"),
 			},
 			// Then re-create and make sure it is there again.
 			{
@@ -227,11 +228,11 @@ func testAccCheckMonitoringJobActive(mj *monitor.Job, expected bool) resource.Te
 }
 
 func sliceToStrMap(elements []string) map[string]string {
-    elementMap := make(map[string]string)
-    for _, s := range elements {
-        elementMap[s] = s
-    }
-    return elementMap
+	elementMap := make(map[string]string)
+	for _, s := range elements {
+		elementMap[s] = s
+	}
+	return elementMap
 }
 
 func testAccCheckMonitoringJobRegions(mj *monitor.Job, expected []string) resource.TestCheckFunc {
@@ -367,7 +368,7 @@ func testAccManualDeleteMonitoringJob(t *testing.T, mj *monitor.Job) func() {
 	}
 }
 
-func testAccCheckMonitoringConnectTimeout(mj *monitor.Job, expected string) resource.TestCheckFunc {
+func testAccCheckMonitoringConnectTimeout(mj *monitor.Job, expected float64) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if mj.Config["connect_timeout"] != expected {
 			return fmt.Errorf("mj.Config.connect_timeout: got: %#v want: %#v", mj.Config["connect_timeout"], expected)
