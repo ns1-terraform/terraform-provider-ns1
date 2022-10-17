@@ -16,18 +16,17 @@ func testAccCheckZoneSecondaries(
 	t *testing.T, z *dns.Zone, idx int, expected *dns.ZoneSecondaryServer,
 ) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		assert.True(t, z.Primary.Enabled)
-
+		assert.Truef(t, z.Primary.Enabled, "primary.enabled: got %v, wanted %v", z.Primary.Enabled, true)
 		secondaries := z.Primary.Secondaries
 		sort.SliceStable(secondaries, func(i, j int) bool {
 			return secondaries[i].IP < secondaries[j].IP
 		})
 		secondary := secondaries[idx]
 
-		assert.Equal(t, expected.IP, secondary.IP)
-		assert.Equal(t, expected.Port, secondary.Port)
-		assert.Equal(t, expected.Notify, secondary.Notify)
-		assert.ElementsMatch(t, expected.NetworkIDs, secondary.NetworkIDs)
+		assert.Equalf(t, expected.IP, secondary.IP, "secondary IP: got %v, wanted %v", secondary.IP, expected.IP)
+		assert.Equalf(t, expected.Port, secondary.Port, "secondary port: got %v, wanted %v", secondary.Port, expected.Port)
+		assert.Equalf(t, expected.Notify, secondary.Notify, "secondary notify: got %v, wanted %v", secondary.Notify, expected.Notify)
+		assert.ElementsMatchf(t, expected.NetworkIDs, secondary.NetworkIDs, "secondary network ID mismatch: got %v, wanted %v", z.Primary.Secondaries[idx], expected)
 
 		return nil
 	}

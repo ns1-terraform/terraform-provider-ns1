@@ -183,13 +183,13 @@ func TestAccZone_secondary_to_primary_to_normal(t *testing.T) {
 	// sorted by IP please
 	expected := []*dns.ZoneSecondaryServer{
 		{
-			NetworkIDs: []int{0},
+			NetworkIDs: []int{},
 			IP:         "2.2.2.2",
 			Port:       53,
 			Notify:     false,
 		},
 		{
-			NetworkIDs: []int{0},
+			NetworkIDs: []int{},
 			IP:         "3.3.3.3",
 			Port:       5353,
 			Notify:     true,
