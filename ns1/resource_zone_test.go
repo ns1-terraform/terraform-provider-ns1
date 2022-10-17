@@ -116,7 +116,7 @@ func TestAccZone_primary_to_secondary_to_normal(t *testing.T) {
 			Notify:     true,
 		},
 	}
-	expectedOtherPorts := []int{53, 53}
+	expectedOtherPorts := []int{53, 5353}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -148,6 +148,7 @@ func TestAccZone_primary_to_secondary_to_normal(t *testing.T) {
 					testAccCheckZoneExists("ns1_zone.it", &zone),
 					testAccCheckZoneName(&zone, zoneName),
 					resource.TestCheckResourceAttr("ns1_zone.it", "primary", "1.1.1.1"),
+					resource.TestCheckResourceAttr("ns1_zone.it", "primary_port", "54"),
 					resource.TestCheckResourceAttr(
 						"ns1_zone.it", "additional_primaries.0", "2.2.2.2",
 					),
@@ -195,7 +196,7 @@ func TestAccZone_secondary_to_primary_to_normal(t *testing.T) {
 			Notify:     true,
 		},
 	}
-	expectedOtherPorts := []int{53, 53}
+	expectedOtherPorts := []int{53, 5353}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -208,6 +209,7 @@ func TestAccZone_secondary_to_primary_to_normal(t *testing.T) {
 					testAccCheckZoneExists("ns1_zone.it", &zone),
 					testAccCheckZoneName(&zone, zoneName),
 					resource.TestCheckResourceAttr("ns1_zone.it", "primary", "1.1.1.1"),
+					resource.TestCheckResourceAttr("ns1_zone.it", "primary_port", "54"),
 					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.0", "2.2.2.2"),
 					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.1", "3.3.3.3"),
 					testAccCheckOtherPorts(&zone, expectedOtherPorts),
@@ -356,6 +358,7 @@ func TestAccZone_TSIG(t *testing.T) {
 					testAccCheckZoneTsigName(&zone, tsig.Name),
 					testAccCheckZoneTsigHash(&zone, tsig.Hash),
 					testAccCheckZoneTsigKey(&zone, tsig.Key),
+					resource.TestCheckResourceAttr("ns1_zone.it", "primary_port", "53"),
 				),
 			},
 		},
@@ -779,7 +782,9 @@ func testAccZoneSecondary(zoneName string) string {
   zone    = "%s"
   ttl     = 10800
   primary = "1.1.1.1"
+  primary_port = 54
   additional_primaries = ["2.2.2.2", "3.3.3.3"]
+  additional_ports = [53, 5353]
 }
 `, zoneName)
 }
@@ -788,6 +793,7 @@ func testAccZoneSecondaryTSIG(zoneName, tsigName string) string {
 	return fmt.Sprintf(`resource "ns1_zone" "it" {
   zone    = "%s"
   primary = "1.1.1.1"
+  # primary_port left unspecified to test default/computed case
   tsig = {
     enabled = true
     name = "%s"
