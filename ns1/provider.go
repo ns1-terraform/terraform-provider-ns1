@@ -63,7 +63,7 @@ func Provider() terraform.ResourceProvider {
 			"ns1_pulsarjob":     pulsarJobResource(),
 			"ns1_tsigkey":       tsigKeyResource(),
 			"ns1_subnet":        resourceSubnet(),
-//			"ns1_dnsview":       dnsView(),
+			"ns1_dnsview":       dnsView(),
 		},
 		ConfigureFunc: ns1Configure,
 	}
