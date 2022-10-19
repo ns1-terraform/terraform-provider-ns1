@@ -66,11 +66,25 @@ func resourceZone() *schema.Resource {
 				Optional:      true,
 				ConflictsWith: []string{"secondaries"},
 			},
+			"primary_port": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"secondaries"},
+			},
 			"additional_primaries": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
+				},
+				ConflictsWith: []string{"secondaries"},
+			},
+			"additional_ports": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
 				},
 				ConflictsWith: []string{"secondaries"},
 			},
@@ -172,8 +186,9 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	d.Set("dns_servers", strings.Join(z.DNSServers[:], ","))
 	if z.Secondary != nil && z.Secondary.Enabled {
 		d.Set("primary", z.Secondary.PrimaryIP)
+		d.Set("primary_port", z.Secondary.PrimaryPort)
 		d.Set("additional_primaries", z.Secondary.OtherIPs)
-
+		d.Set("additional_ports", z.Secondary.OtherPorts)
 		if z.Secondary.TSIG != nil && z.Secondary.TSIG.Enabled {
 			d.Set("tsig", tsigToMap(z.Secondary.TSIG))
 		}
@@ -237,6 +252,9 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 	if v, ok := d.GetOk("primary"); ok {
 		z.MakeSecondary(v.(string))
 
+		if p, ok := d.GetOk("primary_port"); ok {
+			z.Secondary.PrimaryPort = p.(int)
+		}
 		if t, ok := d.GetOk("tsig"); ok {
 			z.Secondary.TSIG = setTSIG(t)
 		}
@@ -261,15 +279,15 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 		for i, otherIP := range otherIPsRaw {
 			z.Secondary.OtherIPs[i] = otherIP.(string)
 		}
-		// Fill a list of matching length with '53' for OtherPorts
-		// to match functionality of MakeSecondary for PrimaryPort
-		// TODO: Add ability to set custom OtherPorts and PrimaryPort
-		//otherPorts := make([]int, len(z.Secondary.OtherIPs))
-		z.Secondary.OtherPorts = make([]int, len(z.Secondary.OtherIPs))
-		for i := range z.Secondary.OtherPorts {
-			z.Secondary.OtherPorts[i] = 53
+	}
+	if v, ok := d.GetOk("additional_ports"); ok {
+		otherPortsRaw := v.([]interface{})
+		z.Secondary.OtherPorts = make([]int, len(otherPortsRaw))
+		for i, otherPort := range otherPortsRaw {
+			z.Secondary.OtherPorts[i] = otherPort.(int)
 		}
 	}
+	// TODO: support OtherNetworks after ns1-go supports it
 	if v, ok := d.GetOk("secondaries"); ok {
 		secondariesSet := v.(*schema.Set)
 		secondaries := make([]dns.ZoneSecondaryServer, secondariesSet.Len())
