@@ -27,10 +27,11 @@ func dataSourceResource() *schema.Resource {
 				Optional: true,
 			},
 		},
-		Create: DataSourceCreate,
-		Read:   DataSourceRead,
-		Update: DataSourceUpdate,
-		Delete: DataSourceDelete,
+		Create:   DataSourceCreate,
+		Read:     DataSourceRead,
+		Update:   DataSourceUpdate,
+		Delete:   DataSourceDelete,
+		Importer: &schema.ResourceImporter{},
 	}
 }
 

@@ -34,10 +34,11 @@ func notifyListResource() *schema.Resource {
 				},
 			},
 		},
-		Create: NotifyListCreate,
-		Read:   NotifyListRead,
-		Update: NotifyListUpdate,
-		Delete: NotifyListDelete,
+		Create:   NotifyListCreate,
+		Read:     NotifyListRead,
+		Update:   NotifyListUpdate,
+		Delete:   NotifyListDelete,
+		Importer: &schema.ResourceImporter{},
 	}
 }
 

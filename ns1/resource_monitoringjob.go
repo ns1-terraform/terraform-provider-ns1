@@ -116,10 +116,11 @@ func monitoringJobResource() *schema.Resource {
 				},
 			},
 		},
-		Create: MonitoringJobCreate,
-		Read:   MonitoringJobRead,
-		Update: MonitoringJobUpdate,
-		Delete: MonitoringJobDelete,
+		Create:   MonitoringJobCreate,
+		Read:     MonitoringJobRead,
+		Update:   MonitoringJobUpdate,
+		Delete:   MonitoringJobDelete,
+		Importer: &schema.ResourceImporter{},
 	}
 }
 
