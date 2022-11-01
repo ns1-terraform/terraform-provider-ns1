@@ -79,13 +79,15 @@ func testAccCheckDataSourceDNSSECKeys(
 ) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		pretty, _ := json.Marshal(d.Keys)
-		if d.Keys.TTL != 3600 {
-			return fmt.Errorf("Keys.TTL got %d, want 3600, data is %s", d.Keys.TTL, pretty)
+		wanted := 3600
+		if d.Keys.TTL != wanted {
+			return fmt.Errorf("Keys.TTL got %d, want %d, data is %s", d.Keys.TTL, wanted, pretty)
 		}
 
-		if len(d.Keys.DNSKey) != 2 {
+		wanted = 1
+		if len(d.Keys.DNSKey) != wanted {
 			return fmt.Errorf(
-				"Keys.DNSKey length: got %d, want 2, data is %s:", len(d.Keys.DNSKey), pretty,
+				"Keys.DNSKey length: got %d, want %d, data is %s:", len(d.Keys.DNSKey), wanted, pretty,
 			)
 		}
 		for i := range d.Keys.DNSKey {
