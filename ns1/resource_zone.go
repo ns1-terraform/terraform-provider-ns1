@@ -369,10 +369,10 @@ func zoneCreate(d *schema.ResourceData, meta interface{}) error {
 	if err := resourceZoneToResourceData(d, z); err != nil {
 		return err
 	}
-// New zones with DNSSEC enabled require additional time to create
-// the DNSSEC signature. Terraform will try to read the entire
-// zone back, including the DNSSEC block, so wait a few extra seconds
-// to allow that process to complete.
+	// New zones with DNSSEC enabled require additional time to create
+	// the DNSSEC signature. Terraform will try to read the entire
+	// zone back, including the DNSSEC block, so wait a few extra seconds
+	// to allow that process to complete.
 	if d.Get("dnssec").(bool) {
 		tries := 1
 		maxTries := 3
