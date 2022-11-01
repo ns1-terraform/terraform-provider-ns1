@@ -1,6 +1,7 @@
 package ns1
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -77,13 +78,14 @@ func testAccCheckDataSourceDNSSECKeys(
 	d *dns.ZoneDNSSEC,
 ) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
+		pretty, _ := json.Marshal(d.Keys)
 		if d.Keys.TTL != 3600 {
-			return fmt.Errorf("Keys.TTL want 3600, got %d", d.Keys.TTL)
+			return fmt.Errorf("Keys.TTL got %d, want 3600, data is %s", d.Keys.TTL, pretty)
 		}
 
 		if len(d.Keys.DNSKey) != 2 {
 			return fmt.Errorf(
-				"Keys.DNSKey length: want 2, got %d", len(d.Keys.DNSKey),
+				"Keys.DNSKey length: got %d, want 2, data is %s:", len(d.Keys.DNSKey), pretty,
 			)
 		}
 		for i := range d.Keys.DNSKey {
