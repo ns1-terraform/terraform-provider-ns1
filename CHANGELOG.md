@@ -1,15 +1,3 @@
-## 1.13.0 (November 2022)
-
-BUG FIXES:
-* monitoring job rules can now be deleted (fixed in ns1-go v2.7.0)
-* better handling of monitoring jobs region names
-CAN WE FIX DNSSEC AFTER ZONE CREATE?
-
-ENHANCEMENTS:
-* DNS view support
-* support for additional secondary zone attributes
-* support for more importers
-
 ## 1.12.8 (September 12, 2022)
 
 BUG FIXES:
