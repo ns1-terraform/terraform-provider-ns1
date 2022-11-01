@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -367,6 +368,25 @@ func zoneCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 	if err := resourceZoneToResourceData(d, z); err != nil {
 		return err
+	}
+	// New zones with DNSSEC enabled require additional time to create
+	// the DNSSEC signature. Since the TF provider will try to read the entire
+	// zone back, including the DNSSEC information, wait for a few extra seconds
+	// to allow that process to complete.
+	if d.Get("dnssec") == "true" {
+		tries := 1
+		maxTries := 3
+		interval := time.Duration(700)
+		var err error
+		for tries <= maxTries {
+			time.Sleep(time.Duration(tries) * interval * time.Millisecond)
+			_, _, err = client.DNSSEC.Get(d.Get("zone").(string))
+			if err == nil {
+				return nil
+			}
+			tries++
+		}
+		log.Printf("unable to retrieve DNSSEC for new zone %s: %v. Terraform run may need to be repeated.", z.Zone, err)
 	}
 	return nil
 }
