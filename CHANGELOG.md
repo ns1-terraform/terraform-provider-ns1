@@ -1,3 +1,17 @@
+## 1.13.0 (November 3, 2022)
+ENHANCEMENTS:
+* Added importers for datafeed, datasource, notifylist and monitoringjob [#235](https://github.com/ns1-terraform/terraform-provider-ns1/pull/235)
+* Added support for additional secondary zone attributes [#233](https://github.com/ns1-terraform/terraform-provider-ns1/pull/233)
+* Added DNS view support [#234](https://github.com/ns1-terraform/terraform-provider-ns1/pull/234)
+* Requires ns1-go v2.7.0.
+
+BUG FIXES
+* Mitigated a race condition that caused false errors to be returned when verifying a newly-created zone with DNSSEC enabled [#235](https://github.com/ns1-terraform/terraform-provider-ns1/pull/235/files#diff-6951d991dadec97cca66b3e918a78392de104f53e86ce520f478f0cca3653e2f)
+* Monitoring job rules can now be deleting by removing them from the resource file (empty rules cannot be explicitly specified due to Terraform limitations) [see ns1-go PR 173](https://github.com/ns1/ns1-go/pull/173/files)
+* Better handling of monitoring job region names [#229](https://github.com/ns1-terraform/terraform-provider-ns1/pull/229)
+* Monitoring job examples and documentation corrected [#231](https://github.com/ns1-terraform/terraform-provider-ns1/pull/231)
+* Fixed several acceptance tests
+
 ## 1.12.8 (September 12, 2022)
 
 BUG FIXES:
