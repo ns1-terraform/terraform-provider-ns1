@@ -126,11 +126,11 @@ func formatJSON(raw []byte) (string, error) {
 	var rawData interface{}
 	err := json.Unmarshal(raw, &rawData)
 	if err != nil {
-		return string(raw), fmt.Errorf("Unable to parse JSON: %s", err)
+		return string(raw), fmt.Errorf("unable to parse JSON: %s", err)
 	}
 	pretty, err := json.MarshalIndent(rawData, "", "  ")
 	if err != nil {
-		return string(raw), fmt.Errorf("Unable to re-marshal JSON: %s", err)
+		return string(raw), fmt.Errorf("unable to re-marshal JSON: %s", err)
 	}
 
 	return string(pretty), nil
