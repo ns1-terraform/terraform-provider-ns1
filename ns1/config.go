@@ -16,6 +16,11 @@ import (
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 )
 
+var (
+	clientVersion     = "1.12.7"
+	providerUserAgent = "terraform-ns1" + "/" + clientVersion
+)
+
 // Config for NS1 API
 type Config struct {
 	Key                  string
@@ -66,7 +71,13 @@ func (c *Config) Client() (*ns1.Client, error) {
 		client.RateLimitStrategySleep()
 	}
 
-	log.Printf("[INFO] NS1 Client configured for Endpoint: %s", client.Endpoint.String())
+	UA := providerUserAgent + "_" + client.UserAgent
+	log.Printf("[INFO] NS1 Client configured for Endpoint: %s, versions %s", client.Endpoint.String(), UA)
+	if localUA := os.Getenv("NS1_TF_USER_AGENT"); localUA != "" {
+		client.UserAgent = localUA
+	} else {
+		client.UserAgent = UA
+	}
 
 	return client, nil
 }
@@ -76,7 +87,9 @@ func Logging() ns1.Decorator {
 	return func(d ns1.Doer) ns1.Doer {
 		return ns1.DoerFunc(func(r *http.Request) (*http.Response, error) {
 			log.Printf("[DEBUG] %s: %s %s", r.UserAgent(), r.Method, r.URL)
-			log.Printf("[DEBUG] Headers: %s", r.Header)
+			heads := r.Header.Clone()
+			heads["X-Nsone-Key"] = []string{"<redacted>"}
+			log.Printf("[DEBUG] Headers: %s", heads)
 			var err error
 			if r.Body != nil {
 				r.Body, err = logRequest(r.Body)
