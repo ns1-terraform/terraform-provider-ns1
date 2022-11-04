@@ -141,7 +141,7 @@ func ApikeyRead(d *schema.ResourceData, meta interface{}) error {
 	return apikeyToResourceData(d, k)
 }
 
-//ApikeyDelete deletes the given ns1 api key
+// ApikeyDelete deletes the given ns1 api key
 func ApikeyDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	resp, err := client.APIKeys.Delete(d.Id())
@@ -149,7 +149,7 @@ func ApikeyDelete(d *schema.ResourceData, meta interface{}) error {
 	return ConvertToNs1Error(resp, err)
 }
 
-//ApikeyUpdate updates the given api key in ns1
+// ApikeyUpdate updates the given api key in ns1
 func ApikeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	k := account.APIKey{
