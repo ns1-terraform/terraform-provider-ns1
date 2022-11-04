@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	clientVersion     = "1.12.7"
+	clientVersion     = "1.13.0"
 	providerUserAgent = "terraform-ns1" + "/" + clientVersion
 )
 
