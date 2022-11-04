@@ -51,8 +51,8 @@ func TestAccDataSourceZone_primary(t *testing.T) {
 	)
 	// sorted by IP please
 	expected := []*dns.ZoneSecondaryServer{
-		&dns.ZoneSecondaryServer{NetworkIDs: []int{0}, IP: "2.2.2.2", Port: 53, Notify: false},
-		&dns.ZoneSecondaryServer{NetworkIDs: []int{0}, IP: "3.3.3.3", Port: 5353, Notify: true},
+		&dns.ZoneSecondaryServer{NetworkIDs: []int{}, IP: "2.2.2.2", Port: 53, Notify: false},
+		&dns.ZoneSecondaryServer{NetworkIDs: []int{}, IP: "3.3.3.3", Port: 5353, Notify: true},
 	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -101,6 +101,7 @@ func testAccDataSourceZoneBasic(zoneName string) string {
   zone = "%s"
   primary = "1.1.1.1"
   additional_primaries = ["2.2.2.2", "3.3.3.3"]
+  additional_ports = ["53", "53"]
 }
 
 data "ns1_zone" "test" {

@@ -30,10 +30,11 @@ func dataFeedResource() *schema.Resource {
 				Optional: true,
 			},
 		},
-		Create: DataFeedCreate,
-		Read:   DataFeedRead,
-		Update: DataFeedUpdate,
-		Delete: DataFeedDelete,
+		Create:   DataFeedCreate,
+		Read:     DataFeedRead,
+		Update:   DataFeedUpdate,
+		Delete:   DataFeedDelete,
+		Importer: &schema.ResourceImporter{State: dataFeedStateFunc},
 	}
 }
 
@@ -111,7 +112,7 @@ func DataFeedUpdate(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-//configAdapterIn adapts the configuration types
+// configAdapterIn adapts the configuration types
 func configAdapterIn(d *schema.ResourceData) error {
 	config := d.Get("config").(map[string]interface{})
 	if config != nil {
@@ -128,7 +129,7 @@ func configAdapterIn(d *schema.ResourceData) error {
 	return nil
 }
 
-//configAdapterOut back the original configuration types
+// configAdapterOut back the original configuration types
 func configAdapterOut(f *data.Feed) {
 	config := f.Config
 	if config != nil {
@@ -139,4 +140,16 @@ func configAdapterOut(f *data.Feed) {
 			f.Config = config
 		}
 	}
+}
+
+func dataFeedStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	parts := strings.Split(d.Id(), "/")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("invalid datafeed specifier.  Expecting 1 slashe (\"datasource_id/datafeed_id\"), got %d", len(parts)-1)
+	}
+
+	d.SetId(parts[1])
+	d.Set("source_id", parts[0])
+
+	return []*schema.ResourceData{d}, nil
 }

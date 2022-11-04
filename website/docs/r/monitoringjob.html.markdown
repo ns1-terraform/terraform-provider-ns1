@@ -66,6 +66,10 @@ The following arguments are supported:
 All of the arguments listed above are exported as attributes, with no
 additions.
 
+## Import
+
+`terraform import ns1_monitoringjob.<name> <monitoringjob_id>`
+
 ## NS1 Documentation
 
 [MonitoringJob Api Doc](https://ns1.com/api#monitoring-jobs)
