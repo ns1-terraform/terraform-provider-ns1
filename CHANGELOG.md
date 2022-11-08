@@ -1,4 +1,4 @@
-## 1.13.0 (November 3, 2022)
+## 1.13.0 (November 8, 2022)
 ENHANCEMENTS:
 * Added importers for datafeed, datasource, notifylist and monitoringjob [#235](https://github.com/ns1-terraform/terraform-provider-ns1/pull/235)
 * Added support for additional secondary zone attributes [#233](https://github.com/ns1-terraform/terraform-provider-ns1/pull/233)
