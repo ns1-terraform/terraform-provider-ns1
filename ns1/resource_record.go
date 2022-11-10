@@ -82,7 +82,6 @@ func recordResource() *schema.Resource {
 			"link": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
 			},
 			"use_client_subnet": {
 				Type:     schema.TypeBool,
