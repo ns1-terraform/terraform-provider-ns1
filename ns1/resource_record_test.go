@@ -662,7 +662,6 @@ func TestAccRecord_OverrideTTLTrueToFalse(t *testing.T) {
 	})
 }
 
-
 func TestAccRecord_Link(t *testing.T) {
 	var record1 dns.Record
 	var record2 dns.Record
