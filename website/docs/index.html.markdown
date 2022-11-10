@@ -47,7 +47,7 @@ Users of DDI should set this to true if managing teams, users, or API keys throu
     NS1 uses a token-based method for rate limiting API requests. Details of which can be found here: https://help.ns1.com/hc/en-us/articles/360020250573-About-API-rate-limiting.
     
     By default, the NS1 provider uses the "sleep" strategy of the underlying [NS1 Go SDK](https://github.com/ns1/ns1-go) for handling the NS1 API rate limit:
-    an operation waits after every API request for a time equal to the rate limit period of that request type divided by the corresponding tokens renaming.
+    an operation waits after every API request for a time equal to the rate limit period of that request type divided by the corresponding tokens remaining.
     
     Furthermore, the default behaviour of Terraform uses ten concurrent operations.
     This means that the provider will burst through available request tokens, gradually slowing until it reaches an equilibrium point where the ten operations wait long enough between requests to replenish ten tokens.
