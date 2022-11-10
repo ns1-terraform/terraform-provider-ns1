@@ -662,6 +662,59 @@ func TestAccRecord_OverrideTTLTrueToFalse(t *testing.T) {
 	})
 }
 
+func TestAccRecord_Link(t *testing.T) {
+	var record1 dns.Record
+	var record2 dns.Record
+	var record3 dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	linkDomainName := fmt.Sprintf("link.%s", zoneName)
+	targetDomainName := fmt.Sprintf("target.%s", zoneName)
+	newTargetDomainName := fmt.Sprintf("newtarget.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordLink(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.link", &record1),
+					testAccCheckRecordExists("ns1_record.target", &record2),
+					testAccCheckRecordDomain(&record1, linkDomainName),
+					testAccCheckRecordDomain(&record2, targetDomainName),
+					testAccCheckRecordTTL(&record1, 666),
+					testAccCheckRecordTTL(&record2, 777),
+					testAccCheckRecordAnswerRdata(
+						t, &record2, 0, []string{"99.86.99.86"},
+					),
+				),
+			},
+			{
+				Config: testAccRecordLinkUpdated(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.link", &record1),
+					testAccCheckRecordExists("ns1_record.target", &record2),
+					testAccCheckRecordExists("ns1_record.newtarget", &record3),
+					testAccCheckRecordDomain(&record1, linkDomainName),
+					testAccCheckRecordDomain(&record2, targetDomainName),
+					testAccCheckRecordDomain(&record3, newTargetDomainName),
+					testAccCheckRecordTTL(&record1, 666),
+					testAccCheckRecordTTL(&record2, 777),
+					testAccCheckRecordTTL(&record3, 888),
+					testAccCheckRecordAnswerRdata(
+						t, &record2, 0, []string{"99.86.99.86"},
+					),
+					testAccCheckRecordAnswerRdata(
+						t, &record3, 0, []string{"16.19.20.19"},
+					),
+				),
+			},
+		},
+	})
+}
+
 // See if URLFWD permission exist by trying to create a record with it.
 func testAccURLFWDPreCheck(t *testing.T) {
 	client, err := sharedClient()
@@ -1325,6 +1378,73 @@ resource "ns1_record" "it" {
   ttl               = 60
 }
 `, rString, rString)
+}
+
+func testAccRecordLink(rString string) string {
+	return fmt.Sprintf(`
+# the name being tested that is a link
+resource "ns1_record" "link" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "link.${ns1_zone.test.zone}"
+  type              = "A"
+  link              = "target.${ns1_zone.test.zone}"
+  ttl               = 666
+}
+
+# the record that is the destination of the link
+resource "ns1_record" "target" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "target.${ns1_zone.test.zone}"
+  type              = "A"
+  ttl               = 777
+  answers {
+             answer = "99.86.99.86"
+	  }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordLinkUpdated(rString string) string {
+	return fmt.Sprintf(`
+# the name being tested that is a link
+resource "ns1_record" "link" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "link.${ns1_zone.test.zone}"
+  type              = "A"
+  link              = "newtarget.${ns1_zone.test.zone}"
+  ttl               = 666
+}
+
+# the record that is the original destination of the link
+resource "ns1_record" "target" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "target.${ns1_zone.test.zone}"
+  type              = "A"
+  ttl               = 777
+  answers {
+             answer = "99.86.99.86"
+	  }
+}
+
+# the new destination for the link
+resource "ns1_record" "newtarget" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "newtarget.${ns1_zone.test.zone}"
+  type              = "A"
+  ttl               = 888
+  answers {
+             answer = "16.19.20.19"
+          }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
 }
 
 func TestRegionsMetaDiffSuppress(t *testing.T) {
