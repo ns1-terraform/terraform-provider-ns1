@@ -1,3 +1,8 @@
+## 1.13.1-pre1 (prerelease) (November 10, 2022)
+BUG FIXES
+* Update instead of delete/recreate when changing link attribute of DNS record
+* Fix documentation typo
+
 ## 1.13.0 (November 8, 2022)
 ENHANCEMENTS:
 * Added importers for datafeed, datasource, notifylist and monitoringjob [#235](https://github.com/ns1-terraform/terraform-provider-ns1/pull/235)
