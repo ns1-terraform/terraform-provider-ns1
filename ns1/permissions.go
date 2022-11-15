@@ -161,31 +161,31 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["security_manage_active_directory"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
-		Default:          false,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dhcp_manage_dhcp"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
-		Default:          false,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dhcp_view_dhcp"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
-		Default:          false,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["ipam_manage_ipam"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
-		Default:          false,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["ipam_view_ipam"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
-		Default:          false,
+		Computed:         true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	return s

@@ -79,12 +79,13 @@ func TestAccUser_ManualDelete(t *testing.T) {
 				PreConfig:          testAccManualDeleteUser(username),
 				Config:             testAccUserBasic(rString),
 				PlanOnly:           true,
+				ExpectError:        regexp.MustCompile("GET .*/account/users/.* not found"),
 				ExpectNonEmptyPlan: true,
 			},
 			// Attempt to re-create it, this should fail because user names must be historically unique.
 			{
 				Config:      testAccUserBasic(rString),
-				ExpectError: regexp.MustCompile(`user already exists`),
+				ExpectError: regexp.MustCompile(`PUT .*/account/teams.*already exists`),
 			},
 		},
 	})
