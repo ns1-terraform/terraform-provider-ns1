@@ -155,37 +155,37 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["security_manage_global_2fa"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
-		Default:          false,
+		Default:          true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["security_manage_active_directory"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
-		Computed:         true,
+		Default:          false,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dhcp_manage_dhcp"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
-		Computed:         true,
+		Default:          true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dhcp_view_dhcp"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
-		Computed:         true,
+		Default:          true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["ipam_manage_ipam"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
-		Computed:         true,
+		Default:          true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["ipam_view_ipam"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
-		Computed:         true,
+		Default:          true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	return s
@@ -354,28 +354,28 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	if v, ok := d.GetOk("security_manage_active_directory"); ok {
 		p.Security.ManageActiveDirectory = v.(bool)
 	}
-	if v, ok := d.GetOk("dhcp_manage_dhcp"); ok {
-		if p.DHCP == nil {
+	for _, thing := range []string{"dhcp_manage_dhcp", "dhcp_view_dhcp"} {
+		_, ok := d.GetOkExists(thing)
+		if d.HasChange(thing) || ok {
 			p.DHCP = &account.PermissionsDHCP{}
 		}
+	}
+	if v, ok := d.GetOk("dhcp_manage_dhcp"); ok {
 		p.DHCP.ManageDHCP = v.(bool)
 	}
 	if v, ok := d.GetOk("dhcp_view_dhcp"); ok {
-		if p.DHCP == nil {
-			p.DHCP = &account.PermissionsDHCP{}
-		}
 		p.DHCP.ViewDHCP = v.(bool)
 	}
-	if v, ok := d.GetOk("ipam_manage_ipam"); ok {
-		if p.IPAM == nil {
+	for _, thing := range []string{"ipam_manage_ipam", "ipam_view_ipam"} {
+		_, ok := d.GetOkExists(thing)
+		if d.HasChange(thing) || ok {
 			p.IPAM = &account.PermissionsIPAM{}
 		}
+	}
+	if v, ok := d.GetOk("ipam_manage_ipam"); ok {
 		p.IPAM.ManageIPAM = v.(bool)
 	}
 	if v, ok := d.GetOk("ipam_view_ipam"); ok {
-		if p.IPAM == nil {
-			p.IPAM = &account.PermissionsIPAM{}
-		}
 		p.IPAM.ViewIPAM = v.(bool)
 	}
 	return p

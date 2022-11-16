@@ -7,9 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"strings"
 
@@ -86,10 +86,10 @@ func (c *Config) Client() (*ns1.Client, error) {
 func Logging() ns1.Decorator {
 	return func(d ns1.Doer) ns1.Doer {
 		return ns1.DoerFunc(func(r *http.Request) (*http.Response, error) {
-			log.Printf("[DEBUG] %s: %s %s", r.UserAgent(), r.Method, r.URL)
+			log.Printf("[DEBUG] HTTP %s: %s %s", r.UserAgent(), r.Method, r.URL)
 			heads := r.Header.Clone()
 			heads["X-Nsone-Key"] = []string{"<redacted>"}
-			log.Printf("[DEBUG] Headers: %s", heads)
+			log.Printf("[DEBUG] HTTP Headers: %s", heads)
 			var err error
 			if r.Body != nil {
 				r.Body, err = logRequest(r.Body)
@@ -97,7 +97,10 @@ func Logging() ns1.Decorator {
 					return nil, err
 				}
 			}
-			return d.Do(r)
+			response, rerr := d.Do(r)
+			dump, _ := httputil.DumpResponse(response, true)
+			log.Printf("[DEBUG] HTTP Response: %s", dump)
+			return response, rerr
 		})
 	}
 }
@@ -115,10 +118,10 @@ func logRequest(original io.ReadCloser) (io.ReadCloser, error) {
 
 	debugInfo, err := formatJSON(bs.Bytes())
 	if err == nil {
-		log.Printf("[DEBUG] Request Body: %s", debugInfo)
+		log.Printf("[DEBUG] HTTP Request Body: %s", debugInfo)
 	}
 
-	return ioutil.NopCloser(strings.NewReader(bs.String())), nil
+	return io.NopCloser(strings.NewReader(bs.String())), nil
 }
 
 // formatJSON attempts to format a byte slice as indented JSON for pretty printing

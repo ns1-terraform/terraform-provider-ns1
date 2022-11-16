@@ -123,6 +123,7 @@ func TestAccUser_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "security_manage_global_2fa", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "security_manage_active_directory", "true"),
 				),
 			},
 			{
