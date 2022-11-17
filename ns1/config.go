@@ -102,7 +102,7 @@ func Logging() ns1.Decorator {
 			}
 			response, rerr := d.Do(r)
 			dump, _ := httputil.DumpResponse(response, true)
-			for _, m := range(msgs) {
+			for _, m := range msgs {
 				log.Printf(m)
 			}
 			log.Printf("[DEBUG] HTTP Response: %s", dump)
