@@ -316,7 +316,7 @@ func answerToMap(a dns.Answer) map[string]interface{} {
 	if a.Meta != nil {
 		log.Println("got meta: ", a.Meta)
 		m["meta"] = metaToMapString(a.Meta)
-		log.Println(m["meta"])
+		log.Println("converted meta to resource string: ", m["meta"])
 	}
 	return m
 }
@@ -603,8 +603,16 @@ func metaToMapString(m *data.Meta) map[string]interface{} {
 	if stringMap != nil {
 		subdivisions := stringMap["subdivisions"]
 		if subdivisions != nil {
+			subd := m.Subdivisions.(map[string]interface{})
+			keys := make([]string, 0, len(subd))
 			var array []string
-			for subRegion, subArray := range m.Subdivisions.(map[string]interface{}) {
+			var subArray interface{}
+			for k := range subd {
+				keys = append(keys,k)
+			}
+			sort.Strings(keys)
+			for _, subRegion := range keys {
+				subArray = subd[subRegion]
 				for _, sub := range subArray.([]interface{}) {
 					array = append(array, subRegion+"-"+sub.(string))
 				}
