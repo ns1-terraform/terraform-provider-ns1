@@ -111,7 +111,9 @@ func TeamCreate(d *schema.ResourceData, meta interface{}) error {
 	if resp, err := client.Teams.Create(&t); err != nil {
 		return ConvertToNs1Error(resp, err)
 	}
-	return teamToResourceData(d, &t)
+	// workaround INBOX-2226 - send a GET to refresh object
+	_ = teamToResourceData(d, &t)
+	return TeamRead(d, meta)
 }
 
 // TeamRead reads the team data from ns1
