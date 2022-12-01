@@ -36,7 +36,7 @@ func userResource() *schema.Resource {
 			Elem:     schema.TypeBool,
 		},
 		"teams": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -91,7 +91,7 @@ func resourceDataToUser(u *account.User, d *schema.ResourceData) error {
 	u.Username = d.Get("username").(string)
 	u.Email = d.Get("email").(string)
 	if v, ok := d.GetOk("teams"); ok {
-		teamsRaw := v.(*schema.Set).List()
+		teamsRaw := v.([]interface{})
 		u.TeamIDs = make([]string, len(teamsRaw))
 		for i, team := range teamsRaw {
 			u.TeamIDs[i] = team.(string)

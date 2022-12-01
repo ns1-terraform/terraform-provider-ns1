@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	clientVersion     = "1.13.1-pre2"
-	providerUserAgent = "tf-ns1" + "/" + clientVersion
+	clientVersion     = "1.13.1-pre1"
+	providerUserAgent = "terraform-ns1" + "/" + clientVersion
 )
 
 // Config for NS1 API
