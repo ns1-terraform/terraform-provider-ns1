@@ -608,7 +608,7 @@ func metaToMapString(m *data.Meta) map[string]interface{} {
 			var array []string
 			var subArray interface{}
 			for k := range subd {
-				keys = append(keys,k)
+				keys = append(keys, k)
 			}
 			sort.Strings(keys)
 			for _, subRegion := range keys {
