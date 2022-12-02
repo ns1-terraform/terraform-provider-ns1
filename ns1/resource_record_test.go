@@ -1236,6 +1236,12 @@ resource "ns1_monitoringjob" "test" {
   config = {
     method = "GET"
     url = "https://www.example.com"
+    connect_timeout = "2000"
+    idle_timeout = "3"
+    ipv6 = false
+    follow_redirect = false
+    tls_add_verify = false
+    user_agent = "just testing"
   }
   rules {
     value = "200"
