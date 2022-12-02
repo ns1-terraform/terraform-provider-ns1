@@ -18,7 +18,7 @@ import (
 )
 
 var (
-	clientVersion     = "1.13.1-pre1"
+	clientVersion     = "1.13.1"
 	providerUserAgent = "tf-ns1" + "/" + clientVersion
 )
 

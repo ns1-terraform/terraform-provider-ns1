@@ -1,3 +1,15 @@
+## 1.13.1 (December 5, 2022)
+ENHANCEMENTS
+* HTTP debug logging now includes request/response times and response data
+
+BUG FIXES
+* Update instead of delete/recreate when changing link attribute of DNS record
+* Region names in DNS record metadata now sorted to avoid false differences
+* Permission flag change detection fixes [issue 237](https://github.com/ns1-terraform/terraform-provider-ns1/issues/237)
+* Team object creation fix
+* Additional acceptance test fixes
+* Fix documentation typo
+
 ## 1.13.1-pre1 (prerelease) (November 10, 2022)
 BUG FIXES
 * Update instead of delete/recreate when changing link attribute of DNS record
