@@ -12,13 +12,14 @@ import (
 	"net/http/httputil"
 	"os"
 	"strings"
+	"time"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 )
 
 var (
 	clientVersion     = "1.13.1-pre1"
-	providerUserAgent = "terraform-ns1" + "/" + clientVersion
+	providerUserAgent = "tf-ns1" + "/" + clientVersion
 )
 
 // Config for NS1 API
@@ -100,12 +101,14 @@ func Logging() ns1.Decorator {
 				}
 				msgs = append(msgs, bodymsg)
 			}
+			requestTime := time.Now()
 			response, rerr := d.Do(r)
+			responseTime := time.Now()
 			dump, _ := httputil.DumpResponse(response, true)
 			for _, m := range msgs {
 				log.Printf(m)
 			}
-			log.Printf("[DEBUG] HTTP Response: %s", dump)
+			log.Printf("[DEBUG] HTTP Response (requested at %s, received at %s): %s", requestTime.Format(time.StampMilli), responseTime.Format(time.StampMilli), dump)
 			return response, rerr
 		})
 	}
