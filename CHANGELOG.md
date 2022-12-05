@@ -1,3 +1,8 @@
+## 1.13.2-pre1 (prerelease) (December 6, 2022)
+BUG FIXES
+
+* Upgrade to ns1-go v2.7.1 to get fix for rate-limit divide-by-zero error.
+
 ## 1.13.1 (December 5, 2022)
 ENHANCEMENTS
 * HTTP debug logging now includes request/response times and response data
