@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-retryablehttp"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 )
 
@@ -34,7 +35,10 @@ type Config struct {
 // Client returns a new NS1 client.
 func (c *Config) Client() (*ns1.Client, error) {
 	var client *ns1.Client
-	httpClient := &http.Client{}
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 4
+	retryClient.Logger = nil
+	httpClient := retryClient.StandardClient()
 	decos := []func(*ns1.Client){}
 
 	if c.Key == "" {
