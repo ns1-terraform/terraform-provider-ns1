@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/data"
@@ -206,7 +206,7 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	d.Set("type", r.Type)
 	d.Set("ttl", r.TTL)
 
-	d.Set("override_ttl", nil)
+	d.Set("override_ttl", false)
 	if r.Type == "ALIAS" && r.Override_TTL != nil {
 		err := d.Set("override_ttl", *r.Override_TTL)
 

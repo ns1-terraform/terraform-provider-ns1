@@ -2,11 +2,12 @@ package ns1
 
 import (
 	"errors"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
-	"gopkg.in/ns1/ns1-go.v2/rest/model/pulsar"
 	"log"
 	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
+	"gopkg.in/ns1/ns1-go.v2/rest/model/pulsar"
 )
 
 func resourceApplication() *schema.Resource {
@@ -29,7 +30,7 @@ func resourceApplication() *schema.Resource {
 				Optional: true,
 			},
 			"default_config": {
-				Type:     schema.TypeMap,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
