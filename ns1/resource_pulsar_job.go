@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/pulsar"
@@ -52,7 +52,7 @@ func pulsarJobResource() *schema.Resource {
 			Default:  false,
 		},
 		"config": {
-			Type:     schema.TypeMap,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
@@ -93,7 +93,7 @@ func pulsarJobResource() *schema.Resource {
 			},
 		},
 		"blend_metric_weights": {
-			Type:     schema.TypeMap,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
