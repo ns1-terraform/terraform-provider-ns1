@@ -1,3 +1,8 @@
+## 1.13.2-pre2 (prerelease) (December 8, 2022)
+ENHANCEMENTS
+
+* The [Hashicorp go-retryablehttp](https://github.com/hashicorp/go-retryablehttp) package is now used by default to retry requests when encountering 502/503 errors or connection errors.
+
 ## 1.13.2-pre1 (prerelease) (December 6, 2022)
 BUG FIXES
 
