@@ -115,8 +115,8 @@ var descriptions map[string]string
 
 func init() {
 	descriptions = map[string]string{
-		"api_key": "The ns1 API key (required)",
-		"endpoint": "URL prefix (including version) for API calls",
+		"api_key":   "The ns1 API key (required)",
+		"endpoint":  "URL prefix (including version) for API calls",
 		"retry_max": "Maximum retries for 50x errors (-1 to disable)",
 	}
 
