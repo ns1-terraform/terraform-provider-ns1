@@ -21,6 +21,7 @@ import (
 var (
 	clientVersion     = "1.13.2-pre1"
 	providerUserAgent = "tf-ns1" + "/" + clientVersion
+	defaultRetryMax   = 3
 )
 
 // Config for NS1 API
@@ -30,15 +31,24 @@ type Config struct {
 	IgnoreSSL            bool
 	EnableDDI            bool
 	RateLimitParallelism int
+	RetryMax             int
 }
 
 // Client returns a new NS1 client.
 func (c *Config) Client() (*ns1.Client, error) {
 	var client *ns1.Client
-	retryClient := retryablehttp.NewClient()
-	retryClient.RetryMax = 4
-	retryClient.Logger = nil
-	httpClient := retryClient.StandardClient()
+
+	httpClient := &http.Client{}
+	retryMax := c.RetryMax
+	if retryMax >= 0 {
+		if retryMax == 0 {
+			retryMax = defaultRetryMax
+		}
+		retryClient := retryablehttp.NewClient()
+		retryClient.RetryMax = retryMax
+		retryClient.Logger = nil
+		httpClient = retryClient.StandardClient()
+	}
 	decos := []func(*ns1.Client){}
 
 	if c.Key == "" {
@@ -77,7 +87,7 @@ func (c *Config) Client() (*ns1.Client, error) {
 	}
 
 	UA := providerUserAgent + "_" + client.UserAgent
-	log.Printf("[INFO] NS1 Client configured for Endpoint: %s, versions %s", client.Endpoint.String(), UA)
+	log.Printf("[INFO] NS1 Client configured for Endpoint: %s, versions %s, retries %d", client.Endpoint.String(), UA, c.RetryMax)
 	if localUA := os.Getenv("NS1_TF_USER_AGENT"); localUA != "" {
 		client.UserAgent = localUA
 	} else {
