@@ -35,14 +35,11 @@ The following arguments are supported:
 
 * `apikey` - (Required) NS1 API token. It must be provided, but it can also
   be sourced from the `NS1_APIKEY` environment variable.
-* `version` - (Optional, but recommended if you don't like surprises) From
-  output of `terraform init`.
-* `endpoint` - (Optional) NS1 API endpoint. For managed clients, this normally
-  should not be set.
+* `version` - (Optional, but recommended if you don't like surprises) Require a specific version of the NS1 provider. Run `terraform init` to get your current version.
+* `retry_max` - (Optional, introduced in v1.13.2) Sets the number of retries for 50x-series errors. The default is 3. A negative value such as -1 disables this feature.
+* `endpoint` - (Optional) NS1 API endpoint. Normally not set unless testing or using non-standard proxies.
 * `ignore_ssl` - (Optional) This normally does not need to be set.
-* `enable_ddi` - (Optional) This sets the permission schema to a DDI-compatible schema. 
-Users of the managed SaaS product should not need to set this.
-Users of DDI should set this to true if managing teams, users, or API keys through this provider.
+* `enable_ddi` - (Deprecated) Enable the DDI-compatible permissions schema. No longer in use.
 * `rate_limit_parallelism` - (Optional) Integer for alternative rate limit and parallelism strategy (Terraform default value is 10).
     NS1 uses a token-based method for rate limiting API requests. Details of which can be found here: https://help.ns1.com/hc/en-us/articles/360020250573-About-API-rate-limiting.
     
@@ -71,6 +68,7 @@ embedding in the config:
 
 * `NS1_APIKEY` - (string) Explained above.
 * `NS1_ENDPOINT` - (string) Explained above.
+* `NS1_RETRY_MAX` - (integer) Explained above.
 * `NS1_IGNORE_SSL` - (boolean) If set, follows the convention of
   [strconv.ParseBool](https://golang.org/pkg/strconv/#ParseBool).
 * `NS1_RATE_LIMIT_PARALLELISM` - (int) Explained above.
