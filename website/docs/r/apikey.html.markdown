@@ -55,6 +55,8 @@ The following arguments are supported:
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.
 * `dns_zones_allow` - (Optional) List of zones that the apikey may access.
 * `dns_zones_deny` - (Optional) List of zones that the apikey may not access.
+* `dns_records_allow` - (Optional) List of records that the apikey may access.
+* `dns_records_deny` - (Optional) List of records that the apikey may not access.
 * `data_push_to_datafeeds` - (Optional) Whether the apikey can publish to data feeds.
 * `data_manage_datasources` - (Optional) Whether the apikey can modify data sources.
 * `data_manage_datafeeds` - (Optional) Whether the apikey can modify data feeds.
