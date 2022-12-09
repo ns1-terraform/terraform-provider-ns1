@@ -62,7 +62,7 @@ The following arguments are supported:
 * `data_manage_datafeeds` - (Optional) Whether the apikey can modify data feeds.
 * `account_manage_users` - (Optional) Whether the apikey can modify account users.
 * `account_manage_payment_methods` - (Optional) Whether the apikey can modify account payment methods.
-* `account_manage_plan` - (Optional) Whether the apikey can modify the account plan.
+* `account_manage_plan` - (Deprecated) No longer in use.
 * `account_manage_teams` - (Optional) Whether the apikey can modify other teams in the account.
 * `account_manage_apikeys` - (Optional) Whether the apikey can modify account apikeys.
 * `account_manage_account_settings` - (Optional) Whether the apikey can modify account settings.
