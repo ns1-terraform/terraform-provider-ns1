@@ -331,6 +331,8 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			switch d.Get("type") {
 			case "TXT", "SPF":
 				r.AddAnswer(dns.NewTXTAnswer(answer))
+			case "CAA":
+				r.AddAnswer(dns.NewAnswer(strings.SplitN(answer, " ", 3)))
 			default:
 				r.AddAnswer(dns.NewAnswer(strings.Split(answer, " ")))
 			}
@@ -345,6 +347,8 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			switch d.Get("type") {
 			case "TXT", "SPF":
 				a = dns.NewTXTAnswer(v)
+			case "CAA":
+				a = dns.NewAnswer(strings.SplitN(v, " ", 3))
 			default:
 				a = dns.NewAnswer(strings.Split(v, " "))
 			}

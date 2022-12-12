@@ -229,6 +229,16 @@ func TestAccRecord_CAA(t *testing.T) {
 				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/CAA", zoneName),
 				ImportStateVerify: true,
 			},
+			{
+				Config: testAccRecordCAAWithSpace(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.caa", &record),
+					testAccCheckRecordDomain(&record, zoneName),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"0", "issue", "inbox2221.ticket; account=xyz"},
+					),
+				),
+			},
 		},
 	})
 }
@@ -1292,6 +1302,24 @@ resource "ns1_record" "caa" {
   answers {
     answer = "0 issuewild ;"
   }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordCAAWithSpace(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "caa" {
+        zone   = ns1_zone.test.zone
+        domain = ns1_zone.test.zone
+        type   = "CAA"
+
+        answers {
+                answer = "0 issue inbox2221.ticket; account=xyz"
+        }
 }
 
 resource "ns1_zone" "test" {
