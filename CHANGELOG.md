@@ -1,7 +1,7 @@
-## 1.13.2-pre3 (prerelease) (December 14, 2022)
+## 1.13.2-pre4 (prerelease) (December 14, 2022)
 BUG FIXES
 
-* Fixed CAA record answers to allow answers with spaces after a domain  [issue 238](https://github.com/ns1-terraform/terraform-provider-ns1/issues/238)
+* Fixed CAA record answers to allow answers with spaces after a domain  ([issue 238](https://github.com/ns1-terraform/terraform-provider-ns1/issues/238))
 * Upgrade to ns1-go v2.7.2 to get messages from HTTP 50x errors properly displayed.
 * Upgraded to Terraform SDK 1.17.2
 * Misc documentation fixes.
@@ -25,7 +25,7 @@ BUG FIXES
 
 * Update instead of delete/recreate when changing link attribute of DNS record
 * Region names in DNS record metadata now sorted to avoid false differences
-* Permission flag change detection fixes [issue 237](https://github.com/ns1-terraform/terraform-provider-ns1/issues/237)
+* Permission flag change detection fixes ([issue 237](https://github.com/ns1-terraform/terraform-provider-ns1/issues/237))
 * Team object creation fix
 * Additional acceptance test fixes
 * Fix documentation typo

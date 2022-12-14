@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	clientVersion     = "1.13.2-pre3"
+	clientVersion     = "1.13.2-pre4"
 	providerUserAgent = "tf-ns1" + "/" + clientVersion
 	defaultRetryMax   = 3
 )
