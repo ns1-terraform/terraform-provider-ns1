@@ -268,7 +268,7 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 			z.Secondary = &dns.ZoneSecondary{Enabled: false}
 		}
 	}
-	if v, ok := d.GetOk("dnssec"); ok {
+	if v, ok := d.GetOkExists("dnssec"); ok {
 		if v != nil {
 			dnssec := v.(bool)
 			z.DNSSEC = &dnssec
