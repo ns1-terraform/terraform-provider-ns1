@@ -355,7 +355,7 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 		p.Security.ManageActiveDirectory = v.(bool)
 	}
 	for _, thing := range []string{"dhcp_manage_dhcp", "dhcp_view_dhcp"} {
-		_, ok := d.GetOkExists(thing)
+		_, ok := d.GetOk(thing)
 		if d.HasChange(thing) || ok {
 			p.DHCP = &account.PermissionsDHCP{}
 		}
@@ -367,7 +367,7 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 		p.DHCP.ViewDHCP = v.(bool)
 	}
 	for _, thing := range []string{"ipam_manage_ipam", "ipam_view_ipam"} {
-		_, ok := d.GetOkExists(thing)
+		_, ok := d.GetOk(thing)
 		if d.HasChange(thing) || ok {
 			p.IPAM = &account.PermissionsIPAM{}
 		}

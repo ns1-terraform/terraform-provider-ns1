@@ -121,7 +121,7 @@ func flattenDelegation(delegation *dns.Delegation) []interface{} {
 }
 
 func flattenDNSKeys(keys []*dns.Key) []interface{} {
-	out := make([]interface{}, 0, 0)
+	out := make([]interface{}, 0)
 	for _, v := range keys {
 		m := make(map[string]interface{})
 		m["flags"] = v.Flags
