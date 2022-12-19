@@ -14,12 +14,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-retryablehttp"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 )
 
 var (
-	clientVersion     = "1.13.2-pre1"
+	clientVersion     = "1.13.2-pre4"
 	providerUserAgent = "tf-ns1" + "/" + clientVersion
+	defaultRetryMax   = 3
 )
 
 // Config for NS1 API
@@ -29,12 +31,24 @@ type Config struct {
 	IgnoreSSL            bool
 	EnableDDI            bool
 	RateLimitParallelism int
+	RetryMax             int
 }
 
 // Client returns a new NS1 client.
 func (c *Config) Client() (*ns1.Client, error) {
 	var client *ns1.Client
+
 	httpClient := &http.Client{}
+	retryMax := c.RetryMax
+	if retryMax >= 0 {
+		if retryMax == 0 {
+			retryMax = defaultRetryMax
+		}
+		retryClient := retryablehttp.NewClient()
+		retryClient.RetryMax = retryMax
+		retryClient.Logger = nil
+		httpClient = retryClient.StandardClient()
+	}
 	decos := []func(*ns1.Client){}
 
 	if c.Key == "" {
@@ -73,7 +87,7 @@ func (c *Config) Client() (*ns1.Client, error) {
 	}
 
 	UA := providerUserAgent + "_" + client.UserAgent
-	log.Printf("[INFO] NS1 Client configured for Endpoint: %s, versions %s", client.Endpoint.String(), UA)
+	log.Printf("[INFO] NS1 Client configured for Endpoint: %s, versions %s, retries %d", client.Endpoint.String(), UA, c.RetryMax)
 	if localUA := os.Getenv("NS1_TF_USER_AGENT"); localUA != "" {
 		client.UserAgent = localUA
 	} else {
@@ -95,7 +109,7 @@ func Logging() ns1.Decorator {
 			var err error
 			if r.Body != nil {
 				var bodymsg string
-				r.Body, err, bodymsg = logRequest(r.Body)
+				r.Body, bodymsg, err = logRequest(r.Body)
 				if err != nil {
 					return nil, err
 				}
@@ -106,7 +120,7 @@ func Logging() ns1.Decorator {
 			responseTime := time.Now()
 			dump, _ := httputil.DumpResponse(response, true)
 			for _, m := range msgs {
-				log.Printf(m)
+				log.Print(m)
 			}
 			log.Printf("[DEBUG] HTTP Response (requested at %s, received at %s): %s", requestTime.Format(time.StampMilli), responseTime.Format(time.StampMilli), dump)
 			return response, rerr
@@ -115,14 +129,14 @@ func Logging() ns1.Decorator {
 }
 
 // logRequest logs a HTTP request and returns a copy that can be read again
-func logRequest(original io.ReadCloser) (io.ReadCloser, error, string) {
+func logRequest(original io.ReadCloser) (io.ReadCloser, string, error) {
 	// Handle request contentType
 	var bs bytes.Buffer
 	defer original.Close()
 
 	_, err := io.Copy(&bs, original)
 	if err != nil {
-		return nil, err, ""
+		return nil, "", err
 	}
 
 	msg := ""
@@ -131,7 +145,7 @@ func logRequest(original io.ReadCloser) (io.ReadCloser, error, string) {
 		msg = fmt.Sprintf("[DEBUG] HTTP Request Body: %s", debugInfo)
 	}
 
-	return io.NopCloser(strings.NewReader(bs.String())), nil, msg
+	return io.NopCloser(strings.NewReader(bs.String())), msg, nil
 }
 
 // formatJSON attempts to format a byte slice as indented JSON for pretty printing

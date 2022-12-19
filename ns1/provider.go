@@ -42,6 +42,12 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("NS1_RATE_LIMIT_PARALLELISM", nil),
 				Description: descriptions["rate_limit_parallelism"],
 			},
+			"retry_max": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NS1_RETRY_MAX", nil),
+				Description: descriptions["retry_max"],
+			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"ns1_zone":   dataSourceZone(),
@@ -97,6 +103,9 @@ func ns1Configure(d *schema.ResourceData) (interface{}, error) {
 	if v, ok := d.GetOk("rate_limit_parallelism"); ok {
 		config.RateLimitParallelism = v.(int)
 	}
+	if v, ok := d.GetOk("retry_max"); ok {
+		config.RetryMax = v.(int)
+	}
 
 	return config.Client()
 }
@@ -105,7 +114,9 @@ var descriptions map[string]string
 
 func init() {
 	descriptions = map[string]string{
-		"api_key": "The ns1 API key, this is required",
+		"api_key":   "The ns1 API key (required)",
+		"endpoint":  "URL prefix (including version) for API calls",
+		"retry_max": "Maximum retries for 50x errors (-1 to disable)",
 	}
 
 	structs.DefaultTagName = "json"

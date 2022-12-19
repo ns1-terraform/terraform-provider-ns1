@@ -20,7 +20,6 @@
 #   data_manage_datafeeds: boolean - allows the requestor to manage datafeeds
 #   account_manage_users: boolean - allows the requstor to manage users
 #   account_manage_payment_methods: boolean - allows the requestor to manage payment methods
-#   account_manage_plan: boolean - allows the requestor to manage the account payment plan
 #   account_manage_teams: boolean - allows the requestor to manage teams
 #   account_manage_apikeys: boolean - allows the requestor to manage apikeys
 #   account_manage_account_settings: boolean - allows the requestor to manage account settings

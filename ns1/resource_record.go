@@ -291,17 +291,17 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 func recordMapValueToString(configMap map[string]interface{}) map[string]interface{} {
 	config := make(map[string]interface{})
 	for configKey, configValue := range configMap {
-		switch configValue.(type) {
+		switch t := configValue.(type) {
 		case bool:
-			if configValue.(bool) {
+			if t {
 				config[configKey] = "1"
 			} else {
 				config[configKey] = "0"
 			}
 		case float64:
-			config[configKey] = strconv.FormatFloat(configValue.(float64), 'f', -1, 64)
+			config[configKey] = strconv.FormatFloat(t, 'f', -1, 64)
 		default:
-			config[configKey] = configValue
+			config[configKey] = t
 		}
 	}
 	return config
@@ -331,6 +331,8 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			switch d.Get("type") {
 			case "TXT", "SPF":
 				r.AddAnswer(dns.NewTXTAnswer(answer))
+			case "CAA":
+				r.AddAnswer(dns.NewAnswer(strings.SplitN(answer, " ", 3)))
 			default:
 				r.AddAnswer(dns.NewAnswer(strings.Split(answer, " ")))
 			}
@@ -345,6 +347,8 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			switch d.Get("type") {
 			case "TXT", "SPF":
 				a = dns.NewTXTAnswer(v)
+			case "CAA":
+				a = dns.NewAnswer(strings.SplitN(v, " ", 3))
 			default:
 				a = dns.NewAnswer(strings.Split(v, " "))
 			}
@@ -439,9 +443,9 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 
 func removeEmptyMeta(v map[string]interface{}) {
 	for metaKey, metaValue := range v {
-		switch metaValue.(type) {
+		switch t := metaValue.(type) {
 		case string:
-			if metaValue.(string) == "" {
+			if t == "" {
 				delete(v, metaKey)
 			}
 		}
