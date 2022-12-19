@@ -108,7 +108,7 @@ func TestAccDataFeed_ManualDelete(t *testing.T) {
 
 func testAccCheckDataFeedExists(n string, dsrc string, dataFeed *data.Feed, t *testing.T) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, _ := s.RootModule().Resources[n]
+		rs := s.RootModule().Resources[n]
 		ds, ok := s.RootModule().Resources[dsrc]
 
 		if !ok {
