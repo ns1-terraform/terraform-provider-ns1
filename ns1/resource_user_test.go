@@ -792,3 +792,21 @@ resource "ns1_user" "u" {
 }
 `, rString, rString, rString, rString)
 }
+
+func testAccUserPermissionsZoneAllow(rstring string) string {
+	return fmt.Sprintf(`resource "ns1_team" "t" {
+  name            = "terraform acc test team %s"
+  dns_view_zones  = true
+  dns_zones_allow = ["j.random.zone"]
+}
+
+resource "ns1_user" "u" {
+  name = "terraform acc test user %s"
+  username = "tf_acc_test_user_%s"
+  email = "tf_acc_test_ns1@example.com"
+  notify = {
+    billing = false
+  }
+  teams = [ns1_team.t.id]
+}`, rstring, rstring, rstring)
+}
