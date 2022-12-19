@@ -33,6 +33,11 @@ func TestAccAPIKey_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_apikey.it", "ip_whitelist_strict", "true"),
 				),
 			},
+                        {
+                                ResourceName:      "ns1_apikey.it",
+                                ImportState:       true,
+                                ImportStateVerify: true,
+                        },
 		},
 	})
 }
