@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -96,6 +97,7 @@ func TestAccDataFeed_ManualDelete(t *testing.T) {
 				Config:             testAccDataFeedBasic,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
+				ExpectError:        regexp.MustCompile("GET .*/data/feeds/.* not found"),
 			},
 			// Then re-create and make sure it is there again.
 			{
