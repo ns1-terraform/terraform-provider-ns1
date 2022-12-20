@@ -33,6 +33,11 @@ func TestAccDNSView_basic(t *testing.T) {
 					testAccCheckDNSViewPreference(&view, viewPreference),
 				),
 			},
+			{
+				ResourceName:      "ns1_dnsview.it",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -70,6 +75,11 @@ func TestAccDNSView_update(t *testing.T) {
 					testAccCheckDNSViewPreference(&updatedView, updatedViewPreference),
 					testAccCheckDNSViewZones(&updatedView, []string{zoneName}),
 				),
+			},
+			{
+				ResourceName:      "ns1_dnsview.it",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
