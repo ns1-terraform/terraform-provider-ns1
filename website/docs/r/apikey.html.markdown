@@ -90,6 +90,15 @@ In addition to all arguments above, the following attributes are exported:
 
 * `key` - (Computed) The apikeys authentication token.
 
+## Import
+
+`terraform import ns1_apikey`
+
+So for the example above:
+
+`terraform import ns1_apikey.example <ID>`
+
+
 ## NS1 Documentation
 
 [ApiKeys Api Doc](https://ns1.com/api#api-key)
