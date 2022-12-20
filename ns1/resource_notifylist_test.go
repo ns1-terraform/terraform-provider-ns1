@@ -27,6 +27,11 @@ func TestAccNotifyList_basic(t *testing.T) {
 					testAccCheckNotifyListName(&nl, "terraform test"),
 				),
 			},
+			{
+				ResourceName:      "ns1_notifylist.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -52,6 +57,11 @@ func TestAccNotifyList_updated(t *testing.T) {
 					testAccCheckNotifyListName(&nl, "terraform test"),
 				),
 			},
+			{
+				ResourceName:      "ns1_notifylist.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -71,11 +81,21 @@ func TestAccNotifyList_types(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "ns1_notifylist.test_slack",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: testAccNotifyListPagerDuty,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNotifyListExists("ns1_notifylist.test_pagerduty", &nl),
 					testAccCheckNotifyListName(&nl, "terraform test pagerduty"),
 				),
+			},
+			{
+				ResourceName:      "ns1_notifylist.test_pagerduty",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

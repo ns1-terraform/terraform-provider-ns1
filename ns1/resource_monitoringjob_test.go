@@ -54,11 +54,11 @@ func TestAccMonitoringJob_basic(t *testing.T) {
 					testAccCheckMonitoringJobConfigTlsAddVerify(&mj, true),
 				),
 			},
-                        {
-                                ResourceName:      "ns1_monitoringjob.it",
-                                ImportState:       true,
-                                ImportStateVerify: true,
-                        },
+			{
+				ResourceName:      "ns1_monitoringjob.it",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -110,6 +110,11 @@ func TestAccMonitoringJob_updated(t *testing.T) {
 					testAccCheckMonitoringJobMute(&mj, false),
 					testAccCheckMonitoringConnectTimeout(&mj, 2000),
 				),
+			},
+			{
+				ResourceName:      "ns1_monitoringjob.it",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

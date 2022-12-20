@@ -27,11 +27,11 @@ func TestAccDataSource_basic(t *testing.T) {
 					testAccCheckDataSourceType(&dataSource, "nsone_v1"),
 				),
 			},
-                        {
-                                ResourceName:      "ns1_datasource.foobar",
-                                ImportState:       true,
-                                ImportStateVerify: true,
-                        },
+			{
+				ResourceName:      "ns1_datasource.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -58,6 +58,11 @@ func TestAccDataSource_updated(t *testing.T) {
 					testAccCheckDataSourceName(&dataSource, "terraform test"),
 					testAccCheckDataSourceType(&dataSource, "nsone_monitoring"),
 				),
+			},
+			{
+				ResourceName:      "ns1_datasource.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
