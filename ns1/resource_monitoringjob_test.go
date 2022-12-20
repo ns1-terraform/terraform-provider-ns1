@@ -54,6 +54,11 @@ func TestAccMonitoringJob_basic(t *testing.T) {
 					testAccCheckMonitoringJobConfigTlsAddVerify(&mj, true),
 				),
 			},
+                        {
+                                ResourceName:      "ns1_monitoringjob.it",
+                                ImportState:       true,
+                                ImportStateVerify: true,
+                        },
 		},
 	})
 }

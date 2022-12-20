@@ -27,6 +27,11 @@ func TestAccDataSource_basic(t *testing.T) {
 					testAccCheckDataSourceType(&dataSource, "nsone_v1"),
 				),
 			},
+                        {
+                                ResourceName:      "ns1_datasource.foobar",
+                                ImportState:       true,
+                                ImportStateVerify: true,
+                        },
 		},
 	})
 }
