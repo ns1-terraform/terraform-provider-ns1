@@ -1,3 +1,19 @@
+## 1.13.3 (December 21, 2022)
+ENHANCEMENTS
+
+* The [Hashicorp go-retryablehttp](https://github.com/hashicorp/go-retryablehttp) package is now used by default to retry requests when encountering 502/503 errors or connection errors.
+* Upgraded to Terraform SDK 1.17.2
+* Upgraded to ns1-go 2.7.2
+
+BUG FIXES
+
+* Fix recognition of datafeed "not found" errors.
+* Fixed CAA record answers to allow answers with spaces after a domain  ([issue 238](https://github.com/ns1-terraform/terraform-provider-ns1/issues/238))
+* HTTP 50x and similar errors are now properly displayed.
+* API keys can now be imported.
+* Documentation corrections and updates.
+* Fixed rate-limit divide-by-zero error.
+
 ## 1.13.2-pre4 (prerelease) (December 14, 2022)
 BUG FIXES
 

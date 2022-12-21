@@ -36,6 +36,11 @@ func TestAccTsigKey_basic(t *testing.T) {
 					testAccCheckTsigKeySecret(&key, keySecret),
 				),
 			},
+			{
+				ResourceName:      "ns1_tsigkey.it",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -68,12 +73,22 @@ func TestAccTsigKey_updated(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "ns1_tsigkey.it",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: testAccTsigKeyBasic(keyName, updatedAlgorithm, updatedSecret),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTsigKeyExists("ns1_tsigkey.it", &key),
 					testAccCheckTsigKeyAlgorithm(&key, updatedAlgorithm),
 					testAccCheckTsigKeySecret(&key, updatedSecret),
 				),
+			},
+			{
+				ResourceName:      "ns1_tsigkey.it",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
