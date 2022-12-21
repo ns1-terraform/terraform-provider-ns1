@@ -55,11 +55,13 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 		Type:     schema.TypeList,
 		Optional: true,
 		Elem:     &schema.Schema{Type: schema.TypeString},
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dns_zones_allow"] = &schema.Schema{
 		Type:     schema.TypeList,
 		Optional: true,
 		Elem:     &schema.Schema{Type: schema.TypeString},
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["data_push_to_datafeeds"] = &schema.Schema{
 		Type:             schema.TypeBool,

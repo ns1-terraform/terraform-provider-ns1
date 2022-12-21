@@ -130,6 +130,7 @@ func TestAccUser_permissions(t *testing.T) {
 				Config: testAccUserPermissionsOnTeam(rString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckUserExists("ns1_user.u", &user),
+					testAccCheckDNSZonesAllow(&user, []string{"j.random.zone"}),
 					resource.TestCheckResourceAttr("ns1_user.u", "email", "tf_acc_test_ns1@hashicorp.com"),
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
@@ -630,6 +631,18 @@ func testAccCheckUserIPWhitelists(user *account.User, expected []string) resourc
 	}
 }
 
+// Check whether dns_zones_allow has the expected list value.
+func testAccCheckDNSZonesAllow(user *account.User, expected []string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		sort.Strings(user.Permissions.DNS.ZonesAllow)
+		sort.Strings(expected)
+		if !reflect.DeepEqual(user.Permissions.DNS.ZonesAllow, expected) {
+			return fmt.Errorf("Permissions.DNS.ZonesAllow: got values: %v want: %v", user.Permissions.DNS.ZonesAllow, expected)
+		}
+		return nil
+	}
+}
+
 // Simulate a manual deletion of a user.
 func testAccManualDeleteUser(user string) func() {
 	return func() {
@@ -687,6 +700,7 @@ func testAccUserPermissionsOnTeam(rString string) string {
   name = "terraform acc test team %s"
   account_manage_account_settings = true
   account_manage_ip_whitelist = false
+  dns_zones_allow = ["j.random.zone"]
 }
 
 resource "ns1_user" "u" {
