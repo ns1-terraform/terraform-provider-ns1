@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	clientVersion     = "1.13.2-pre4"
+	clientVersion     = "1.13.3"
 	providerUserAgent = "tf-ns1" + "/" + clientVersion
 	defaultRetryMax   = 3
 )
@@ -109,7 +109,7 @@ func Logging() ns1.Decorator {
 			var err error
 			if r.Body != nil {
 				var bodymsg string
-				r.Body, err, bodymsg = logRequest(r.Body)
+				r.Body, bodymsg, err = logRequest(r.Body)
 				if err != nil {
 					return nil, err
 				}
@@ -120,7 +120,7 @@ func Logging() ns1.Decorator {
 			responseTime := time.Now()
 			dump, _ := httputil.DumpResponse(response, true)
 			for _, m := range msgs {
-				log.Printf(m)
+				log.Print(m)
 			}
 			log.Printf("[DEBUG] HTTP Response (requested at %s, received at %s): %s", requestTime.Format(time.StampMilli), responseTime.Format(time.StampMilli), dump)
 			return response, rerr
@@ -129,14 +129,14 @@ func Logging() ns1.Decorator {
 }
 
 // logRequest logs a HTTP request and returns a copy that can be read again
-func logRequest(original io.ReadCloser) (io.ReadCloser, error, string) {
+func logRequest(original io.ReadCloser) (io.ReadCloser, string, error) {
 	// Handle request contentType
 	var bs bytes.Buffer
 	defer original.Close()
 
 	_, err := io.Copy(&bs, original)
 	if err != nil {
-		return nil, err, ""
+		return nil, "", err
 	}
 
 	msg := ""
@@ -145,7 +145,7 @@ func logRequest(original io.ReadCloser) (io.ReadCloser, error, string) {
 		msg = fmt.Sprintf("[DEBUG] HTTP Request Body: %s", debugInfo)
 	}
 
-	return io.NopCloser(strings.NewReader(bs.String())), nil, msg
+	return io.NopCloser(strings.NewReader(bs.String())), msg, nil
 }
 
 // formatJSON attempts to format a byte slice as indented JSON for pretty printing

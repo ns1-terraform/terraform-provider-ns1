@@ -15,7 +15,7 @@ type StringEnum struct {
 // NewStringEnum makes a StringEnum from a list of strings.
 func NewStringEnum(values []string) *StringEnum {
 	valueMap := make(map[string]int)
-	quoted := make([]string, len(values), len(values))
+	quoted := make([]string, len(values))
 	for i, value := range values {
 		_, present := valueMap[value]
 		if present {
