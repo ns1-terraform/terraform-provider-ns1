@@ -1,3 +1,8 @@
+## 1.13.4-pre1 (December 22, 2022)
+BUG FIXES
+
+* fixed permissions problems with DNS record allow/deny lists (issues 196 and 197)
+
 ## 1.13.3 (December 21, 2022)
 ENHANCEMENTS
 
