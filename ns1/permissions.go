@@ -7,9 +7,10 @@ import (
 
 func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 	dnsRecords := &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		Required: false,
+		Type:             schema.TypeList,
+		Optional:         true,
+		Required:         false,
+		DiffSuppressFunc: suppressPermissionDiff,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"domain": {
@@ -52,14 +53,16 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dns_zones_deny"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		Elem:     &schema.Schema{Type: schema.TypeString},
+		Type:             schema.TypeList,
+		Optional:         true,
+		Elem:             &schema.Schema{Type: schema.TypeString},
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dns_zones_allow"] = &schema.Schema{
-		Type:     schema.TypeList,
-		Optional: true,
-		Elem:     &schema.Schema{Type: schema.TypeString},
+		Type:             schema.TypeList,
+		Optional:         true,
+		Elem:             &schema.Schema{Type: schema.TypeString},
+		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["data_push_to_datafeeds"] = &schema.Schema{
 		Type:             schema.TypeBool,
@@ -258,18 +261,24 @@ func permissionsToResourceData(d *schema.ResourceData, permissions account.Permi
 		d.Set("ipam_manage_ipam", permissions.IPAM.ManageIPAM)
 		d.Set("ipam_view_ipam", permissions.IPAM.ViewIPAM)
 	}
+	if permissions.DNS.RecordsAllow != nil {
+		d.Set("dns_records_allow", dnsRecordsACLtoSchema(permissions.DNS.RecordsAllow))
+	}
+	if permissions.DNS.RecordsDeny != nil {
+		d.Set("dns_records_deny", dnsRecordsACLtoSchema(permissions.DNS.RecordsDeny))
+	}
 }
 
 func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	var p account.PermissionsMap
 
 	if v, ok := d.GetOk("dns_records_allow"); ok {
-		p.DNS.RecordsAllow = SchemaToRecordArray(v)
+		p.DNS.RecordsAllow = schemaToDNSRecordsACL(v)
 	} else {
 		p.DNS.RecordsAllow = []account.PermissionsRecord{}
 	}
 	if v, ok := d.GetOk("dns_records_deny"); ok {
-		p.DNS.RecordsDeny = SchemaToRecordArray(v)
+		p.DNS.RecordsDeny = schemaToDNSRecordsACL(v)
 	} else {
 		p.DNS.RecordsDeny = []account.PermissionsRecord{}
 	}
@@ -381,7 +390,20 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	return p
 }
 
-func SchemaToRecordArray(v interface{}) []account.PermissionsRecord {
+func dnsRecordsACLtoSchema(acls []account.PermissionsRecord) []map[string]interface{} {
+	results := make([]map[string]interface{}, len(acls))
+	for i, r := range acls {
+		m := make(map[string]interface{})
+		m["domain"] = r.Domain
+		m["include_subdomains"] = r.Subdomains
+		m["zone"] = r.Zone
+		m["type"] = r.RecordType
+		results[i] = m
+	}
+	return results
+}
+
+func schemaToDNSRecordsACL(v interface{}) []account.PermissionsRecord {
 	if schemaRecord, ok := v.([]interface{}); ok {
 		var records []account.PermissionsRecord
 		for _, sr := range schemaRecord {
