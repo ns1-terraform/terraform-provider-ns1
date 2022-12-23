@@ -30,8 +30,9 @@ func resourceApplication() *schema.Resource {
 				Optional: true,
 			},
 			"default_config": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
+				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"http": {
@@ -80,7 +81,7 @@ func resourceApplicationToResourceData(d *schema.ResourceData, a *pulsar.Applica
 	d.Set("default_config", defaultConfigToMap(&a.DefaultConfig))
 	return nil
 }
-func defaultConfigToMap(d *pulsar.DefaultConfig) map[string]interface{} {
+func defaultConfigToMap(d *pulsar.DefaultConfig) []map[string]interface{} {
 	dm := make(map[string]interface{})
 	dm["http"] = d.Http
 	dm["https"] = d.Https
@@ -88,7 +89,7 @@ func defaultConfigToMap(d *pulsar.DefaultConfig) map[string]interface{} {
 	dm["job_timeout_millis"] = d.JobTimeoutMillis
 	dm["use_xhr"] = d.UseXhr
 	dm["static_values"] = d.StaticValues
-	return dm
+	return []map[string]interface{}{dm}
 }
 
 func resourceDataToApplication(a *pulsar.Application, d *schema.ResourceData) {
@@ -111,7 +112,7 @@ func resourceDataToApplication(a *pulsar.Application, d *schema.ResourceData) {
 }
 
 func setDefaultConfig(ds interface{}) (d pulsar.DefaultConfig) {
-	defaultConfig := ds.(map[string]interface{})
+	defaultConfig := ds.([]map[string]interface{})[0]
 	d = pulsar.DefaultConfig{}
 	httpConf := defaultConfig["http"]
 	if httpConf != nil {
