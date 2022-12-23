@@ -46,6 +46,17 @@ func dataSourceZone() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"additional_ports": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
+				},
+			},
+			"primary_port": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+			},
 			"dns_servers": {
 				Type:     schema.TypeString,
 				Computed: true,
