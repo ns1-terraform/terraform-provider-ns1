@@ -13,7 +13,7 @@ func apikeyResourceV0() *schema.Resource {
 			Computed: true,
 		},
 		"teams": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},

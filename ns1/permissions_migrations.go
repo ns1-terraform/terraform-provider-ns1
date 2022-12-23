@@ -33,12 +33,12 @@ func addPermsSchemaV0(s map[string]*schema.Schema) map[string]*schema.Schema {
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dns_zones_deny"] = &schema.Schema{
-		Type:     schema.TypeList,
+		Type:     schema.TypeSet,
 		Optional: true,
 		Elem:     &schema.Schema{Type: schema.TypeString},
 	}
 	s["dns_zones_allow"] = &schema.Schema{
-		Type:     schema.TypeList,
+		Type:     schema.TypeSet,
 		Optional: true,
 		Elem:     &schema.Schema{Type: schema.TypeString},
 	}

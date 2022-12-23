@@ -23,7 +23,7 @@ func userResourceV0() *schema.Resource {
 			Elem:     schema.TypeBool,
 		},
 		"teams": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},

@@ -53,13 +53,13 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dns_zones_deny"] = &schema.Schema{
-		Type:             schema.TypeList,
+		Type:             schema.TypeSet,
 		Optional:         true,
 		Elem:             &schema.Schema{Type: schema.TypeString},
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["dns_zones_allow"] = &schema.Schema{
-		Type:             schema.TypeList,
+		Type:             schema.TypeSet,
 		Optional:         true,
 		Elem:             &schema.Schema{Type: schema.TypeString},
 		DiffSuppressFunc: suppressPermissionDiff,
@@ -208,18 +208,19 @@ func suppressPermissionDiff(k, old, new string, d *schema.ResourceData) bool {
 	// Check for both old and new team values - if either of them is set,
 	// (e.g. if a user is either being added to a team or removed from one),
 	// then ignore diffs on the permission keys.
-	if teamsRaw, ok := oldTeams.([]interface{}); ok {
+	if oldTeams != nil {
+		teamsRaw := oldTeams.(*schema.Set).List()
 		if len(teamsRaw) > 0 {
 			return true
 		}
 	}
-
 	// For some reason, removing a user from a team by completely
 	// deleting the teams block from the config will not show up here,
 	// the old value will still be in newTeams, so there is no way to know
 	// that a user isn't part of any teams anymore. So `terraform apply`
 	// has to be ran again to update the users permissions.
-	if teamsRaw, ok := newTeams.([]interface{}); ok {
+	if newTeams != nil {
+		teamsRaw := newTeams.(*schema.Set).List()
 		if len(teamsRaw) > 0 {
 			return true
 		}
@@ -292,7 +293,7 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 		p.DNS.ZonesAllowByDefault = v.(bool)
 	}
 	if v, ok := d.GetOk("dns_zones_deny"); ok {
-		denyRaw := v.([]interface{})
+		denyRaw := v.(*schema.Set).List()
 		p.DNS.ZonesDeny = make([]string, len(denyRaw))
 		for i, deny := range denyRaw {
 			p.DNS.ZonesDeny[i] = deny.(string)
@@ -301,7 +302,7 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 		p.DNS.ZonesDeny = make([]string, 0)
 	}
 	if v, ok := d.GetOk("dns_zones_allow"); ok {
-		allowRaw := v.([]interface{})
+		allowRaw := v.(*schema.Set).List()
 		p.DNS.ZonesAllow = make([]string, len(allowRaw))
 		for i, allow := range allowRaw {
 			p.DNS.ZonesAllow[i] = allow.(string)

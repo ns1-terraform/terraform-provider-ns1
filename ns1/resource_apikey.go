@@ -21,7 +21,7 @@ func apikeyResource() *schema.Resource {
 			Sensitive: true,
 		},
 		"teams": {
-			Type:     schema.TypeList,
+			Type:     schema.TypeSet,
 			Optional: true,
 			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
@@ -71,7 +71,7 @@ func resourceDataToApikey(k *account.APIKey, d *schema.ResourceData) error {
 	k.ID = d.Id()
 	k.Name = d.Get("name").(string)
 	if v, ok := d.GetOk("teams"); ok {
-		teamsRaw := v.([]interface{})
+		teamsRaw := v.(*schema.Set).List()
 		k.TeamIDs = make([]string, len(teamsRaw))
 		for i, team := range teamsRaw {
 			k.TeamIDs[i] = team.(string)
