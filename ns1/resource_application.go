@@ -3,7 +3,6 @@ package ns1
 import (
 	"errors"
 	"log"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -32,6 +31,7 @@ func resourceApplication() *schema.Resource {
 			"default_config": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -78,10 +78,10 @@ func resourceApplicationToResourceData(d *schema.ResourceData, a *pulsar.Applica
 	d.Set("browser_wait_millis", a.BrowserWaitMillis)
 	d.Set("jobs_per_transaction", a.JobsPerTransaction)
 
-	d.Set("default_config", defaultConfigToMap(&a.DefaultConfig))
+	d.Set("default_config", []map[string]interface{}{defaultConfigToMap(&a.DefaultConfig)})
 	return nil
 }
-func defaultConfigToMap(d *pulsar.DefaultConfig) []map[string]interface{} {
+func defaultConfigToMap(d *pulsar.DefaultConfig) map[string]interface{} {
 	dm := make(map[string]interface{})
 	dm["http"] = d.Http
 	dm["https"] = d.Https
@@ -89,7 +89,7 @@ func defaultConfigToMap(d *pulsar.DefaultConfig) []map[string]interface{} {
 	dm["job_timeout_millis"] = d.JobTimeoutMillis
 	dm["use_xhr"] = d.UseXhr
 	dm["static_values"] = d.StaticValues
-	return []map[string]interface{}{dm}
+	return dm
 }
 
 func resourceDataToApplication(a *pulsar.Application, d *schema.ResourceData) {
@@ -112,37 +112,31 @@ func resourceDataToApplication(a *pulsar.Application, d *schema.ResourceData) {
 }
 
 func setDefaultConfig(ds interface{}) (d pulsar.DefaultConfig) {
-	defaultConfig := ds.([]map[string]interface{})[0]
+	defaultConfig := ds.([]interface{})[0].(map[string]interface{})
 	d = pulsar.DefaultConfig{}
 	httpConf := defaultConfig["http"]
 	if httpConf != nil {
-		httpsBool, _ := strconv.ParseBool(httpConf.(string))
-		d.Http = httpsBool
+		d.Http = httpConf.(bool)
 	}
 	httpsConf := defaultConfig["https"]
 	if httpsConf != nil {
-		httpsBool, _ := strconv.ParseBool(httpsConf.(string))
-		d.Https = httpsBool
+		d.Https = httpsConf.(bool)
 	}
 	xhrConf := defaultConfig["use_xhr"]
 	if xhrConf != nil {
-		xhrBool, _ := strconv.ParseBool(xhrConf.(string))
-		d.UseXhr = xhrBool
+		d.UseXhr = xhrConf.(bool)
 	}
 	staticConf := defaultConfig["static_values"]
 	if staticConf != nil {
-		StaticBool, _ := strconv.ParseBool(staticConf.(string))
-		d.StaticValues = StaticBool
+		d.StaticValues = staticConf.(bool)
 	}
 	jobConf := defaultConfig["job_timeout_millis"]
 	if jobConf != nil {
-		jobInt, _ := strconv.Atoi(jobConf.(string))
-		d.JobTimeoutMillis = jobInt
+		d.JobTimeoutMillis = jobConf.(int)
 	}
 	reqConf := defaultConfig["request_timeout_millis"]
 	if reqConf != nil {
-		reqInt, _ := strconv.Atoi(reqConf.(string))
-		d.RequestTimeoutMillis = reqInt
+		d.RequestTimeoutMillis = reqConf.(int)
 	}
 	return
 }

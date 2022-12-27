@@ -1,3 +1,32 @@
+## 1.x.x (???)
+
+INCOMPATIBILITIES WITH PREVIOUS VERSIONS
+
+* The `ws1_application` resource attribute `default_config` is now
+a block with only one item permitted. This is due to an SDK 2.x restriction
+on nested structures. Existing resource files will need to be edited to
+remove the equals sign in the `default_config` declaration, for example:
+
+```
+resource "ns1_application" "it" {
+ name = "my_application"
+ browser_wait_millis = 123
+ jobs_per_transaction = 100
+ default_config {
+  http  = true
+  https = false
+  request_timeout_millis = 100
+  job_timeout_millis = 100
+  static_values = true
+ }
+}
+```
+
+ENHANCEMENTS
+
+* Upgraded to Terraform SDK 2.24.1
+
+
 ## 1.13.3 (December 21, 2022)
 ENHANCEMENTS
 

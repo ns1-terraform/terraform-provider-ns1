@@ -118,7 +118,10 @@ func Logging() ns1.Decorator {
 			requestTime := time.Now()
 			response, rerr := d.Do(r)
 			responseTime := time.Now()
-			dump, _ := httputil.DumpResponse(response, true)
+			dump := []byte{}
+			if response != nil {
+				dump, _ = httputil.DumpResponse(response, true)
+			}
 			for _, m := range msgs {
 				log.Print(m)
 			}
