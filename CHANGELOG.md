@@ -2,10 +2,7 @@
 
 INCOMPATIBILITIES WITH PREVIOUS VERSIONS
 
-* The `ws1_application` resource attribute `default_config` is now
-a block with only one item permitted. This is due to an SDK 2.x restriction
-on nested structures. Existing resource files will need to be edited to
-remove the equals sign in the `default_config` declaration, for example:
+* The `ns1_application` resource attributes `config` and  `default_config` are now blocks, with only one item permitted. This is due to an SDK 2.x restriction on nested structures. Existing resource files will need to be edited to remove the equals sign in the declaration for the `config` and `default_config` stanzas, for example:
 
 ```
 resource "ns1_application" "it" {
@@ -20,6 +17,11 @@ resource "ns1_application" "it" {
   static_values = true
  }
 }
+```
+
+instead of:
+```
+ default_config = {
 ```
 
 ENHANCEMENTS
