@@ -224,7 +224,7 @@ func TestAccRecord_CAA(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.caa",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/CAA", zoneName),
 				ImportStateVerify: true,
@@ -266,7 +266,7 @@ func TestAccRecord_SPF(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.spf",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/SPF", zoneName),
 				ImportStateVerify: true,
@@ -302,7 +302,7 @@ func TestAccRecord_SRV(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.srv",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/SRV", zoneName, domainName),
 				ImportStateVerify: true,
@@ -338,7 +338,7 @@ func TestAccRecord_DS(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.ds",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/DS", zoneName, domainName),
 				ImportStateVerify: true,
@@ -373,7 +373,7 @@ func TestAccRecord_URLFWD(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.urlfwd",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/URLFWD", zoneName, domainName),
 				ImportStateVerify: true,
@@ -392,17 +392,14 @@ func TestAccRecord_validationError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccRecordInvalid(rString),
-				/* The error block should look like this:
-
-				config is invalid: 4 problems:
-
-					- zone has an invalid leading ".", got: .terraform-test-e677cntkkar21ak.io.
-					- zone has an invalid trailing ".", got: .terraform-test-e677cntkkar21ak.io.
-					- domain has an invalid leading ".", got: .test.terraform-test-e677cntkkar21ak.io.
-					- domain has an invalid trailing ".", got: .test.terraform-test-e677cntkkar21ak.io.
-
+				/* The error block has lines like this:
+        Error: zone has an invalid leading ".", got: .terraform-test-vmatw2m3iunjw4j.io.
+        Error: zone has an invalid trailing ".", got: .terraform-test-vmatw2m3iunjw4j.io.
+        Error: domain has an invalid leading ".", got: .test.terraform-test-vmatw2m3iunjw4j.io.
+        Error: domain has an invalid trailing ".", got: .test.terraform-test-vmatw2m3iunjw4j.io.
 				*/
-				ExpectError: regexp.MustCompile(`config is invalid: 4 problems:\n\n(\s*- (zone|domain) has an invalid (leading|trailing) \"\.\", got: .*){4}`),
+				ExpectError: regexp.MustCompile(`(?s)(Error: (zone|domain) has an invalid (leading|trailing) "\.", got: .*){4}`),
+
 			},
 		},
 	})
