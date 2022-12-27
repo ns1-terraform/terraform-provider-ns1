@@ -46,14 +46,22 @@ func dataFeedToResourceData(d *schema.ResourceData, f *data.Feed) {
 }
 
 func resourceDataToDataFeed(d *schema.ResourceData) (feed *data.Feed, e error) {
-	err := configAdapterIn(d)
-	if err != nil {
-		return nil, err
+	config := d.Get("config").(map[string]interface{})
+	if config != nil {
+		test_id := config["test_id"]
+		if test_id != nil {
+			test_id_int, err := strconv.Atoi(test_id.(string))
+			if err != nil {
+				return &data.Feed{}, fmt.Errorf("could not convert %v as int %w", test_id, err)
+			}
+			config["test_id"] = test_id_int
+		}
 	}
+
 	return &data.Feed{
 		Name:     d.Get("name").(string),
 		SourceID: d.Get("source_id").(string),
-		Config:   d.Get("config").(map[string]interface{}),
+		Config:   config,
 	}, nil
 }
 
@@ -109,23 +117,6 @@ func DataFeedUpdate(d *schema.ResourceData, meta interface{}) error {
 		return ConvertToNs1Error(resp, err)
 	}
 	dataFeedToResourceData(d, f)
-	return nil
-}
-
-// configAdapterIn adapts the configuration types
-func configAdapterIn(d *schema.ResourceData) error {
-	config := d.Get("config").(map[string]interface{})
-	if config != nil {
-		test_id := config["test_id"]
-		if test_id != nil {
-			test_id_int, err := strconv.Atoi(test_id.(string))
-			if err != nil {
-				return fmt.Errorf("could not convert %v as int %w", test_id, err)
-			}
-			config["test_id"] = test_id_int
-			d.Set("config", config)
-		}
-	}
 	return nil
 }
 
