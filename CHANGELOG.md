@@ -27,6 +27,10 @@ ENHANCEMENTS
 * Upgraded to Terraform SDK 2.24.1
 
 
+BUG FIXES
+
+* Fixed a panic when trying to print the response from a failed HTTP request when in debug mode. (Workaround if needed: set retry_max = -1)
+
 ## 1.13.3 (December 21, 2022)
 ENHANCEMENTS
 
