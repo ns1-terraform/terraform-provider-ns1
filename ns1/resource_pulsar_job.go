@@ -52,8 +52,9 @@ func pulsarJobResource() *schema.Resource {
 			Default:  false,
 		},
 		"config": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Optional: true,
+			MaxItems: 1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"host": {
@@ -171,22 +172,22 @@ func jobConfigToResourceData(d *schema.ResourceData, j *pulsar.PulsarJob) error 
 		config["url_path"] = *j.Config.URL_Path
 	}
 	if j.Config.Http != nil {
-		config["http"] = strconv.FormatBool(*j.Config.Http)
+		config["http"] = *j.Config.Http
 	}
 	if j.Config.Https != nil {
-		config["https"] = strconv.FormatBool(*j.Config.Https)
+		config["https"] = *j.Config.Https
 	}
 	if j.Config.RequestTimeoutMillis != nil {
-		config["request_timeout_millis"] = strconv.Itoa(*j.Config.RequestTimeoutMillis)
+		config["request_timeout_millis"] = *j.Config.RequestTimeoutMillis
 	}
 	if j.Config.RequestTimeoutMillis != nil {
-		config["job_timeout_millis"] = strconv.Itoa(*j.Config.JobTimeoutMillis)
+		config["job_timeout_millis"] = *j.Config.JobTimeoutMillis
 	}
 	if j.Config.UseXHR != nil {
-		config["use_xhr"] = strconv.FormatBool(*j.Config.UseXHR)
+		config["use_xhr"] = *j.Config.UseXHR
 	}
 	if j.Config.StaticValues != nil {
-		config["static_values"] = strconv.FormatBool(*j.Config.StaticValues)
+		config["static_values"] = *j.Config.StaticValues
 	}
 
 	if j.Config.BlendMetricWeights != nil {
@@ -206,7 +207,7 @@ func jobConfigToResourceData(d *schema.ResourceData, j *pulsar.PulsarJob) error 
 		}
 	}
 
-	d.Set("config", config)
+	d.Set("config", []map[string]interface{}{config})
 	return nil
 }
 
@@ -263,7 +264,8 @@ func resourceDataToPulsarJob(j *pulsar.PulsarJob, d *schema.ResourceData) error 
 }
 
 func resourceDataToJobConfig(v interface{}) (*pulsar.JobConfig, error) {
-	rawconfig := v.(map[string]interface{})
+	rawconfig := v.([]interface{})[0].(map[string]interface{})
+
 	j := &pulsar.JobConfig{}
 
 	if v, ok := rawconfig["host"]; ok {
@@ -275,46 +277,28 @@ func resourceDataToJobConfig(v interface{}) (*pulsar.JobConfig, error) {
 		j.URL_Path = &url_path
 	}
 	if v, ok := rawconfig["http"]; ok {
-		if b, err := strconv.ParseBool(v.(string)); err != nil {
-			return nil, err
-		} else {
-			j.Http = &b
-		}
+		b := v.(bool)
+		j.Http = &b
 	}
 	if v, ok := rawconfig["https"]; ok {
-		if b, err := strconv.ParseBool(v.(string)); err != nil {
-			return nil, err
-		} else {
-			j.Https = &b
-		}
+		b := v.(bool)
+		j.Https = &b
 	}
 	if v, ok := rawconfig["request_timeout_millis"]; ok {
-		if i, err := strconv.Atoi(v.(string)); err != nil {
-			return nil, err
-		} else {
-			j.RequestTimeoutMillis = &i
-		}
+		i := v.(int)
+		j.RequestTimeoutMillis = &i
 	}
 	if v, ok := rawconfig["job_timeout_millis"]; ok {
-		if i, err := strconv.Atoi(v.(string)); err != nil {
-			return nil, err
-		} else {
-			j.JobTimeoutMillis = &i
-		}
+		i := v.(int)
+		j.JobTimeoutMillis = &i
 	}
 	if v, ok := rawconfig["use_xhr"]; ok {
-		if b, err := strconv.ParseBool(v.(string)); err != nil {
-			return nil, err
-		} else {
-			j.UseXHR = &b
-		}
+		b := v.(bool)
+		j.UseXHR = &b
 	}
 	if v, ok := rawconfig["static_values"]; ok {
-		if b, err := strconv.ParseBool(v.(string)); err != nil {
-			return nil, err
-		} else {
-			j.StaticValues = &b
-		}
+		b := v.(bool)
+		j.StaticValues = &b
 	}
 	return j, nil
 }

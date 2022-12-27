@@ -6,7 +6,6 @@ ENHANCEMENTS
 INCOMPATIBILITIES WITH PREVIOUS VERSIONS
 
 * The `ns1_application` resource attributes `config`, `default_config` and `blended_metric_weights` are now blocks, with only one item permitted. This is due to an SDK 2.x restriction on nested structures. Existing resource files will need to be edited to remove the equals sign in the declarations of the affected stanzas, for example:
-
 ```
 resource "ns1_application" "it" {
  name = "my_application"
