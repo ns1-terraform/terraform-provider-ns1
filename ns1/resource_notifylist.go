@@ -141,7 +141,7 @@ func NotifyListRead(d *schema.ResourceData, meta interface{}) error {
 
 	nl, resp, err := client.Notifications.Get(d.Id())
 	if err != nil {
-		if err == ns1.ErrListMissing {
+		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("[DEBUG] NS1 notify list (%s) not found", d.Id())
 			d.SetId("")
 			return nil

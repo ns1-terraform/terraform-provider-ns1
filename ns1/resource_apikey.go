@@ -131,7 +131,7 @@ func ApikeyRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	k, resp, err := client.APIKeys.Get(d.Id())
 	if err != nil {
-		if err == ns1.ErrKeyMissing {
+		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("[DEBUG] NS1 API key (%s) not found", d.Id())
 			d.SetId("")
 			return nil

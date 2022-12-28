@@ -121,7 +121,7 @@ func TeamRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	t, resp, err := client.Teams.Get(d.Id())
 	if err != nil {
-		if err == ns1.ErrTeamMissing {
+		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("[DEBUG] NS1 team (%s) not found", d.Id())
 			d.SetId("")
 			return nil
