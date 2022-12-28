@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -94,8 +93,9 @@ func pulsarJobResource() *schema.Resource {
 			},
 		},
 		"blend_metric_weights": {
-			Type:     schema.TypeSet,
+			Type:     schema.TypeList,
 			Optional: true,
+			MaxItems: 1,
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"timestamp": {
@@ -191,7 +191,7 @@ func jobConfigToResourceData(d *schema.ResourceData, j *pulsar.PulsarJob) error 
 	}
 
 	if j.Config.BlendMetricWeights != nil {
-		if err := d.Set("blend_metric_weights", blendMetricWeightsToMap(j.Config.BlendMetricWeights)); err != nil {
+		if err := d.Set("blend_metric_weights", []map[string]interface{}{blendMetricWeightsToMap(j.Config.BlendMetricWeights)}); err != nil {
 			return fmt.Errorf("[DEBUG] Error setting Blend Metric Weights for: %s, error: %#v", j.Name, err)
 		}
 
@@ -213,7 +213,7 @@ func jobConfigToResourceData(d *schema.ResourceData, j *pulsar.PulsarJob) error 
 
 func blendMetricWeightsToMap(b *pulsar.BlendMetricWeights) map[string]interface{} {
 	blendMetric := make(map[string]interface{})
-	blendMetric["timestamp"] = strconv.Itoa(b.Timestamp)
+	blendMetric["timestamp"] = b.Timestamp
 
 	return blendMetric
 }
@@ -304,15 +304,11 @@ func resourceDataToJobConfig(v interface{}) (*pulsar.JobConfig, error) {
 }
 
 func resourceDataToBlendMetric(v interface{}) (*pulsar.BlendMetricWeights, error) {
-	rawMetric := v.(map[string]interface{})
+	rawMetric := v.([]interface{})[0].(map[string]interface{})
 	m := &pulsar.BlendMetricWeights{}
 
 	if v, ok := rawMetric["timestamp"]; ok {
-		if i, err := strconv.Atoi(v.(string)); err != nil {
-			return nil, err
-		} else {
-			m.Timestamp = i
-		}
+		m.Timestamp = v.(int)
 	}
 
 	m.Weights = make([]*pulsar.Weights, 0)

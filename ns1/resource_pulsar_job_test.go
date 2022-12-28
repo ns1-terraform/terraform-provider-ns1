@@ -424,7 +424,7 @@ func testAccJSPulsarJobBlendMetricWeights(appName, jobName string) string {
 			host = "testAccCompleteHost"
 			url_path = "/testAccCompleteURLPath"
 		}
-		blend_metric_weights = {
+		blend_metric_weights {
 			timestamp = 123
 		}
 		weights {
@@ -501,7 +501,7 @@ func testAccBBPulsarJobBlendMetricWeights(appName, jobName string) string {
 			host = "testAccHost"
 			url_path = "/testAccUrlPath"
 		}
-		blend_metric_weights = {
+		blend_metric_weights {
 			timestamp = 123
 		}
 		weights {
