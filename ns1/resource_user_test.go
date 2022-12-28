@@ -79,13 +79,14 @@ func TestAccUser_ManualDelete(t *testing.T) {
 				PreConfig:          testAccManualDeleteUser(username),
 				Config:             testAccUserBasic(rString),
 				PlanOnly:           true,
-				ExpectError:        regexp.MustCompile("GET .*/account/users/.* not found"),
 				ExpectNonEmptyPlan: true,
 			},
 			// Attempt to re-create it, this should fail because user names must be historically unique.
+			// Error: PUT https://api.nsone.net/v1/account/users: 409 login name tf_acc_test_user_k8qsnpxghuhgmip already exists
+
 			{
 				Config:      testAccUserBasic(rString),
-				ExpectError: regexp.MustCompile(`PUT .*/account/teams.*already exists`),
+				ExpectError: regexp.MustCompile(`PUT .*/account/users.*already exists`),
 			},
 		},
 	})

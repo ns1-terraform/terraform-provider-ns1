@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"regexp"
 	"sort"
 	"testing"
 
@@ -103,7 +102,6 @@ func TestAccTeam_ManualDelete(t *testing.T) {
 				Config:             testAccTeamBasic,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
-				ExpectError:        regexp.MustCompile("GET .*/account/teams/.* not found"),
 			},
 			// Then re-create and make sure it is there again.
 			{

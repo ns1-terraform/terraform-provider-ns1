@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -152,8 +151,7 @@ func UserRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	u, resp, err := client.Users.Get(d.Id())
 	if err != nil {
-		// No custom error type is currently defined in the SDK for a non-existent user.
-		if strings.Contains(err.Error(), "User not found") {
+		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("[DEBUG] NS1 user (%s) not found", d.Id())
 			d.SetId("")
 			return nil

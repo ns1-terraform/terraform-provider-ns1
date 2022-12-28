@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"regexp"
 	"sort"
 	"testing"
 
@@ -97,7 +96,6 @@ func TestAccAPIKey_ManualDelete(t *testing.T) {
 				PreConfig:          testAccManualDeleteAPIKey(&apiKey),
 				Config:             testAccAPIKeyBasic(name),
 				PlanOnly:           true,
-				ExpectError:        regexp.MustCompile("GET .*/account/apikeys/.* not found"),
 				ExpectNonEmptyPlan: true,
 			},
 			// Then re-create and make sure it is there again.
