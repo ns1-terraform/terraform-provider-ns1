@@ -2,7 +2,7 @@
 
 INCOMPATIBILITIES WITH PREVIOUS VERSIONS
 
-* The `ns1_application` resource attributes `config` and  `default_config` are now blocks, with only one item permitted. This is due to an SDK 2.x restriction on nested structures. Existing resource files will need to be edited to remove the equals sign in the declaration for the `config` and `default_config` stanzas, for example:
+* The `ns1_application` resource attributes `config`, `default_config` and `blended_metric_weights` are now blocks, with only one item permitted. This is due to an SDK 2.x restriction on nested structures. Existing resource files will need to be edited to remove the equals sign in the declarations of the affected stanzas, for example:
 
 ```
 resource "ns1_application" "it" {
@@ -27,11 +27,6 @@ instead of:
 ENHANCEMENTS
 
 * Upgraded to Terraform SDK 2.24.1
-
-
-BUG FIXES
-
-* Fixed a panic when trying to print the response from a failed HTTP request when in debug mode. (Workaround if needed: set retry_max = -1)
 
 ## 1.13.3 (December 21, 2022)
 ENHANCEMENTS
