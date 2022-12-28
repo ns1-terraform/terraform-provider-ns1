@@ -32,6 +32,7 @@ ENHANCEMENTS
 * User-agent string can now be customized in the resource file.
 * Upgraded to ns1-go 2.7.3
 
+<<<<<<< HEAD
 BUG FIXES
 
 * Fixed permissions problems with DNS record allow/deny lists (issues 196 and 197)
@@ -48,6 +49,8 @@ BUG FIXES
 
 * Fixed a panic when trying to print the response from a failed HTTP request when in debug mode. (Workaround if needed: set retry_max = -1)
 
+=======
+>>>>>>> 5c4a686 (doc)
 ## 1.13.3 (December 21, 2022)
 ENHANCEMENTS
 
