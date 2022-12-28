@@ -24,7 +24,7 @@ resource "ns1_pulsarjob" "example_javascript" {
   app_id = ns1_pulsar_application.example.id
   type_id  = "latency"
   
-  config = {
+  config {
     host = "terraform.job_host.io"
     url_path = "/terraform.job_url_path.io"
   }

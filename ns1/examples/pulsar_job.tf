@@ -14,7 +14,7 @@ resource "ns1_pulsarjob" "example" {
   # Optional
   active = false
   shared = false
-  config = {
+  config {
     host = "my_host.com"
     url_path = "/my_url_path"
     https = false
@@ -24,7 +24,7 @@ resource "ns1_pulsarjob" "example" {
     use_xhr = false
     static_values = false
   }
-  blend_metric_weights = {
+  blend_metric_weights {
     timestamp = 53
   }
   weights {
