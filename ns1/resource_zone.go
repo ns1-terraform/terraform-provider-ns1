@@ -361,9 +361,16 @@ func zoneCreate(d *schema.ResourceData, meta interface{}) error {
 		return ConvertToNs1Error(resp, err)
 	}
 	if !d.Get("autogenerate_ns_record").(bool) {
-		log.Printf("autogenerate_ns_record set to false: deleting NS record for zone %s", z.Zone)
-		if resp, err := client.Records.Delete(z.Zone, z.Zone, "NS"); err != nil {
-			return ConvertToNs1Error(resp, err)
+		// Do not try to delete records in a linked zone.
+		isLinked := false
+		if _, ok := d.GetOk("link"); ok {
+			isLinked = true
+		}
+		if !isLinked {
+			log.Printf("autogenerate_ns_record set to false: deleting NS record for zone %s", z.Zone)
+			if resp, err := client.Records.Delete(z.Zone, z.Zone, "NS"); err != nil {
+				return ConvertToNs1Error(resp, err)
+			}
 		}
 	}
 	if err := resourceZoneToResourceData(d, z); err != nil {
