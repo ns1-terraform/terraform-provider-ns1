@@ -390,7 +390,14 @@ func TestAccZone_disable_autogenerate_ns_record(t *testing.T) {
 					testAccCheckZoneExists("ns1_zone.it", &zone),
 					testAccCheckZoneName(&zone, zoneName),
 					testAccCheckZoneExists("ns1_zone.linked_zone", &zone),
+					testAccCheckZoneName(&zone, "linkedzone_" + zoneName),
 				),
+			},
+			{
+				ResourceName:      "ns1_zone.linked_zone",
+				ImportState:       true,
+				ImportStateId:     zoneName,
+				ImportStateVerify: true,
 			},
 		},
 	})
