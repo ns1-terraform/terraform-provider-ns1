@@ -57,7 +57,21 @@ func TestAccNotifyList_updated(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_notifylist.test",
+				Config: testAccNotifyListMultiple,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNotifyListExists("ns1_notifylist.test_multiple", &nl),
+					testAccCheckNotifyListName(&nl, "terraform test multiple"),
+				),
+			},
+			{
+				Config: testAccNotifyListMultipleDifferentOrder ,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNotifyListExists("ns1_notifylist.test_multiple2", &nl),
+					testAccCheckNotifyListName(&nl, "terraform test multiple2"),
+				),
+			},
+			{
+				ResourceName:      "ns1_notifylist.test_multiple2",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -258,6 +272,42 @@ resource "ns1_notifylist" "test_slack" {
 const testAccNotifyListPagerDuty = `
 resource "ns1_notifylist" "test_pagerduty" {
   name = "terraform test pagerduty"
+  notifications {
+    type = "pagerduty"
+    config = {
+      service_key = "tftestkey"
+    }
+  }
+}
+`
+
+const testAccNotifyListMultiple = `
+resource "ns1_notifylist" "test_multiple" {
+  name = "terraform test multiple"
+  notifications {
+    type = "pagerduty"
+    config = {
+      service_key = "tftestkey"
+    }
+  }
+  notifications {
+    type = "webhook"
+    config = {
+      url = "http://localhost:9090"
+    }
+  }
+}
+`
+
+const testAccNotifyListMultipleDifferentOrder = `
+resource "ns1_notifylist" "test_multiple2" {
+  name = "terraform test multiple2"
+  notifications {
+    type = "webhook"
+    config = {
+      url = "http://localhost:9090"
+    }
+  }
   notifications {
     type = "pagerduty"
     config = {
