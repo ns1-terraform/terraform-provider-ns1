@@ -56,6 +56,17 @@ func TestAccNotifyList_updated(t *testing.T) {
 					testAccCheckNotifyListName(&nl, "terraform test"),
 				),
 			},
+		},
+	})
+}
+
+func TestAccNotifyList_multiple(t *testing.T) {
+	var nl monitor.NotifyList
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNotifyListDestroy,
+		Steps: []resource.TestStep{
 			{
 				Config: testAccNotifyListMultiple,
 				Check: resource.ComposeTestCheckFunc(
