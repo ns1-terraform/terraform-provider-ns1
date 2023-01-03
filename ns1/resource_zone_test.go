@@ -384,6 +384,14 @@ func TestAccZone_disable_autogenerate_ns_record(t *testing.T) {
 					testAccCheckNSRecord("ns1_zone.it", false),
 				),
 			},
+			{
+				Config: testAccZoneDisableAutoGenerateNSRecordLinkedZone(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneExists("ns1_zone.linked_zone", &zone),
+				),
+			},
 		},
 	})
 }
@@ -826,4 +834,17 @@ func testAccZoneDisableAutoGenerateNSRecord(zoneName string) string {
   autogenerate_ns_record = false
 }
 `, zoneName)
+}
+
+func testAccZoneDisableAutoGenerateNSRecordLinkedZone(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone = "%s"
+}
+
+resource "ns1_zone" "linked_zone" {
+  zone = "linkedzone_%s"
+  link = ns1_zone.it.zone
+  autogenerate_ns_record = false
+}
+`, zoneName, zoneName)
 }
