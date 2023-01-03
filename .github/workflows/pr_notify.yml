@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Jira Login
-        uses: atlassian/gajira-login@v2.0.0
+        uses: atlassian/gajira-login@v3
         env:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
@@ -18,7 +18,7 @@ jobs:
       # try to find jira key in the PR title
       - name: Find jirakey in title
         id: jira_founded_ticket
-        uses: atlassian/gajira-find-issue-key@master
+        uses: atlassian/gajira-find-issue-key@v3
         continue-on-error: true
         with:
           string: ${{ github.event.pull_request.title }}
@@ -26,7 +26,7 @@ jobs:
       - name: Jira Create issue
         id: jira_ticket
         if: ${{!steps.jira_founded_ticket.outputs.issue}}
-        uses: atlassian/gajira-create@v2.0.1
+        uses: atlassian/gajira-create@v3
         with:
           project: ${{secrets.JIRA_PROJECT_KEY}}
           issuetype: Task
