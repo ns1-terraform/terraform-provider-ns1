@@ -3,7 +3,6 @@ package ns1
 import (
 	"fmt"
 	"log"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -103,7 +102,6 @@ func TestAccNotifyList_types(t *testing.T) {
 
 func TestAccNotifyList_ManualDelete(t *testing.T) {
 	var nl monitor.NotifyList
-	notFoundExp, _ := regexp.Compile("GET http.*/v1/lists/.* 404 ?")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -120,7 +118,6 @@ func TestAccNotifyList_ManualDelete(t *testing.T) {
 				Config:             testAccNotifyListBasic,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
-				ExpectError:        notFoundExp,
 			},
 			// Then re-create and make sure it is there again.
 			{

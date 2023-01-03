@@ -224,7 +224,7 @@ func TestAccRecord_CAA(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.caa",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/CAA", zoneName),
 				ImportStateVerify: true,
@@ -266,7 +266,7 @@ func TestAccRecord_SPF(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.spf",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/SPF", zoneName),
 				ImportStateVerify: true,
@@ -302,7 +302,7 @@ func TestAccRecord_SRV(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.srv",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/SRV", zoneName, domainName),
 				ImportStateVerify: true,
@@ -338,7 +338,7 @@ func TestAccRecord_DS(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.ds",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/DS", zoneName, domainName),
 				ImportStateVerify: true,
@@ -373,7 +373,7 @@ func TestAccRecord_URLFWD(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.urlfwd",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/URLFWD", zoneName, domainName),
 				ImportStateVerify: true,

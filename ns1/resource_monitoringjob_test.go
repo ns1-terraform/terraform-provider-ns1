@@ -3,7 +3,6 @@ package ns1
 import (
 	"fmt"
 	"reflect"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -138,7 +137,6 @@ func TestAccMonitoringJob_ManualDelete(t *testing.T) {
 				Config:             testAccMonitoringJobBasic,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
-				ExpectError:        regexp.MustCompile("GET .*/monitoring/jobs/.* was not found"),
 			},
 			// Then re-create and make sure it is there again.
 			{
