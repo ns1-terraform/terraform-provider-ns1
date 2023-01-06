@@ -3,6 +3,7 @@ NS1 Terraform Provider
 
 > This project is in [active development](https://github.com/ns1/community/blob/master/project_status/ACTIVE_DEVELOPMENT.md).
 
+- Terraform NS1 Provider Documentation: https://registry.terraform.io/providers/ns1-terraform/ns1/latest/docs
 - NS1 Website: https://www.ns1.com
 - Terraform Website: https://www.terraform.io
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
