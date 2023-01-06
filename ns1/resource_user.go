@@ -151,7 +151,7 @@ func UserRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	u, resp, err := client.Users.Get(d.Id())
 	if err != nil {
-		if resp != nil && resp.StatusCode == 404 {
+		if err == ns1.ErrUserMissing {
 			log.Printf("[DEBUG] NS1 user (%s) not found", d.Id())
 			d.SetId("")
 			return nil
