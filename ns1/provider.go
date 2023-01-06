@@ -124,13 +124,13 @@ var descriptions map[string]string
 
 func init() {
 	descriptions = map[string]string{
-		"api_key":   "The ns1 API key (required)",
-		"endpoint":  "URL prefix (including version) for API calls",
-		"ignore_ssl": "Don't validate server SSL/TLS certificate",
+		"api_key":                "The ns1 API key (required)",
+		"endpoint":               "URL prefix (including version) for API calls",
+		"ignore_ssl":             "Don't validate server SSL/TLS certificate",
 		"rate_limit_parallelism": "Tune response to rate limits, see docs",
-		"retry_max": "Maximum retries for 50x errors (-1 to disable)",
-		"user_agent": "User-Agent string to use in NS1 API requests",
-		"enable_ddi": "Deprecated, no longer in use",
+		"retry_max":              "Maximum retries for 50x errors (-1 to disable)",
+		"user_agent":             "User-Agent string to use in NS1 API requests",
+		"enable_ddi":             "Deprecated, no longer in use",
 	}
 
 	structs.DefaultTagName = "json"
