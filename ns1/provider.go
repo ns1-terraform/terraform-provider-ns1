@@ -49,6 +49,12 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("NS1_RETRY_MAX", nil),
 				Description: descriptions["retry_max"],
 			},
+			"user_agent": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NS1_TF_USER_AGENT", nil),
+				Description: descriptions["user_agent"],
+			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"ns1_zone":   dataSourceZone(),
@@ -107,6 +113,9 @@ func ns1Configure(d *schema.ResourceData) (interface{}, error) {
 	if v, ok := d.GetOk("retry_max"); ok {
 		config.RetryMax = v.(int)
 	}
+	if v, ok := d.GetOk("user_agent"); ok {
+		config.UserAgent = v.(string)
+	}
 
 	return config.Client()
 }
@@ -117,7 +126,11 @@ func init() {
 	descriptions = map[string]string{
 		"api_key":   "The ns1 API key (required)",
 		"endpoint":  "URL prefix (including version) for API calls",
+		"ignore_ssl": "Don't validate server SSL/TLS certificate",
+		"rate_limit_parallelism": "Tune response to rate limits, see docs",
 		"retry_max": "Maximum retries for 50x errors (-1 to disable)",
+		"user_agent": "User-Agent string to use in NS1 API requests",
+		"enable_ddi": "Deprecated, no longer in use",
 	}
 
 	structs.DefaultTagName = "json"
