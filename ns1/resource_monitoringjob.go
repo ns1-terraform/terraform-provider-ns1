@@ -280,6 +280,7 @@ func MonitoringJobRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	j, resp, err := client.Jobs.Get(d.Id())
 	if err != nil {
+		// No custom error type is currently defined in the SDK for a monitoring job.
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("[DEBUG] NS1 record (%s) not found", d.Id())
 			d.SetId("")
