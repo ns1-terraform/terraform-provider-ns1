@@ -32,6 +32,7 @@ type Config struct {
 	EnableDDI            bool
 	RateLimitParallelism int
 	RetryMax             int
+	UserAgent            string
 }
 
 // Client returns a new NS1 client.
@@ -87,12 +88,12 @@ func (c *Config) Client() (*ns1.Client, error) {
 	}
 
 	UA := providerUserAgent + "_" + client.UserAgent
-	log.Printf("[INFO] NS1 Client configured for Endpoint: %s, versions %s, retries %d", client.Endpoint.String(), UA, c.RetryMax)
-	if localUA := os.Getenv("NS1_TF_USER_AGENT"); localUA != "" {
-		client.UserAgent = localUA
+	if len(c.UserAgent) > 0 {
+		client.UserAgent = c.UserAgent
 	} else {
 		client.UserAgent = UA
 	}
+	log.Printf("[INFO] NS1 Client configuration: endpoint: %s, version %s, retries %d, User-Agent %s", client.Endpoint.String(), clientVersion, c.RetryMax, client.UserAgent)
 
 	return client, nil
 }
@@ -102,7 +103,7 @@ func Logging() ns1.Decorator {
 	return func(d ns1.Doer) ns1.Doer {
 		return ns1.DoerFunc(func(r *http.Request) (*http.Response, error) {
 			msgs := []string{}
-			msgs = append(msgs, fmt.Sprintf("[DEBUG] HTTP %s: %s %s", r.UserAgent(), r.Method, r.URL))
+			msgs = append(msgs, fmt.Sprintf("[DEBUG] HTTP %s %s", r.Method, r.URL))
 			heads := r.Header.Clone()
 			heads["X-Nsone-Key"] = []string{"<redacted>"}
 			msgs = append(msgs, fmt.Sprintf("[DEBUG] HTTP Headers: %s", heads))
