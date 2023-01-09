@@ -5,6 +5,7 @@ NS1 Terraform Provider
 
 - NS1 Website: https://www.ns1.com
 - Terraform Website: https://www.terraform.io
+- Terraform NS1 Provider Documentation: https://registry.terraform.io/providers/ns1-terraform/ns1/latest/docs
 - [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
 - Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
 

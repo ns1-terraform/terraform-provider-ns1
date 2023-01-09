@@ -49,6 +49,7 @@ The following arguments are supported:
 * `endpoint` - (Optional) NS1 API endpoint. Normally not set unless testing or using non-standard proxies.
 * `ignore_ssl` - (Optional) This normally does not need to be set.
 * `enable_ddi` - (Deprecated) Enable the DDI-compatible permissions schema. No longer in use.
+* `user_agent` - (Optional, introduced in v1.13.4) Sets the User-Agent header in the NS1 API.
 * `rate_limit_parallelism` - (Optional) Integer for alternative rate limit and parallelism strategy.
     NS1 uses a token-based method for rate limiting API requests. Full details can be found at https://help.ns1.com/hc/en-us/articles/360020250573-About-API-rate-limiting.
     
