@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/hashicorp/terraform-plugin-sdk v1.17.2
 	github.com/stretchr/testify v1.7.0
-	gopkg.in/ns1/ns1-go.v2 v2.7.2
+	gopkg.in/ns1/ns1-go.v2 v2.7.3
 )
 
 require (
