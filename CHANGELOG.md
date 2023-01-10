@@ -6,6 +6,7 @@ ENHANCEMENTS
 INCOMPATIBILITIES WITH PREVIOUS VERSIONS
 
 * The `ns1_application` resource attributes `config`, `default_config` and `blended_metric_weights` are now blocks, with only one item permitted. This is due to an SDK 2.x restriction on nested structures. Existing resource files will need to be edited to remove the equals sign in the declarations of the affected stanzas, for example:
+
 ```
 resource "ns1_application" "it" {
  name = "my_application"
@@ -42,22 +43,8 @@ BUG FIXES
 ## 1.13.4-pre1 (December 22, 2022)
 BUG FIXES
 
-* Fixed permissions problems with DNS record allow/deny lists (issues 196 and 197)
-* Fixed a few cases where objects deleted from infrastructure but still in state were not being recognized correctly.
-* Fixed error in HTTP response debug logging
-* Datasource and datafeed schema fixes
-
-## 1.13.4-pre1 (December 22, 2022)
-BUG FIXES
-
 * fixed permissions problems with DNS record allow/deny lists (issues 196 and 197)
 
-BUG FIXES
-
-* Fixed a panic when trying to print the response from a failed HTTP request when in debug mode. (Workaround if needed: set retry_max = -1)
-
-=======
->>>>>>> 5c4a686 (doc)
 ## 1.13.3 (December 21, 2022)
 ENHANCEMENTS
 
