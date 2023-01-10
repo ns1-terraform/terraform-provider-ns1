@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	clientVersion     = "1.13.3"
+	clientVersion     = "1.14.0-pre1" // placeholder version until we release
 	providerUserAgent = "tf-ns1" + "/" + clientVersion
 	defaultRetryMax   = 3
 )

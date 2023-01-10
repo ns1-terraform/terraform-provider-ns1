@@ -1,4 +1,7 @@
-## 1.x.x (???)
+## 1.14.x (???)
+ENHANCEMENTS
+
+* Upgraded to Terraform SDK 2.24.1. Users of Pulsar will need to make minor changes in their resource files, see below.
 
 INCOMPATIBILITIES WITH PREVIOUS VERSIONS
 
@@ -24,9 +27,23 @@ instead of:
  default_config = {
 ```
 
+## 1.13.4 (January 10, 2023)
 ENHANCEMENTS
 
-* Upgraded to Terraform SDK 2.24.1
+* User-agent string can now be customized in the resource file.
+* Upgraded to ns1-go 2.7.3
+
+BUG FIXES
+
+* Fixed permissions problems with DNS record allow/deny lists (issues 196 and 197)
+* Fixed a few cases where objects deleted from infrastructure but still in state were not being recognized correctly.
+* Fixed error in HTTP response debug logging
+* Datasource and datafeed schema fixes
+
+## 1.13.4-pre1 (December 22, 2022)
+BUG FIXES
+
+* fixed permissions problems with DNS record allow/deny lists (issues 196 and 197)
 
 ## 1.13.3 (December 21, 2022)
 ENHANCEMENTS
