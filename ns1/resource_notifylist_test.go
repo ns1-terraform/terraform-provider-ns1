@@ -74,15 +74,19 @@ func TestAccNotifyList_multiple(t *testing.T) {
 					testAccCheckNotifyListName(&nl, "terraform test multiple"),
 				),
 			},
+// This fails because the schema.TypeList is ordered. We want to switch
+// this to schema.TypeSet but cannot due to SDK issue #652 / #895, fix for
+// which is waiting for review, see
+// https://github.com/hashicorp/terraform-plugin-sdk/pull/1042
+//			{
+//				Config: testAccNotifyListMultipleDifferentOrder ,
+//				Check: resource.ComposeTestCheckFunc(
+//					testAccCheckNotifyListExists("ns1_notifylist.test_multiple2", &nl),
+//					testAccCheckNotifyListName(&nl, "terraform test multiple2"),
+//				),
+//			},
 			{
-				Config: testAccNotifyListMultipleDifferentOrder ,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNotifyListExists("ns1_notifylist.test_multiple2", &nl),
-					testAccCheckNotifyListName(&nl, "terraform test multiple2"),
-				),
-			},
-			{
-				ResourceName:      "ns1_notifylist.test_multiple2",
+				ResourceName:      "ns1_notifylist.test_multiple",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
