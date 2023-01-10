@@ -32,7 +32,14 @@ ENHANCEMENTS
 * User-agent string can now be customized in the resource file.
 * Upgraded to ns1-go 2.7.3
 
-<<<<<<< HEAD
+BUG FIXES
+
+* Fixed permissions problems with DNS record allow/deny lists (issues 196 and 197)
+* Fixed a few cases where objects deleted from infrastructure but still in state were not being recognized correctly.
+* Fixed error in HTTP response debug logging
+* Datasource and datafeed schema fixes
+
+## 1.13.4-pre1 (December 22, 2022)
 BUG FIXES
 
 * Fixed permissions problems with DNS record allow/deny lists (issues 196 and 197)

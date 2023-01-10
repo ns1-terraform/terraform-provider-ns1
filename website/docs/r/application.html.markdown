@@ -28,7 +28,7 @@ resource "ns1_application" "ns1_app" {
 # Create a new pulsar application with default config
 resource "ns1_application" "ns1_app" {
   name = "terraform_app"
-  default_config = {
+  default_config {
     http     = true
     https = false
     request_timeout_millis = 100
