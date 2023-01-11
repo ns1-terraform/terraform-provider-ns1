@@ -1,4 +1,4 @@
-## 1.14.x (???)
+## 2.0.0-pre1 (release pending)
 ENHANCEMENTS
 
 * Upgraded to Terraform SDK 2.24.1. Users of Pulsar will need to make minor changes in their resource files, see below.
