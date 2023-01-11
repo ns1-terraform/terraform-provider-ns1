@@ -1,8 +1,12 @@
 package ns1
 
-import "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+import (
+	"context"
 
-func permissionInstanceStateUpgradeV0(rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+func permissionInstanceStateUpgradeV0(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
 	rawState["security_manage_global_2fa"] = false
 	rawState["security_manage_active_directory"] = false
 	rawState["dhcp_manage_dhcp"] = false
