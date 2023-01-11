@@ -393,13 +393,12 @@ func TestAccRecord_validationError(t *testing.T) {
 			{
 				Config: testAccRecordInvalid(rString),
 				/* The error block has lines like this:
-        Error: zone has an invalid leading ".", got: .terraform-test-vmatw2m3iunjw4j.io.
-        Error: zone has an invalid trailing ".", got: .terraform-test-vmatw2m3iunjw4j.io.
-        Error: domain has an invalid leading ".", got: .test.terraform-test-vmatw2m3iunjw4j.io.
-        Error: domain has an invalid trailing ".", got: .test.terraform-test-vmatw2m3iunjw4j.io.
+				   Error: zone has an invalid leading ".", got: .terraform-test-vmatw2m3iunjw4j.io.
+				   Error: zone has an invalid trailing ".", got: .terraform-test-vmatw2m3iunjw4j.io.
+				   Error: domain has an invalid leading ".", got: .test.terraform-test-vmatw2m3iunjw4j.io.
+				   Error: domain has an invalid trailing ".", got: .test.terraform-test-vmatw2m3iunjw4j.io.
 				*/
 				ExpectError: regexp.MustCompile(`(?s)(Error: (zone|domain) has an invalid (leading|trailing) "\.", got: .*){4}`),
-
 			},
 		},
 	})
