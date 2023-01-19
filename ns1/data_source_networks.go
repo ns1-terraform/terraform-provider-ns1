@@ -2,6 +2,8 @@ package ns1
 
 import (
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -29,7 +31,7 @@ func dataSourceNetworks() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"networks": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Computed: true,
 				Elem:     networkSchema,
 			},
@@ -52,7 +54,7 @@ func networksRead(d *schema.ResourceData, meta interface{}) error {
 
 func networksToResourceData(d *schema.ResourceData, n []*dns.Network) error {
 
-	d.SetId("123_test")
+	d.SetId(strconv.FormatInt(time.Now().Unix(), 10))
 	networks := make([]interface{}, 0)
 	for _, network := range n {
 		networkMap := make(map[string]interface{})

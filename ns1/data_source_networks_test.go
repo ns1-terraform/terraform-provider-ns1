@@ -12,7 +12,7 @@ import (
 
 func TestAccNetworks_basic(t *testing.T) {
 	name := "foobar"
-	resourceName := fmt.Sprintf("data.ns1_networks.%s",name)
+	resourceName := fmt.Sprintf("data.ns1_networks.%s", name)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -21,10 +21,8 @@ func TestAccNetworks_basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(testAccNetworksBasic, name),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckNameOfNetwork(resourceName),
-					testAccCheckLabelOfNetwork(resourceName),
-					testAccCheckIDOfNetwork(resourceName),
 					testAccCheckNumberOfNetworks(resourceName),
+					testAccCheckNetworks(resourceName),
 				),
 			},
 		},
@@ -41,7 +39,7 @@ func testAccCheckNumberOfNetworks(n string) resource.TestCheckFunc {
 	}
 }
 
-func testAccCheckNameOfNetwork(n string,) resource.TestCheckFunc{
+func testAccCheckNetworks(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(*ns1.Client)
 		foundNetworks, _, err := client.Network.Get()
@@ -49,8 +47,16 @@ func testAccCheckNameOfNetwork(n string,) resource.TestCheckFunc{
 			return err
 		}
 
-		for idx,network := range foundNetworks{
-			err = resource.TestCheckResourceAttr(n, fmt.Sprintf("networks.%s.name",strconv.Itoa(idx)), network.Name)(s)
+		for _, network := range foundNetworks {
+			err = resource.TestCheckTypeSetElemNestedAttrs(
+				n,
+				"networks.*",
+				map[string]string{
+					"name":       network.Name,
+					"label":      network.Label,
+					"network_id": strconv.Itoa(network.NetworkID),
+				},
+			)(s)
 			if err != nil {
 				return err
 			}
@@ -59,42 +65,6 @@ func testAccCheckNameOfNetwork(n string,) resource.TestCheckFunc{
 	}
 }
 
-func testAccCheckLabelOfNetwork(n string,) resource.TestCheckFunc{
-	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*ns1.Client)
-		foundNetworks, _, err := client.Network.Get()
-		if err != nil {
-			return err
-		}
-
-		for idx,network := range foundNetworks{
-			err = resource.TestCheckResourceAttr(n, fmt.Sprintf("networks.%s.label",strconv.Itoa(idx)), network.Label)(s)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-}
-
-
-func testAccCheckIDOfNetwork(n string,) resource.TestCheckFunc{
-	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*ns1.Client)
-		foundNetworks, _, err := client.Network.Get()
-		if err != nil {
-			return err
-		}
-
-		for idx,network := range foundNetworks{
-			err = resource.TestCheckResourceAttr(n, fmt.Sprintf("networks.%s.network_id",strconv.Itoa(idx)), strconv.Itoa(network.NetworkID))(s)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-}
 const testAccNetworksBasic = `
 data "ns1_networks" "%s" {
 }
