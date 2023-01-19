@@ -24,7 +24,8 @@ website/node_modules
 *.test
 *.iml
 *.vscode
-
+go.work
+go.work.sum
 website/vendor
 
 # Test exclusions
