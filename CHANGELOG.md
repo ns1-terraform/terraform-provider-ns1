@@ -1,4 +1,4 @@
-## 2.0.0-pre1 (release pending)
+## 2.0.0-pre1 (January 18, 2023)
 ENHANCEMENTS
 
 * Upgraded to Terraform SDK 2.24.1. Users of Pulsar will need to make minor changes in their resource files, see below.
@@ -22,7 +22,7 @@ resource "ns1_application" "it" {
 }
 ```
 
-instead of:
+instead of the previous syntax:
 ```
  default_config = {
 ```
