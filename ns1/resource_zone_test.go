@@ -857,3 +857,79 @@ resource "ns1_zone" "linked_zone" {
 }
 `, zoneName, zoneName)
 }
+
+func TestAccZone_tags(t *testing.T) {
+	var zone dns.Zone
+	defaultHostmaster := "hostmaster@nsone.net"
+	zoneName := fmt.Sprintf(
+		"terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccZoneTags(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneTTL(&zone, 3600),
+					testAccCheckZoneRefresh(&zone, 43200),
+					testAccCheckZoneRetry(&zone, 7200),
+					testAccCheckZoneExpiry(&zone, 1209600),
+					testAccCheckZoneNxTTL(&zone, 3600),
+					testAccCheckZoneNotPrimary(&zone),
+					testAccCheckZoneDNSSEC(&zone, false),
+					testAccCheckNSRecord("ns1_zone.it", true),
+					testAccCheckZoneHostmaster(&zone, defaultHostmaster),
+					resource.TestCheckResourceAttr("ns1_zone.it", "tags.tag1", "val1"),
+					resource.TestCheckResourceAttr("ns1_zone.it", "tags.tag2", "val2"),
+				),
+			},
+			{
+				Config: testAccZoneTagsUpdated(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneTTL(&zone, 3600),
+					testAccCheckZoneRefresh(&zone, 43200),
+					testAccCheckZoneRetry(&zone, 7200),
+					testAccCheckZoneExpiry(&zone, 1209600),
+					testAccCheckZoneNxTTL(&zone, 3600),
+					testAccCheckZoneNotPrimary(&zone),
+					testAccCheckZoneDNSSEC(&zone, false),
+					testAccCheckNSRecord("ns1_zone.it", true),
+					testAccCheckZoneHostmaster(&zone, defaultHostmaster),
+					resource.TestCheckResourceAttr("ns1_zone.it", "tags.tag1", "val1"),
+					resource.TestCheckResourceAttr("ns1_zone.it", "tags.tag2", "value2"),
+					resource.TestCheckResourceAttr("ns1_zone.it", "tags.tag3", "val3"),
+				),
+			},
+		},
+	})
+}
+
+func testAccZoneTags(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone = "%s"
+  tags = {
+    tag1 = "val1"
+    tag2 = "val2"
+  }
+}
+`, zoneName)
+}
+
+func testAccZoneTagsUpdated(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone = "%s"
+  tags = {
+    tag1 = "val1"
+    tag2 = "value2"
+    tag3 = "val3"
+  }
+}
+`, zoneName)
+}

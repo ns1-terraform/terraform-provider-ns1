@@ -160,6 +160,18 @@ It is suggested to migrate to a regular "answers" block. Using Terraform 0.12+, 
 					},
 				},
 			},
+			"tags": {
+				Type:        schema.TypeMap,
+				Description: "Contains the key/value tag information associated to the record.",
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"blocked_tags": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "List of tag key names that should not inherit from the parent zone.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 		},
 		Create:   RecordCreate,
 		Read:     RecordRead,
@@ -285,6 +297,7 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 			return fmt.Errorf("[DEBUG] Error setting regions for: %s, error: %#v", r.Domain, err)
 		}
 	}
+	d.Set("tags", r.Tags)
 	return nil
 }
 
@@ -438,6 +451,15 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			r.Regions[region["name"].(string)] = ns1R
 		}
 	}
+	r.Tags = expandStringMap(d.Get("tags").(map[string]interface{}))
+	log.Printf("record tags: %v", r.Tags)
+
+	r.BlockedTags = expandStringList(d.Get("blocked_tags").([]interface{}))
+	// set an empty string array to allow field updates
+	if len(r.BlockedTags) == 0 {
+		r.BlockedTags = make([]string, 0)
+	}
+	log.Printf("record blocked_tags: %v", r.BlockedTags)
 	return nil
 }
 

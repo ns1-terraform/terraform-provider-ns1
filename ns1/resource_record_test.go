@@ -1541,3 +1541,136 @@ func TestValidateFQDN(t *testing.T) {
 		})
 	}
 }
+
+func TestAccRecord_tags(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("test.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordTags(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 60),
+					testAccCheckRecordUseClientSubnet(&record, true),
+					testAccCheckRecordRegionName(&record, []string{"cal"}),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{fmt.Sprintf("test1.%s", zoneName)},
+					),
+					resource.TestCheckResourceAttr("ns1_record.it", "tags.tag1", "val1"),
+					resource.TestCheckResourceAttr("ns1_record.it", "tags.tag2", "val2"),
+					resource.TestCheckResourceAttr("ns1_record.it", "blocked_tags.0", "zone_creator"),
+				),
+			},
+			{
+				ResourceName:  "ns1_record.it",
+				ImportState:   true,
+				ImportStateId: fmt.Sprintf("%s/%s/CNAME", zoneName, domainName),
+				// Disabling because blocked_tags cannot be retrieved from record read call.
+				ImportStateVerify: false,
+			},
+			{
+				Config: testAccRecordTagsUpdated(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 60),
+					testAccCheckRecordUseClientSubnet(&record, true),
+					testAccCheckRecordRegionName(&record, []string{"cal"}),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{fmt.Sprintf("test1.%s", zoneName)},
+					),
+					resource.TestCheckResourceAttr("ns1_record.it", "tags.tag1", "val1"),
+					resource.TestCheckResourceAttr("ns1_record.it", "tags.tag2", "value2"),
+					resource.TestCheckResourceAttr("ns1_record.it", "tags.tag3", "val3"),
+					resource.TestCheckResourceAttr("ns1_record.it", "blocked_tags.0", "zone_owner"),
+				),
+			},
+		},
+	})
+}
+
+func testAccRecordTags(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+  zone   = "${ns1_zone.test.zone}"
+  domain = "test.${ns1_zone.test.zone}"
+  type   = "CNAME"
+  ttl    = 60
+
+  answers {
+    answer = "test1.${ns1_zone.test.zone}"
+    region = "cal"
+
+    // meta {
+    //   weight = 10
+    //   up = true
+    // }
+  }
+
+  regions {
+    name = "cal"
+    // meta {
+    //   up = true
+    //   us_state = ["CA"]
+    // }
+  }
+
+  tags   = {
+    tag1 = "val1"
+    tag2 = "val2"
+  }
+
+  blocked_tags = ["zone_creator"]
+}
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordTagsUpdated(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+  zone   = "${ns1_zone.test.zone}"
+  domain = "test.${ns1_zone.test.zone}"
+  type   = "CNAME"
+  ttl    = 60
+
+  answers {
+    answer = "test1.${ns1_zone.test.zone}"
+    region = "cal"
+
+    // meta {
+    //   weight = 10
+    //   up = true
+    // }
+  }
+
+  regions {
+    name = "cal"
+    // meta {
+    //   up = true
+    //   us_state = ["CA"]
+    // }
+  }
+
+  tags   = {
+    tag1 = "val1"
+    tag2 = "value2"
+    tag3 = "val3"
+  }
+  blocked_tags = ["zone_owner"]
+}
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}

@@ -151,6 +151,12 @@ func resourceZone() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"tags": {
+				Type:        schema.TypeMap,
+				Description: "Contains the key/value tag information associated to the zone.",
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
 		},
 		Create:   zoneCreate,
 		Read:     zoneRead,
@@ -208,6 +214,7 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	if z.Link != nil && *z.Link != "" {
 		d.Set("link", *z.Link)
 	}
+	d.Set("tags", z.Tags)
 	return nil
 }
 
@@ -328,6 +335,7 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 		networkIDSet := v.(*schema.Set)
 		z.NetworkIDs = setToInts(networkIDSet)
 	}
+	z.Tags = expandStringMap(d.Get("tags").(map[string]interface{}))
 }
 
 func setTSIG(raw interface{}) *dns.TSIG {
