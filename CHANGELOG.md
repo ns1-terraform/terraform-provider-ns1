@@ -1,3 +1,40 @@
+## 2.0.0 (March 2, 2023)
+ENHANCEMENTS
+
+* Upgraded to Terraform SDK 2.24.1. Users of Pulsar will need to make minor changes in their resource files, see below.
+
+INCOMPATIBILITIES WITH PREVIOUS VERSIONS
+
+* The `ns1_application` resource attributes `config`, `default_config` and `blended_metric_weights` are now blocks, with only one item permitted. This is due to an SDK 2.x restriction on nested structures. Existing resource files will need to be edited to remove the equals sign in the declarations of the affected stanzas, for example:
+
+```
+resource "ns1_application" "it" {
+ name = "my_application"
+ browser_wait_millis = 123
+ jobs_per_transaction = 100
+ default_config {
+  http  = true
+  https = false
+  request_timeout_millis = 100
+  job_timeout_millis = 100
+  static_values = true
+ }
+}
+```
+
+instead of the previous syntax:
+```
+ default_config = {
+```
+
+* Added `networks` resource it provides details about NS1 Networks. Use this if you would simply like to read information from NS1 into your configurations, for example: 
+
+```hcl
+# Get details about NS1 Networks.
+data "ns1_networks" "example" {
+}
+```
+
 ## 2.0.0-pre1 (January 18, 2023)
 ENHANCEMENTS
 
