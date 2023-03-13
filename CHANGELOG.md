@@ -1,3 +1,23 @@
+## 2.0.1 (March 14, 2023)
+BUG FIX
+
+* `ns1-go` client version bump fixes `additional_metadata` not applying correctly
+
+Note:
+* To avoid whitespace issues in `additional_metadata` meta tag using `jsonencode` for example:
+
+``` hcl
+meta = {
+  "additional_metadata" : jsonencode(
+    [
+      {
+        a = "1"
+        b = "3"
+      }
+  ])
+}
+```
+
 ## 2.0.0 (March 2, 2023)
 ENHANCEMENTS
 
