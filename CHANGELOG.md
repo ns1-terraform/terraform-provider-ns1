@@ -1,3 +1,6 @@
+## 2.0.2 (March 14, 2023)
+Version Bump to fix tagging issue
+
 ## 2.0.1 (March 14, 2023)
 BUG FIX
 
