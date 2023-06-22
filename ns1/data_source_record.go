@@ -1,7 +1,7 @@
 package ns1
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourceRecord() *schema.Resource {
@@ -21,6 +21,10 @@ func dataSourceRecord() *schema.Resource {
 			},
 			"ttl": {
 				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"override_ttl": {
+				Type:     schema.TypeBool,
 				Computed: true,
 			},
 			"meta": {

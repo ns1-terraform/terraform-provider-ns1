@@ -1,6 +1,6 @@
 package ns1
 
-import "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 func apikeyResourceV0() *schema.Resource {
 	s := map[string]*schema.Schema{

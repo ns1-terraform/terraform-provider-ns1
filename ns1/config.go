@@ -7,13 +7,21 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/go-retryablehttp"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
+)
+
+var (
+	clientVersion     = "2.0.3"
+	providerUserAgent = "tf-ns1" + "/" + clientVersion
+	defaultRetryMax   = 3
 )
 
 // Config for NS1 API
@@ -23,12 +31,25 @@ type Config struct {
 	IgnoreSSL            bool
 	EnableDDI            bool
 	RateLimitParallelism int
+	RetryMax             int
+	UserAgent            string
 }
 
 // Client returns a new NS1 client.
 func (c *Config) Client() (*ns1.Client, error) {
 	var client *ns1.Client
+
 	httpClient := &http.Client{}
+	retryMax := c.RetryMax
+	if retryMax >= 0 {
+		if retryMax == 0 {
+			retryMax = defaultRetryMax
+		}
+		retryClient := retryablehttp.NewClient()
+		retryClient.RetryMax = retryMax
+		retryClient.Logger = nil
+		httpClient = retryClient.StandardClient()
+	}
 	decos := []func(*ns1.Client){}
 
 	if c.Key == "" {
@@ -66,7 +87,13 @@ func (c *Config) Client() (*ns1.Client, error) {
 		client.RateLimitStrategySleep()
 	}
 
-	log.Printf("[INFO] NS1 Client configured for Endpoint: %s", client.Endpoint.String())
+	UA := providerUserAgent + "_" + client.UserAgent
+	if len(c.UserAgent) > 0 {
+		client.UserAgent = c.UserAgent
+	} else {
+		client.UserAgent = UA
+	}
+	log.Printf("[INFO] NS1 Client configuration: endpoint: %s, version %s, retries %d, User-Agent %s", client.Endpoint.String(), clientVersion, c.RetryMax, client.UserAgent)
 
 	return client, nil
 }
@@ -75,37 +102,54 @@ func (c *Config) Client() (*ns1.Client, error) {
 func Logging() ns1.Decorator {
 	return func(d ns1.Doer) ns1.Doer {
 		return ns1.DoerFunc(func(r *http.Request) (*http.Response, error) {
-			log.Printf("[DEBUG] %s: %s %s", r.UserAgent(), r.Method, r.URL)
-			log.Printf("[DEBUG] Headers: %s", r.Header)
+			msgs := []string{}
+			msgs = append(msgs, fmt.Sprintf("[DEBUG] HTTP %s %s", r.Method, r.URL))
+			heads := r.Header.Clone()
+			heads["X-Nsone-Key"] = []string{"<redacted>"}
+			msgs = append(msgs, fmt.Sprintf("[DEBUG] HTTP Headers: %s", heads))
 			var err error
 			if r.Body != nil {
-				r.Body, err = logRequest(r.Body)
+				var bodymsg string
+				r.Body, bodymsg, err = logRequest(r.Body)
 				if err != nil {
 					return nil, err
 				}
+				msgs = append(msgs, bodymsg)
 			}
-			return d.Do(r)
+			requestTime := time.Now()
+			response, rerr := d.Do(r)
+			responseTime := time.Now()
+			dump := []byte{}
+			if response != nil {
+				dump, _ = httputil.DumpResponse(response, true)
+			}
+			for _, m := range msgs {
+				log.Print(m)
+			}
+			log.Printf("[DEBUG] HTTP Response (requested at %s, received at %s): %s", requestTime.Format(time.StampMilli), responseTime.Format(time.StampMilli), dump)
+			return response, rerr
 		})
 	}
 }
 
 // logRequest logs a HTTP request and returns a copy that can be read again
-func logRequest(original io.ReadCloser) (io.ReadCloser, error) {
+func logRequest(original io.ReadCloser) (io.ReadCloser, string, error) {
 	// Handle request contentType
 	var bs bytes.Buffer
 	defer original.Close()
 
 	_, err := io.Copy(&bs, original)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
+	msg := ""
 	debugInfo, err := formatJSON(bs.Bytes())
 	if err == nil {
-		log.Printf("[DEBUG] Request Body: %s", debugInfo)
+		msg = fmt.Sprintf("[DEBUG] HTTP Request Body: %s", debugInfo)
 	}
 
-	return ioutil.NopCloser(strings.NewReader(bs.String())), nil
+	return io.NopCloser(strings.NewReader(bs.String())), msg, nil
 }
 
 // formatJSON attempts to format a byte slice as indented JSON for pretty printing
@@ -113,11 +157,11 @@ func formatJSON(raw []byte) (string, error) {
 	var rawData interface{}
 	err := json.Unmarshal(raw, &rawData)
 	if err != nil {
-		return string(raw), fmt.Errorf("Unable to parse JSON: %s", err)
+		return string(raw), fmt.Errorf("unable to parse JSON: %s", err)
 	}
 	pretty, err := json.MarshalIndent(rawData, "", "  ")
 	if err != nil {
-		return string(raw), fmt.Errorf("Unable to re-marshal JSON: %s", err)
+		return string(raw), fmt.Errorf("unable to re-marshal JSON: %s", err)
 	}
 
 	return string(pretty), nil

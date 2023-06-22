@@ -7,9 +7,9 @@ import (
 	"log"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccApplication_basic(t *testing.T) {
@@ -41,6 +41,11 @@ func TestAccApplication_basic(t *testing.T) {
 					testAccCheckApplicationJobs(&application, 0),
 					testAccCheckApplicationDefaultConfig(&application, d),
 				),
+			},
+			{
+				ResourceName:      "ns1_application.it",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -85,6 +90,11 @@ func TestAccApplication_updated(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "ns1_application.it",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: testAccApplicationUpdated(applicationName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckApplicationExists("ns1_application.it", &application),
@@ -93,6 +103,11 @@ func TestAccApplication_updated(t *testing.T) {
 					testAccCheckApplicationJobs(&application, 100),
 					testAccCheckApplicationDefaultConfig(&application, updatedConfig),
 				),
+			},
+			{
+				ResourceName:      "ns1_application.it",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -240,7 +255,7 @@ func testAccApplicationUpdated(appName string) string {
  name = "%s"
  browser_wait_millis = 123
  jobs_per_transaction = 100
- default_config = {
+ default_config {
   http     = true
   https = false
   request_timeout_millis = 100

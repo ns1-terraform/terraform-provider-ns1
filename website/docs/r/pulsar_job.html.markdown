@@ -6,7 +6,7 @@ description: |-
   Provides a Pulsar Job resource.
 ---
 
-# ns1\_pulsar\_job
+# ns1\_pulsarjob
 
 Provides a Pulsar job resource. This can be used to create, modify, and delete zones.
 
@@ -24,7 +24,7 @@ resource "ns1_pulsarjob" "example_javascript" {
   app_id = ns1_pulsar_application.example.id
   type_id  = "latency"
   
-  config = {
+  config {
     host = "terraform.job_host.io"
     url_path = "/terraform.job_url_path.io"
   }

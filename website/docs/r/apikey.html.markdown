@@ -40,7 +40,7 @@ When a key is removed from all teams completely, it will inherit whatever permis
 If a key is removed from all it's teams, it will probably be necessary to run `terraform apply` a second time
 to update the keys permissions from it's old team permissions to new key-specific permissions.
 
-See [the NS1 API docs](https://ns1.com/api#getget-all-account-users) for an overview of permission semantics.
+See [the NS1 API docs](https://ns1.com/api#getget-all-account-users) for an overview of permission semantics or for [more details](https://help.ns1.com/hc/en-us/articles/360024409034-Managing-user-permissions) about the individual permission flags.
 
 ## Argument Reference
 
@@ -55,12 +55,14 @@ The following arguments are supported:
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.
 * `dns_zones_allow` - (Optional) List of zones that the apikey may access.
 * `dns_zones_deny` - (Optional) List of zones that the apikey may not access.
+* `dns_records_allow` - (Optional) List of records that the apikey may access.
+* `dns_records_deny` - (Optional) List of records that the apikey may not access.
 * `data_push_to_datafeeds` - (Optional) Whether the apikey can publish to data feeds.
 * `data_manage_datasources` - (Optional) Whether the apikey can modify data sources.
 * `data_manage_datafeeds` - (Optional) Whether the apikey can modify data feeds.
 * `account_manage_users` - (Optional) Whether the apikey can modify account users.
 * `account_manage_payment_methods` - (Optional) Whether the apikey can modify account payment methods.
-* `account_manage_plan` - (Optional) Whether the apikey can modify the account plan.
+* `account_manage_plan` - (Deprecated) No longer in use.
 * `account_manage_teams` - (Optional) Whether the apikey can modify other teams in the account.
 * `account_manage_apikeys` - (Optional) Whether the apikey can modify account apikeys.
 * `account_manage_account_settings` - (Optional) Whether the apikey can modify account settings.
@@ -87,6 +89,15 @@ Only relevant for the DDI product.
 In addition to all arguments above, the following attributes are exported:
 
 * `key` - (Computed) The apikeys authentication token.
+
+## Import
+
+`terraform import ns1_apikey`
+
+So for the example above:
+
+`terraform import ns1_apikey.example <ID>`
+
 
 ## NS1 Documentation
 

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -224,10 +224,20 @@ func TestAccRecord_CAA(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.caa",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/CAA", zoneName),
 				ImportStateVerify: true,
+			},
+			{
+				Config: testAccRecordCAAWithSpace(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.caa", &record),
+					testAccCheckRecordDomain(&record, zoneName),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"0", "issue", "inbox2221.ticket; account=xyz"},
+					),
+				),
 			},
 		},
 	})
@@ -256,7 +266,7 @@ func TestAccRecord_SPF(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.spf",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/SPF", zoneName),
 				ImportStateVerify: true,
@@ -292,7 +302,7 @@ func TestAccRecord_SRV(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.srv",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/SRV", zoneName, domainName),
 				ImportStateVerify: true,
@@ -328,7 +338,7 @@ func TestAccRecord_DS(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.ds",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/DS", zoneName, domainName),
 				ImportStateVerify: true,
@@ -363,7 +373,7 @@ func TestAccRecord_URLFWD(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.urlfwd",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/URLFWD", zoneName, domainName),
 				ImportStateVerify: true,
@@ -450,17 +460,13 @@ func TestAccRecord_validationError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccRecordInvalid(rString),
-				/* The error block should look like this:
-
-				config is invalid: 4 problems:
-
-					- zone has an invalid leading ".", got: .terraform-test-e677cntkkar21ak.io.
-					- zone has an invalid trailing ".", got: .terraform-test-e677cntkkar21ak.io.
-					- domain has an invalid leading ".", got: .test.terraform-test-e677cntkkar21ak.io.
-					- domain has an invalid trailing ".", got: .test.terraform-test-e677cntkkar21ak.io.
-
+				/* The error block has lines like this:
+				   Error: zone has an invalid leading ".", got: .terraform-test-vmatw2m3iunjw4j.io.
+				   Error: zone has an invalid trailing ".", got: .terraform-test-vmatw2m3iunjw4j.io.
+				   Error: domain has an invalid leading ".", got: .test.terraform-test-vmatw2m3iunjw4j.io.
+				   Error: domain has an invalid trailing ".", got: .test.terraform-test-vmatw2m3iunjw4j.io.
 				*/
-				ExpectError: regexp.MustCompile(`config is invalid: 4 problems:\n\n(\s*- (zone|domain) has an invalid (leading|trailing) \"\.\", got: .*){4}`),
+				ExpectError: regexp.MustCompile(`(?s)(Error: (zone|domain) has an invalid (leading|trailing) "\.", got: .*){4}`),
 			},
 		},
 	})
@@ -725,6 +731,59 @@ func TestAccRecord_OverrideTTLTrueToFalse(t *testing.T) {
 				Config:             tfFileDoNotOverrideTtlALIAS,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+func TestAccRecord_Link(t *testing.T) {
+	var record1 dns.Record
+	var record2 dns.Record
+	var record3 dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	linkDomainName := fmt.Sprintf("link.%s", zoneName)
+	targetDomainName := fmt.Sprintf("target.%s", zoneName)
+	newTargetDomainName := fmt.Sprintf("newtarget.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordLink(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.link", &record1),
+					testAccCheckRecordExists("ns1_record.target", &record2),
+					testAccCheckRecordDomain(&record1, linkDomainName),
+					testAccCheckRecordDomain(&record2, targetDomainName),
+					testAccCheckRecordTTL(&record1, 666),
+					testAccCheckRecordTTL(&record2, 777),
+					testAccCheckRecordAnswerRdata(
+						t, &record2, 0, []string{"99.86.99.86"},
+					),
+				),
+			},
+			{
+				Config: testAccRecordLinkUpdated(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.link", &record1),
+					testAccCheckRecordExists("ns1_record.target", &record2),
+					testAccCheckRecordExists("ns1_record.newtarget", &record3),
+					testAccCheckRecordDomain(&record1, linkDomainName),
+					testAccCheckRecordDomain(&record2, targetDomainName),
+					testAccCheckRecordDomain(&record3, newTargetDomainName),
+					testAccCheckRecordTTL(&record1, 666),
+					testAccCheckRecordTTL(&record2, 777),
+					testAccCheckRecordTTL(&record3, 888),
+					testAccCheckRecordAnswerRdata(
+						t, &record2, 0, []string{"99.86.99.86"},
+					),
+					testAccCheckRecordAnswerRdata(
+						t, &record3, 0, []string{"16.19.20.19"},
+					),
+				),
 			},
 		},
 	})
@@ -1271,6 +1330,12 @@ resource "ns1_monitoringjob" "test" {
   config = {
     method = "GET"
     url = "https://www.example.com"
+    connect_timeout = "2000"
+    idle_timeout = "3"
+    ipv6 = false
+    follow_redirect = false
+    tls_add_verify = false
+    user_agent = "just testing"
   }
   rules {
     value = "200"
@@ -1321,6 +1386,24 @@ resource "ns1_record" "caa" {
   answers {
     answer = "0 issuewild ;"
   }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordCAAWithSpace(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "caa" {
+        zone   = ns1_zone.test.zone
+        domain = ns1_zone.test.zone
+        type   = "CAA"
+
+        answers {
+                answer = "0 issue inbox2221.ticket; account=xyz"
+        }
 }
 
 resource "ns1_zone" "test" {
@@ -1450,6 +1533,73 @@ resource "ns1_record" "it" {
   ttl               = 60
 }
 `, rString, rString)
+}
+
+func testAccRecordLink(rString string) string {
+	return fmt.Sprintf(`
+# the name being tested that is a link
+resource "ns1_record" "link" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "link.${ns1_zone.test.zone}"
+  type              = "A"
+  link              = "target.${ns1_zone.test.zone}"
+  ttl               = 666
+}
+
+# the record that is the destination of the link
+resource "ns1_record" "target" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "target.${ns1_zone.test.zone}"
+  type              = "A"
+  ttl               = 777
+  answers {
+             answer = "99.86.99.86"
+	  }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordLinkUpdated(rString string) string {
+	return fmt.Sprintf(`
+# the name being tested that is a link
+resource "ns1_record" "link" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "link.${ns1_zone.test.zone}"
+  type              = "A"
+  link              = "newtarget.${ns1_zone.test.zone}"
+  ttl               = 666
+}
+
+# the record that is the original destination of the link
+resource "ns1_record" "target" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "target.${ns1_zone.test.zone}"
+  type              = "A"
+  ttl               = 777
+  answers {
+             answer = "99.86.99.86"
+	  }
+}
+
+# the new destination for the link
+resource "ns1_record" "newtarget" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "newtarget.${ns1_zone.test.zone}"
+  type              = "A"
+  ttl               = 888
+  answers {
+             answer = "16.19.20.19"
+          }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
 }
 
 func TestRegionsMetaDiffSuppress(t *testing.T) {

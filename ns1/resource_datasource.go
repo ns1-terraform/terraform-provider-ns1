@@ -4,7 +4,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/data"
@@ -27,10 +27,11 @@ func dataSourceResource() *schema.Resource {
 				Optional: true,
 			},
 		},
-		Create: DataSourceCreate,
-		Read:   DataSourceRead,
-		Update: DataSourceUpdate,
-		Delete: DataSourceDelete,
+		Create:   DataSourceCreate,
+		Read:     DataSourceRead,
+		Update:   DataSourceUpdate,
+		Delete:   DataSourceDelete,
+		Importer: &schema.ResourceImporter{},
 	}
 }
 

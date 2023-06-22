@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -18,7 +18,7 @@ import (
 
 func TestAccZone_basic(t *testing.T) {
 	var zone dns.Zone
-	defaultHostmaster := "hostmaster@example.net"
+	defaultHostmaster := "hostmaster@nsone.net"
 	zoneName := fmt.Sprintf(
 		"terraform-test-%s.io",
 		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
@@ -116,7 +116,7 @@ func TestAccZone_primary_to_secondary_to_normal(t *testing.T) {
 			Notify:     true,
 		},
 	}
-	expectedOtherPorts := []int{53, 53}
+	expectedOtherPorts := []int{53, 5353}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -148,6 +148,7 @@ func TestAccZone_primary_to_secondary_to_normal(t *testing.T) {
 					testAccCheckZoneExists("ns1_zone.it", &zone),
 					testAccCheckZoneName(&zone, zoneName),
 					resource.TestCheckResourceAttr("ns1_zone.it", "primary", "1.1.1.1"),
+					resource.TestCheckResourceAttr("ns1_zone.it", "primary_port", "54"),
 					resource.TestCheckResourceAttr(
 						"ns1_zone.it", "additional_primaries.0", "2.2.2.2",
 					),
@@ -183,19 +184,19 @@ func TestAccZone_secondary_to_primary_to_normal(t *testing.T) {
 	// sorted by IP please
 	expected := []*dns.ZoneSecondaryServer{
 		{
-			NetworkIDs: []int{0},
+			NetworkIDs: []int{},
 			IP:         "2.2.2.2",
 			Port:       53,
 			Notify:     false,
 		},
 		{
-			NetworkIDs: []int{0},
+			NetworkIDs: []int{},
 			IP:         "3.3.3.3",
 			Port:       5353,
 			Notify:     true,
 		},
 	}
-	expectedOtherPorts := []int{53, 53}
+	expectedOtherPorts := []int{53, 5353}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -208,6 +209,7 @@ func TestAccZone_secondary_to_primary_to_normal(t *testing.T) {
 					testAccCheckZoneExists("ns1_zone.it", &zone),
 					testAccCheckZoneName(&zone, zoneName),
 					resource.TestCheckResourceAttr("ns1_zone.it", "primary", "1.1.1.1"),
+					resource.TestCheckResourceAttr("ns1_zone.it", "primary_port", "54"),
 					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.0", "2.2.2.2"),
 					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.1", "3.3.3.3"),
 					testAccCheckOtherPorts(&zone, expectedOtherPorts),
@@ -288,7 +290,7 @@ func TestAccZone_dnssec(t *testing.T) {
 
 func TestAccZone_hostmaster(t *testing.T) {
 	var zone dns.Zone
-	defaultHostmaster := "hostmaster@example.net"
+	defaultHostmaster := "hostmaster@nsone.net"
 	zoneHostmaster := "hostmaster@rname.test"
 	zoneName := fmt.Sprintf(
 		"terraform-test-%s.io",
@@ -356,6 +358,7 @@ func TestAccZone_TSIG(t *testing.T) {
 					testAccCheckZoneTsigName(&zone, tsig.Name),
 					testAccCheckZoneTsigHash(&zone, tsig.Hash),
 					testAccCheckZoneTsigKey(&zone, tsig.Key),
+					resource.TestCheckResourceAttr("ns1_zone.it", "primary_port", "53"),
 				),
 			},
 		},
@@ -381,6 +384,23 @@ func TestAccZone_disable_autogenerate_ns_record(t *testing.T) {
 					testAccCheckNSRecord("ns1_zone.it", false),
 				),
 			},
+			{
+				Config: testAccZoneDisableAutoGenerateNSRecordLinkedZone(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneExists("ns1_zone.linked_zone", &zone),
+					testAccCheckZoneName(&zone, "linkedzone_"+zoneName),
+				),
+			},
+			// verifying a linked zone import fails because the zone tag read
+			// back is for the linked zone.
+			//			{
+			//				ResourceName:      "ns1_zone.linked_zone",
+			//				ImportState:       true,
+			//				ImportStateId:     zoneName,
+			//				ImportStateVerify: true,
+			//			},
 		},
 	})
 }
@@ -779,7 +799,9 @@ func testAccZoneSecondary(zoneName string) string {
   zone    = "%s"
   ttl     = 10800
   primary = "1.1.1.1"
+  primary_port = 54
   additional_primaries = ["2.2.2.2", "3.3.3.3"]
+  additional_ports = [53, 5353]
 }
 `, zoneName)
 }
@@ -788,6 +810,7 @@ func testAccZoneSecondaryTSIG(zoneName, tsigName string) string {
 	return fmt.Sprintf(`resource "ns1_zone" "it" {
   zone    = "%s"
   primary = "1.1.1.1"
+  # primary_port left unspecified to test default/computed case
   tsig = {
     enabled = true
     name = "%s"
@@ -820,4 +843,17 @@ func testAccZoneDisableAutoGenerateNSRecord(zoneName string) string {
   autogenerate_ns_record = false
 }
 `, zoneName)
+}
+
+func testAccZoneDisableAutoGenerateNSRecordLinkedZone(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone = "%s"
+}
+
+resource "ns1_zone" "linked_zone" {
+  zone = "linkedzone_%s"
+  link = ns1_zone.it.zone
+  autogenerate_ns_record = false
+}
+`, zoneName, zoneName)
 }

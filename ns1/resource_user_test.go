@@ -8,9 +8,9 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -82,9 +82,11 @@ func TestAccUser_ManualDelete(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			// Attempt to re-create it, this should fail because user names must be historically unique.
+			// Error: PUT https://api.nsone.net/v1/account/users: 409 login name tf_acc_test_user_k8qsnpxghuhgmip already exists
+
 			{
 				Config:      testAccUserBasic(rString),
-				ExpectError: regexp.MustCompile(`user already exists`),
+				ExpectError: regexp.MustCompile(`PUT .*/account/users.*already exists`),
 			},
 		},
 	})
@@ -122,6 +124,7 @@ func TestAccUser_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "security_manage_global_2fa", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "security_manage_active_directory", "true"),
 				),
 			},
 			{

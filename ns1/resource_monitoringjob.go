@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"log"
 	"regexp"
-	"sort"
 	"strconv"
-	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/monitor"
@@ -28,7 +26,7 @@ func monitoringJobResource() *schema.Resource {
 				ForceNew: true,
 			},
 			"regions": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Required: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -117,10 +115,11 @@ func monitoringJobResource() *schema.Resource {
 				},
 			},
 		},
-		Create: MonitoringJobCreate,
-		Read:   MonitoringJobRead,
-		Update: MonitoringJobUpdate,
-		Delete: MonitoringJobDelete,
+		Create:   MonitoringJobCreate,
+		Read:     MonitoringJobRead,
+		Update:   MonitoringJobUpdate,
+		Delete:   MonitoringJobDelete,
+		Importer: &schema.ResourceImporter{},
 	}
 }
 
@@ -130,10 +129,7 @@ func monitoringJobToResourceData(d *schema.ResourceData, r *monitor.Job) error {
 	d.Set("job_type", r.Type)
 	d.Set("active", r.Active)
 	d.Set("mute", r.Mute)
-	if len(r.Regions) > 0 {
-		sort.Strings(r.Regions)
-		d.Set("regions", r.Regions)
-	}
+	d.Set("regions", r.Regions)
 	d.Set("frequency", r.Frequency)
 	d.Set("rapid_recheck", r.RapidRecheck)
 	config := make(map[string]string)
@@ -191,7 +187,7 @@ func resourceDataToMonitoringJob(r *monitor.Job, d *schema.ResourceData) error {
 	r.Type = d.Get("job_type").(string)
 	r.Active = d.Get("active").(bool)
 	r.Mute = d.Get("mute").(bool)
-	rawRegions := d.Get("regions").([]interface{})
+	rawRegions := d.Get("regions").(*schema.Set).List()
 	r.Regions = make([]string, len(rawRegions))
 	for i, v := range rawRegions {
 		r.Regions[i] = v.(string)
@@ -285,7 +281,7 @@ func MonitoringJobRead(d *schema.ResourceData, meta interface{}) error {
 	j, resp, err := client.Jobs.Get(d.Id())
 	if err != nil {
 		// No custom error type is currently defined in the SDK for a monitoring job.
-		if strings.Contains(err.Error(), "unknown monitoring job") {
+		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("[DEBUG] NS1 record (%s) not found", d.Id())
 			d.SetId("")
 			return nil

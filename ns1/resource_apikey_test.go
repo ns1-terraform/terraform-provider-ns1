@@ -7,9 +7,9 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/account"
 )
@@ -31,6 +31,11 @@ func TestAccAPIKey_basic(t *testing.T) {
 					testAccCheckAPIKeyIPWhitelists(&apiKey, []string{"1.1.1.1", "2.2.2.2"}),
 					resource.TestCheckResourceAttr("ns1_apikey.it", "ip_whitelist_strict", "true"),
 				),
+			},
+			{
+				ResourceName:      "ns1_apikey.it",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -63,6 +68,11 @@ func TestAccAPIKey_updated(t *testing.T) {
 					testAccCheckAPIKeyIPWhitelists(&apiKey, []string{}),
 					resource.TestCheckResourceAttr("ns1_apikey.it", "ip_whitelist_strict", "false"),
 				),
+			},
+			{
+				ResourceName:      "ns1_apikey.it",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -116,6 +126,11 @@ func TestAccAPIKey_teamKey(t *testing.T) {
 					resource.TestCheckResourceAttrSet("ns1_apikey.it", "key"),
 				),
 			},
+			{
+				ResourceName:      "ns1_apikey.it",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -164,6 +179,11 @@ func TestAccAPIKey_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_account_settings", "false"),
 					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_ip_whitelist", "false"),
 				),
+			},
+			{
+				ResourceName:      "ns1_apikey.it",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

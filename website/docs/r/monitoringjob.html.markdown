@@ -25,7 +25,7 @@ resource "ns1_monitoringjob" "uswest_monitor" {
 
   config = {
     ssl  = 1
-    send = "HEAD / HTTP/1.0\r\n\r\n"
+    send = "HEAD / HTTP/1.0\\r\\n\\r\\n"
     port = 443
     host = "example-elb-uswest.aws.amazon.com"
   }
@@ -46,7 +46,7 @@ The following arguments are supported:
 * `job_type` - (Required) The type of monitoring job to be run. Refer to the NS1 API documentation (https://ns1.com/api#monitoring-jobs) for supported values which include ping, tcp, dns, http.
 * `active` - (Required) Indicates if the job is active or temporarily disabled.
 * `regions` - (Required) The list of region codes in which to run the monitoring
-  job. See NS1 API docs for supported values. NOTE: order alphabetically by region code.
+  job. See NS1 API docs for supported values.
 * `frequency` - (Required) The frequency, in seconds, at which to run the monitoring job in each region.
 * `rapid_recheck` - (Required) If true, on any apparent state change, the job is quickly re-run after one second to confirm the state change before notification.
 * `policy` - (Required) The policy for determining the monitor's global status
@@ -65,6 +65,10 @@ The following arguments are supported:
 
 All of the arguments listed above are exported as attributes, with no
 additions.
+
+## Import
+
+`terraform import ns1_monitoringjob.<name> <monitoringjob_id>`
 
 ## NS1 Documentation
 

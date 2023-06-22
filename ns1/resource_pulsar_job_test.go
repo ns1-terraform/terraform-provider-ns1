@@ -5,9 +5,9 @@ import (
 	"log"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/pulsar"
@@ -384,7 +384,7 @@ func testAccJSPulsarJobBasic(appName, jobName string) string {
   		name = "%s"
 		type_id = "latency"
 		app_id = "${ns1_application.app.id}"
-		config = {
+		config {
 			host = "testAccHost"
 			url_path = "/testAccURLPath"
 		}
@@ -403,7 +403,7 @@ func testAccJSPulsarJobUpdated(appName, jobName string) string {
 		app_id = "${ns1_application.app.id}"
 		active = false
 		shared = false
-		config = {
+		config {
 			host = "testAccUpdatedHost"
 			url_path = "/testAccUpdatedURLPath"
 		}
@@ -420,11 +420,11 @@ func testAccJSPulsarJobBlendMetricWeights(appName, jobName string) string {
   		name = "%s"
 		type_id = "latency"
 		app_id = "${ns1_application.app.id}"
-		config = {
+		config {
 			host = "testAccCompleteHost"
 			url_path = "/testAccCompleteURLPath"
 		}
-		blend_metric_weights = {
+		blend_metric_weights {
 			timestamp = 123
 		}
 		weights {
@@ -480,7 +480,7 @@ func testAccBBPulsarJobConverted(appName, jobName string) string {
   		name = "%s"
 		type_id = "custom"
 		app_id = "${ns1_application.app.id}"
-		config = {
+		config {
 			host = ""
 			url_path = ""
 		}
@@ -497,11 +497,11 @@ func testAccBBPulsarJobBlendMetricWeights(appName, jobName string) string {
   		name = "%s"
 		type_id = "custom"
 		app_id = "${ns1_application.app.id}"
-		config = {
+		config {
 			host = "testAccHost"
 			url_path = "/testAccUrlPath"
 		}
-		blend_metric_weights = {
+		blend_metric_weights {
 			timestamp = 123
 		}
 		weights {

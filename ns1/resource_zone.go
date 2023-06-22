@@ -1,14 +1,16 @@
 package ns1
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/customdiff"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -66,11 +68,25 @@ func resourceZone() *schema.Resource {
 				Optional:      true,
 				ConflictsWith: []string{"secondaries"},
 			},
+			"primary_port": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"secondaries"},
+			},
 			"additional_primaries": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
+				},
+				ConflictsWith: []string{"secondaries"},
+			},
+			"additional_ports": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
 				},
 				ConflictsWith: []string{"secondaries"},
 			},
@@ -144,7 +160,7 @@ func resourceZone() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			customdiff.ForceNewIfChange(
 				"primary",
-				func(old, new, meta interface{}) bool {
+				func(_ context.Context, old, new, meta interface{}) bool {
 					// ForceNew if we're becoming a secondary zone, otherwise allow
 					// change or removal in place.
 					if old == "" && new != "" {
@@ -172,8 +188,9 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	d.Set("dns_servers", strings.Join(z.DNSServers[:], ","))
 	if z.Secondary != nil && z.Secondary.Enabled {
 		d.Set("primary", z.Secondary.PrimaryIP)
+		d.Set("primary_port", z.Secondary.PrimaryPort)
 		d.Set("additional_primaries", z.Secondary.OtherIPs)
-
+		d.Set("additional_ports", z.Secondary.OtherPorts)
 		if z.Secondary.TSIG != nil && z.Secondary.TSIG.Enabled {
 			d.Set("tsig", tsigToMap(z.Secondary.TSIG))
 		}
@@ -237,6 +254,9 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 	if v, ok := d.GetOk("primary"); ok {
 		z.MakeSecondary(v.(string))
 
+		if p, ok := d.GetOk("primary_port"); ok {
+			z.Secondary.PrimaryPort = p.(int)
+		}
 		if t, ok := d.GetOk("tsig"); ok {
 			z.Secondary.TSIG = setTSIG(t)
 		}
@@ -261,15 +281,15 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 		for i, otherIP := range otherIPsRaw {
 			z.Secondary.OtherIPs[i] = otherIP.(string)
 		}
-		// Fill a list of matching length with '53' for OtherPorts
-		// to match functionality of MakeSecondary for PrimaryPort
-		// TODO: Add ability to set custom OtherPorts and PrimaryPort
-		//otherPorts := make([]int, len(z.Secondary.OtherIPs))
-		z.Secondary.OtherPorts = make([]int, len(z.Secondary.OtherIPs))
-		for i := range z.Secondary.OtherPorts {
-			z.Secondary.OtherPorts[i] = 53
+	}
+	if v, ok := d.GetOk("additional_ports"); ok {
+		otherPortsRaw := v.([]interface{})
+		z.Secondary.OtherPorts = make([]int, len(otherPortsRaw))
+		for i, otherPort := range otherPortsRaw {
+			z.Secondary.OtherPorts[i] = otherPort.(int)
 		}
 	}
+	// TODO: support OtherNetworks after ns1-go supports it
 	if v, ok := d.GetOk("secondaries"); ok {
 		secondariesSet := v.(*schema.Set)
 		secondaries := make([]dns.ZoneSecondaryServer, secondariesSet.Len())
@@ -342,13 +362,40 @@ func zoneCreate(d *schema.ResourceData, meta interface{}) error {
 		return ConvertToNs1Error(resp, err)
 	}
 	if !d.Get("autogenerate_ns_record").(bool) {
-		log.Printf("autogenerate_ns_record set to false: deleting NS record for zone %s", z.Zone)
-		if resp, err := client.Records.Delete(z.Zone, z.Zone, "NS"); err != nil {
-			return ConvertToNs1Error(resp, err)
+		// Do not try to delete records in a linked zone.
+		isLinked := false
+		if _, ok := d.GetOk("link"); ok {
+			isLinked = true
+		}
+		if !isLinked {
+			log.Printf("autogenerate_ns_record set to false: deleting NS record for zone %s", z.Zone)
+			if resp, err := client.Records.Delete(z.Zone, z.Zone, "NS"); err != nil {
+				return ConvertToNs1Error(resp, err)
+			}
 		}
 	}
 	if err := resourceZoneToResourceData(d, z); err != nil {
 		return err
+	}
+	// New zones with DNSSEC enabled require additional time to create
+	// the DNSSEC signature. Terraform will try to read the entire
+	// zone back, including the DNSSEC block, so wait a few extra seconds
+	// to allow that process to complete.
+	if d.Get("dnssec").(bool) {
+		tries := 1
+		maxTries := 3
+		interval := time.Duration(850)
+		var err error
+		for tries <= maxTries {
+			time.Sleep(time.Duration(tries) * interval * time.Millisecond)
+			_, _, err = client.DNSSEC.Get(d.Get("zone").(string))
+			if err == nil {
+				return nil
+			}
+			log.Printf("DNSSEC retrieval for zone %s failed on try #%d of %d.", z.Zone, tries, maxTries)
+			tries++
+		}
+		log.Printf("unable to retrieve DNSSEC for new zone %s: %v. Additional waiting may be needed.", z.Zone, err)
 	}
 	return nil
 }

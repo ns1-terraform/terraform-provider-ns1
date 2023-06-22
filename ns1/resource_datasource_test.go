@@ -5,8 +5,8 @@ import (
 	"log"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/data"
@@ -26,6 +26,11 @@ func TestAccDataSource_basic(t *testing.T) {
 					testAccCheckDataSourceName(&dataSource, "terraform test"),
 					testAccCheckDataSourceType(&dataSource, "nsone_v1"),
 				),
+			},
+			{
+				ResourceName:      "ns1_datasource.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -53,6 +58,11 @@ func TestAccDataSource_updated(t *testing.T) {
 					testAccCheckDataSourceName(&dataSource, "terraform test"),
 					testAccCheckDataSourceType(&dataSource, "nsone_monitoring"),
 				),
+			},
+			{
+				ResourceName:      "ns1_datasource.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

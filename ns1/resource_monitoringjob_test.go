@@ -2,12 +2,11 @@ package ns1
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/monitor"
@@ -26,12 +25,12 @@ func TestAccMonitoringJob_basic(t *testing.T) {
 					testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),
 					testAccCheckMonitoringJobName(&mj, "terraform test"),
 					testAccCheckMonitoringJobActive(&mj, true),
-					testAccCheckMonitoringJobRegions(&mj, []string{"lga", "sjc", "sin"}),
+					testAccCheckMonitoringJobRegions(&mj, []string{"sjc", "lga", "sin"}),
 					testAccCheckMonitoringJobType(&mj, "tcp"),
 					testAccCheckMonitoringJobFrequency(&mj, 60),
 					testAccCheckMonitoringJobRapidRecheck(&mj, false),
 					testAccCheckMonitoringJobPolicy(&mj, "quorum"),
-					testAccCheckMonitoringJobConfigSend(&mj, "HEAD / HTTP/1.0\r\n\r\n"),
+					testAccCheckMonitoringJobConfigSend(&mj, "HEAD / HTTP/1.0\\r\\n\\r\\n"),
 					testAccCheckMonitoringJobConfigPort(&mj, 443),
 					testAccCheckMonitoringJobConfigHost(&mj, "1.2.3.4"),
 					testAccCheckMonitoringJobRuleValue(&mj, "200 OK"),
@@ -54,6 +53,11 @@ func TestAccMonitoringJob_basic(t *testing.T) {
 					testAccCheckMonitoringJobConfigTlsAddVerify(&mj, true),
 				),
 			},
+			{
+				ResourceName:      "ns1_monitoringjob.it",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -71,12 +75,12 @@ func TestAccMonitoringJob_updated(t *testing.T) {
 					testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),
 					testAccCheckMonitoringJobName(&mj, "terraform test"),
 					testAccCheckMonitoringJobActive(&mj, true),
-					testAccCheckMonitoringJobRegions(&mj, []string{"lga", "sjc", "sin"}),
+					testAccCheckMonitoringJobRegions(&mj, []string{"sin", "sjc", "lga"}),
 					testAccCheckMonitoringJobType(&mj, "tcp"),
 					testAccCheckMonitoringJobFrequency(&mj, 60),
 					testAccCheckMonitoringJobRapidRecheck(&mj, false),
 					testAccCheckMonitoringJobPolicy(&mj, "quorum"),
-					testAccCheckMonitoringJobConfigSend(&mj, "HEAD / HTTP/1.0\r\n\r\n"),
+					testAccCheckMonitoringJobConfigSend(&mj, "HEAD / HTTP/1.0\\r\\n\\r\\n"),
 					testAccCheckMonitoringJobConfigPort(&mj, 443),
 					testAccCheckMonitoringJobConfigHost(&mj, "1.2.3.4"),
 					testAccCheckMonitoringJobRuleValue(&mj, "200 OK"),
@@ -91,19 +95,25 @@ func TestAccMonitoringJob_updated(t *testing.T) {
 					testAccCheckMonitoringJobExists("ns1_monitoringjob.it", &mj),
 					testAccCheckMonitoringJobName(&mj, "terraform test"),
 					testAccCheckMonitoringJobActive(&mj, true),
-					testAccCheckMonitoringJobRegions(&mj, []string{"lga"}),
+					testAccCheckMonitoringJobRegions(&mj, []string{"nrt", "lga"}),
 					testAccCheckMonitoringJobType(&mj, "tcp"),
 					testAccCheckMonitoringJobFrequency(&mj, 120),
 					testAccCheckMonitoringJobRapidRecheck(&mj, true),
 					testAccCheckMonitoringJobPolicy(&mj, "all"),
-					testAccCheckMonitoringJobConfigSend(&mj, "HEAD / HTTP/1.0\r\n\r\n"),
+					testAccCheckMonitoringJobConfigSend(&mj, "HEAD  /  HTTP/1.0\\r\\n\\r\\n"),
 					testAccCheckMonitoringJobConfigPort(&mj, 443),
 					testAccCheckMonitoringJobConfigHost(&mj, "1.1.1.1"),
 					testAccCheckMonitoringJobRuleValue(&mj, "200"),
 					testAccCheckMonitoringJobRuleComparison(&mj, "<="),
 					testAccCheckMonitoringJobRuleKey(&mj, "connect"),
 					testAccCheckMonitoringJobMute(&mj, false),
+					testAccCheckMonitoringConnectTimeout(&mj, 2000),
 				),
+			},
+			{
+				ResourceName:      "ns1_monitoringjob.it",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -123,7 +133,7 @@ func TestAccMonitoringJob_ManualDelete(t *testing.T) {
 			},
 			// Simulate a manual deletion of the monitoring job and verify that the plan has a diff.
 			{
-				PreConfig:          testAccManualDeleteMonitoringJob(&mj),
+				PreConfig:          testAccManualDeleteMonitoringJob(t, &mj),
 				Config:             testAccMonitoringJobBasic,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
@@ -225,9 +235,19 @@ func testAccCheckMonitoringJobActive(mj *monitor.Job, expected bool) resource.Te
 	}
 }
 
+func sliceToStrMap(elements []string) map[string]string {
+	elementMap := make(map[string]string)
+	for _, s := range elements {
+		elementMap[s] = s
+	}
+	return elementMap
+}
+
 func testAccCheckMonitoringJobRegions(mj *monitor.Job, expected []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if !reflect.DeepEqual(mj.Regions, expected) {
+		gotRegions := sliceToStrMap(mj.Regions)
+		expectedRegions := sliceToStrMap(expected)
+		if !reflect.DeepEqual(gotRegions, expectedRegions) {
 			return fmt.Errorf("mj.Regions: got: %#v want: %#v", mj.Regions, expected)
 		}
 		return nil
@@ -345,14 +365,23 @@ func testAccCheckMonitoringJobMute(mj *monitor.Job, expected bool) resource.Test
 }
 
 // Simulate a manual deletion of a monitoring job.
-func testAccManualDeleteMonitoringJob(mj *monitor.Job) func() {
+func testAccManualDeleteMonitoringJob(t *testing.T, mj *monitor.Job) func() {
 	return func() {
 		client := testAccProvider.Meta().(*ns1.Client)
 		_, err := client.Jobs.Delete(mj.ID)
 		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
 		if err != nil {
-			log.Printf("failed to delete monitoring job: %v", err)
+			t.Logf("failed to delete monitoring job: %v", err)
 		}
+	}
+}
+
+func testAccCheckMonitoringConnectTimeout(mj *monitor.Job, expected float64) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if mj.Config["connect_timeout"] != expected {
+			return fmt.Errorf("mj.Config.connect_timeout: got: %#v want: %#v", mj.Config["connect_timeout"], expected)
+		}
+		return nil
 	}
 }
 
@@ -361,15 +390,22 @@ resource "ns1_monitoringjob" "it" {
   job_type = "tcp"
   name     = "terraform test"
 
-  regions   = ["sin","sjc","lga"]
+  regions   = ["lga","sjc","sin"]
   frequency = 60
   mute      = true
 
   config = {
     ssl = "1",
-    send = "HEAD / HTTP/1.0\r\n\r\n"
+    send = "HEAD / HTTP/1.0\\r\\n\\r\\n"
     port = 443
     host = "1.2.3.4"
+    connect_timeout = "2000"
+    idle_timeout = "3"
+    follow_redirect = true
+    response_timeout = "1000"
+    tls_add_verify = false
+    ipv6 = false
+    user_agent = "NS1 Terraform Provider Acceptance Test"
   }
   rules {
     value = "200 OK"
@@ -389,7 +425,13 @@ resource "ns1_monitoringjob" "it" {
 
   config = {
     url = "https://test.domain/"
+    connect_timeout = "2000"
+    idle_timeout = "3"
+    follow_redirect = false
+    response_timeout = "1000"
     tls_add_verify = true
+    ipv6 = false
+    user_agent = "Another Terraform Provider Acceptance Test"
   }
 }
 `
@@ -400,7 +442,7 @@ resource "ns1_monitoringjob" "it" {
   name     = "terraform test"
 
   active        = true
-  regions       = ["sin","sjc","lga"]
+  regions       = ["lga", "nrt"]
   frequency     = 120
   rapid_recheck = true
   policy        = "all"
@@ -408,9 +450,13 @@ resource "ns1_monitoringjob" "it" {
 
   config = {
     ssl = "1",
-    send = "HEAD / HTTP/1.0\r\n\r\n"
+    send = "HEAD  /  HTTP/1.0\\r\\n\\r\\n"
     port = 443
     host = "1.1.1.1"
+    connect_timeout = "2000"
+    response_timeout = "1000"
+    tls_add_verify = false
+    ipv6 = false
   }
   rules {
     value = 200

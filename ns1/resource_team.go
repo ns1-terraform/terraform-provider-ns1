@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/account"
@@ -111,7 +111,9 @@ func TeamCreate(d *schema.ResourceData, meta interface{}) error {
 	if resp, err := client.Teams.Create(&t); err != nil {
 		return ConvertToNs1Error(resp, err)
 	}
-	return teamToResourceData(d, &t)
+	// workaround INBOX-2226 - send a GET to refresh object
+	_ = teamToResourceData(d, &t)
+	return TeamRead(d, meta)
 }
 
 // TeamRead reads the team data from ns1

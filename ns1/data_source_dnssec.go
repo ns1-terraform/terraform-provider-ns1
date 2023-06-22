@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
@@ -41,7 +41,6 @@ func dataSourceDNSSEC() *schema.Resource {
 			"keys": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"dnskey": &schema.Schema{
@@ -59,7 +58,6 @@ func dataSourceDNSSEC() *schema.Resource {
 			"delegation": &schema.Schema{
 				Type:     schema.TypeList,
 				Computed: true,
-				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"dnskey": &schema.Schema{
@@ -121,7 +119,7 @@ func flattenDelegation(delegation *dns.Delegation) []interface{} {
 }
 
 func flattenDNSKeys(keys []*dns.Key) []interface{} {
-	out := make([]interface{}, 0, 0)
+	out := make([]interface{}, 0)
 	for _, v := range keys {
 		m := make(map[string]interface{})
 		m["flags"] = v.Flags

@@ -48,6 +48,10 @@ Notify List Notifiers (`notifications`) support the following:
 All of the arguments listed above are exported as attributes, with no
 additions.
 
+## Import
+
+`terraform import ns1_notifylist.<name> <notifylist_id>`
+
 ## NS1 Documentation
 
 [NotifyList Api Doc](https://ns1.com/api#notification-lists)

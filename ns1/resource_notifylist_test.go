@@ -5,8 +5,8 @@ import (
 	"log"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/monitor"
@@ -25,6 +25,11 @@ func TestAccNotifyList_basic(t *testing.T) {
 					testAccCheckNotifyListExists("ns1_notifylist.test", &nl),
 					testAccCheckNotifyListName(&nl, "terraform test"),
 				),
+			},
+			{
+				ResourceName:      "ns1_notifylist.test",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -55,6 +60,40 @@ func TestAccNotifyList_updated(t *testing.T) {
 	})
 }
 
+func TestAccNotifyList_multiple(t *testing.T) {
+	var nl monitor.NotifyList
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckNotifyListDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccNotifyListMultiple,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNotifyListExists("ns1_notifylist.test_multiple", &nl),
+					testAccCheckNotifyListName(&nl, "terraform test multiple"),
+				),
+			},
+			// This fails because the schema.TypeList is ordered. We want to switch
+			// this to schema.TypeSet but cannot due to SDK issue #652 / #895, fix for
+			// which is waiting for review, see
+			// https://github.com/hashicorp/terraform-plugin-sdk/pull/1042
+			//			{
+			//				Config: testAccNotifyListMultipleDifferentOrder ,
+			//				Check: resource.ComposeTestCheckFunc(
+			//					testAccCheckNotifyListExists("ns1_notifylist.test_multiple2", &nl),
+			//					testAccCheckNotifyListName(&nl, "terraform test multiple2"),
+			//				),
+			//			},
+			{
+				ResourceName:      "ns1_notifylist.test_multiple",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccNotifyList_types(t *testing.T) {
 	var nl monitor.NotifyList
 	resource.Test(t, resource.TestCase{
@@ -70,11 +109,21 @@ func TestAccNotifyList_types(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "ns1_notifylist.test_slack",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: testAccNotifyListPagerDuty,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNotifyListExists("ns1_notifylist.test_pagerduty", &nl),
 					testAccCheckNotifyListName(&nl, "terraform test pagerduty"),
 				),
+			},
+			{
+				ResourceName:      "ns1_notifylist.test_pagerduty",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -238,6 +287,42 @@ resource "ns1_notifylist" "test_slack" {
 const testAccNotifyListPagerDuty = `
 resource "ns1_notifylist" "test_pagerduty" {
   name = "terraform test pagerduty"
+  notifications {
+    type = "pagerduty"
+    config = {
+      service_key = "tftestkey"
+    }
+  }
+}
+`
+
+const testAccNotifyListMultiple = `
+resource "ns1_notifylist" "test_multiple" {
+  name = "terraform test multiple"
+  notifications {
+    type = "pagerduty"
+    config = {
+      service_key = "tftestkey"
+    }
+  }
+  notifications {
+    type = "webhook"
+    config = {
+      url = "http://localhost:9090"
+    }
+  }
+}
+`
+
+const testAccNotifyListMultipleDifferentOrder = `
+resource "ns1_notifylist" "test_multiple2" {
+  name = "terraform test multiple2"
+  notifications {
+    type = "webhook"
+    config = {
+      url = "http://localhost:9090"
+    }
+  }
   notifications {
     type = "pagerduty"
     config = {

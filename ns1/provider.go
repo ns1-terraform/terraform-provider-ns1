@@ -5,12 +5,11 @@ import (
 	"os"
 
 	"github.com/fatih/structs"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 // Provider returns a terraform.ResourceProvider.
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"apikey": {
@@ -43,11 +42,24 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("NS1_RATE_LIMIT_PARALLELISM", nil),
 				Description: descriptions["rate_limit_parallelism"],
 			},
+			"retry_max": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NS1_RETRY_MAX", nil),
+				Description: descriptions["retry_max"],
+			},
+			"user_agent": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("NS1_TF_USER_AGENT", nil),
+				Description: descriptions["user_agent"],
+			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"ns1_zone":   dataSourceZone(),
-			"ns1_dnssec": dataSourceDNSSEC(),
-			"ns1_record": dataSourceRecord(),
+			"ns1_zone":     dataSourceZone(),
+			"ns1_dnssec":   dataSourceDNSSEC(),
+			"ns1_record":   dataSourceRecord(),
+			"ns1_networks": dataSourceNetworks(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ns1_zone":          resourceZone(),
@@ -63,6 +75,7 @@ func Provider() terraform.ResourceProvider {
 			"ns1_pulsarjob":     pulsarJobResource(),
 			"ns1_tsigkey":       tsigKeyResource(),
 			"ns1_subnet":        resourceSubnet(),
+			"ns1_dnsview":       dnsView(),
 		},
 		ConfigureFunc: ns1Configure,
 	}
@@ -97,6 +110,12 @@ func ns1Configure(d *schema.ResourceData) (interface{}, error) {
 	if v, ok := d.GetOk("rate_limit_parallelism"); ok {
 		config.RateLimitParallelism = v.(int)
 	}
+	if v, ok := d.GetOk("retry_max"); ok {
+		config.RetryMax = v.(int)
+	}
+	if v, ok := d.GetOk("user_agent"); ok {
+		config.UserAgent = v.(string)
+	}
 
 	return config.Client()
 }
@@ -105,7 +124,13 @@ var descriptions map[string]string
 
 func init() {
 	descriptions = map[string]string{
-		"api_key": "The ns1 API key, this is required",
+		"api_key":                "The ns1 API key (required)",
+		"endpoint":               "URL prefix (including version) for API calls",
+		"ignore_ssl":             "Don't validate server SSL/TLS certificate",
+		"rate_limit_parallelism": "Tune response to rate limits, see docs",
+		"retry_max":              "Maximum retries for 50x errors (-1 to disable)",
+		"user_agent":             "User-Agent string to use in NS1 API requests",
+		"enable_ddi":             "Deprecated, no longer in use",
 	}
 
 	structs.DefaultTagName = "json"

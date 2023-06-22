@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/data"
@@ -82,7 +82,6 @@ func recordResource() *schema.Resource {
 			"link": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
 			},
 			"use_client_subnet": {
 				Type:     schema.TypeBool,
@@ -313,17 +312,17 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 func recordMapValueToString(configMap map[string]interface{}) map[string]interface{} {
 	config := make(map[string]interface{})
 	for configKey, configValue := range configMap {
-		switch configValue.(type) {
+		switch t := configValue.(type) {
 		case bool:
-			if configValue.(bool) {
+			if t {
 				config[configKey] = "1"
 			} else {
 				config[configKey] = "0"
 			}
 		case float64:
-			config[configKey] = strconv.FormatFloat(configValue.(float64), 'f', -1, 64)
+			config[configKey] = strconv.FormatFloat(t, 'f', -1, 64)
 		default:
-			config[configKey] = configValue
+			config[configKey] = t
 		}
 	}
 	return config
@@ -338,7 +337,7 @@ func answerToMap(a dns.Answer) map[string]interface{} {
 	if a.Meta != nil {
 		log.Println("got meta: ", a.Meta)
 		m["meta"] = metaToMapString(a.Meta)
-		log.Println(m["meta"])
+		log.Println("converted meta to resource string: ", m["meta"])
 	}
 	return m
 }
@@ -353,6 +352,8 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			switch d.Get("type") {
 			case "TXT", "SPF":
 				r.AddAnswer(dns.NewTXTAnswer(answer))
+			case "CAA":
+				r.AddAnswer(dns.NewAnswer(strings.SplitN(answer, " ", 3)))
 			default:
 				r.AddAnswer(dns.NewAnswer(strings.Split(answer, " ")))
 			}
@@ -367,6 +368,8 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			switch d.Get("type") {
 			case "TXT", "SPF":
 				a = dns.NewTXTAnswer(v)
+			case "CAA":
+				a = dns.NewAnswer(strings.SplitN(v, " ", 3))
 			default:
 				a = dns.NewAnswer(strings.Split(v, " "))
 			}
@@ -461,9 +464,9 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 
 func removeEmptyMeta(v map[string]interface{}) {
 	for metaKey, metaValue := range v {
-		switch metaValue.(type) {
+		switch t := metaValue.(type) {
 		case string:
-			if metaValue.(string) == "" {
+			if t == "" {
 				delete(v, metaKey)
 			}
 		}
@@ -625,8 +628,16 @@ func metaToMapString(m *data.Meta) map[string]interface{} {
 	if stringMap != nil {
 		subdivisions := stringMap["subdivisions"]
 		if subdivisions != nil {
+			subd := m.Subdivisions.(map[string]interface{})
+			keys := make([]string, 0, len(subd))
 			var array []string
-			for subRegion, subArray := range m.Subdivisions.(map[string]interface{}) {
+			var subArray interface{}
+			for k := range subd {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+			for _, subRegion := range keys {
+				subArray = subd[subRegion]
 				for _, sub := range subArray.([]interface{}) {
 					array = append(array, subRegion+"-"+sub.(string))
 				}

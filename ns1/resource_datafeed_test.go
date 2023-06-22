@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/data"
@@ -108,7 +108,7 @@ func TestAccDataFeed_ManualDelete(t *testing.T) {
 
 func testAccCheckDataFeedExists(n string, dsrc string, dataFeed *data.Feed, t *testing.T) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
+		rs := s.RootModule().Resources[n]
 		ds, ok := s.RootModule().Resources[dsrc]
 
 		if !ok {

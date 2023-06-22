@@ -3,7 +3,7 @@ package ns1
 import (
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/account"
@@ -44,6 +44,7 @@ func apikeyResource() *schema.Resource {
 		Read:          ApikeyRead,
 		Update:        ApikeyUpdate,
 		Delete:        ApikeyDelete,
+		Importer:      &schema.ResourceImporter{},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
@@ -141,7 +142,7 @@ func ApikeyRead(d *schema.ResourceData, meta interface{}) error {
 	return apikeyToResourceData(d, k)
 }
 
-//ApikeyDelete deletes the given ns1 api key
+// ApikeyDelete deletes the given ns1 api key
 func ApikeyDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	resp, err := client.APIKeys.Delete(d.Id())
@@ -149,7 +150,7 @@ func ApikeyDelete(d *schema.ResourceData, meta interface{}) error {
 	return ConvertToNs1Error(resp, err)
 }
 
-//ApikeyUpdate updates the given api key in ns1
+// ApikeyUpdate updates the given api key in ns1
 func ApikeyUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	k := account.APIKey{
