@@ -459,6 +459,19 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			r.Regions[region["name"].(string)] = ns1R
 		}
 	}
+
+	if _, tagsExist := d.GetOk("tags"); tagsExist == true {
+		if _, blockedTagsExist := d.GetOk("blocked_tags"); blockedTagsExist == false {
+			r.BlockedTags = []string{}
+			log.Println("empty 'blocked tags' key added")
+		}
+	}
+	if _, blockedTagsExist := d.GetOk("blocked_tags"); blockedTagsExist == true {
+		if _, tagsExist := d.GetOk("tags"); tagsExist == false {
+			r.Tags = map[string]string{}
+			log.Println("empty 'tags' key added")
+		}
+	}
 	return nil
 }
 
