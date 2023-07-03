@@ -16,7 +16,7 @@ import (
 // Creating basic DNS view
 func TestAccDNSView_basic(t *testing.T) {
 	var (
-		view           = dns.DNSView{}
+		view           = dns.View{}
 		viewName       = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 		viewPreference = 10
 	)
@@ -45,11 +45,11 @@ func TestAccDNSView_basic(t *testing.T) {
 // Update DNS view
 func TestAccDNSView_update(t *testing.T) {
 	var (
-		view           = dns.DNSView{}
+		view           = dns.View{}
 		viewName       = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 		viewPreference = 10
 
-		updatedView           = dns.DNSView{}
+		updatedView           = dns.View{}
 		updatedViewPreference = 5
 
 		zoneName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
@@ -88,7 +88,7 @@ func TestAccDNSView_update(t *testing.T) {
 // Manually deleting DNS View
 func TestAccDNSView_ManualDelete(t *testing.T) {
 	var (
-		view           = dns.DNSView{}
+		view           = dns.View{}
 		viewName       = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 		viewPreference = 10
 	)
@@ -141,7 +141,7 @@ func testAccDNSViewUpdated(zoneName, viewName string, viewPreference int) string
 `, zoneName, viewName, viewPreference)
 }
 
-func testAccCheckDNSViewName(view *dns.DNSView, expected string) resource.TestCheckFunc {
+func testAccCheckDNSViewName(view *dns.View, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if view.Name != expected {
 			return fmt.Errorf("view.Name: got: %s want: %s", view.Name, expected)
@@ -150,7 +150,7 @@ func testAccCheckDNSViewName(view *dns.DNSView, expected string) resource.TestCh
 	}
 }
 
-func testAccCheckDNSViewPreference(view *dns.DNSView, expected int) resource.TestCheckFunc {
+func testAccCheckDNSViewPreference(view *dns.View, expected int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if view.Preference != expected {
 			return fmt.Errorf("view.Preference: got: %d want: %d", view.Preference, expected)
@@ -159,7 +159,7 @@ func testAccCheckDNSViewPreference(view *dns.DNSView, expected int) resource.Tes
 	}
 }
 
-func testAccCheckDNSViewZones(view *dns.DNSView, expected []string) resource.TestCheckFunc {
+func testAccCheckDNSViewZones(view *dns.View, expected []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if !reflect.DeepEqual(view.Zones, expected) {
 			return fmt.Errorf("view.Zones: got: %v want: %v", view.Zones, expected)
@@ -187,7 +187,7 @@ func testAccCheckDNSViewDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckDNSViewExists(n string, view *dns.DNSView) resource.TestCheckFunc {
+func testAccCheckDNSViewExists(n string, view *dns.View) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -212,7 +212,7 @@ func testAccCheckDNSViewExists(n string, view *dns.DNSView) resource.TestCheckFu
 	}
 }
 
-func testAccManualDeleteDNSView(view *dns.DNSView) func() {
+func testAccManualDeleteDNSView(view *dns.View) func() {
 	return func() {
 		client := testAccProvider.Meta().(*ns1.Client)
 		_, err := client.View.Delete(view.Name)

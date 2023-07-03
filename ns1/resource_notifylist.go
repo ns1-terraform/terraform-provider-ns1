@@ -89,7 +89,7 @@ func resourceDataToNotifyList(nl *monitor.NotifyList, d *schema.ResourceData) er
 				case "webhook":
 					url := config["url"]
 					if url != nil {
-						ns[i] = monitor.NewWebNotification(url.(string))
+						ns[i] = monitor.NewWebNotification(url.(string), nil)
 					} else {
 						return fmt.Errorf("wrong config for webhook expected url field into config")
 					}

@@ -83,8 +83,8 @@ func resourceApplicationToResourceData(d *schema.ResourceData, a *pulsar.Applica
 }
 func defaultConfigToMap(d *pulsar.DefaultConfig) map[string]interface{} {
 	dm := make(map[string]interface{})
-	dm["http"] = d.Http
-	dm["https"] = d.Https
+	dm["http"] = d.HTTP
+	dm["https"] = d.HTTPS
 	dm["request_timeout_millis"] = d.RequestTimeoutMillis
 	dm["job_timeout_millis"] = d.JobTimeoutMillis
 	dm["use_xhr"] = d.UseXhr
@@ -116,11 +116,11 @@ func setDefaultConfig(ds interface{}) (d pulsar.DefaultConfig) {
 	d = pulsar.DefaultConfig{}
 	httpConf := defaultConfig["http"]
 	if httpConf != nil {
-		d.Http = httpConf.(bool)
+		d.HTTP = httpConf.(bool)
 	}
 	httpsConf := defaultConfig["https"]
 	if httpsConf != nil {
-		d.Https = httpsConf.(bool)
+		d.HTTPS = httpsConf.(bool)
 	}
 	xhrConf := defaultConfig["use_xhr"]
 	if xhrConf != nil {
