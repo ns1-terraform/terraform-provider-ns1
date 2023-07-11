@@ -503,7 +503,7 @@ func testAccCheckZoneExists(n string, zone *dns.Zone) resource.TestCheckFunc {
 
 		client := testAccProvider.Meta().(*ns1.Client)
 
-		foundZone, _, err := client.Zones.Get(rs.Primary.Attributes["zone"], true)
+		foundZone, _, err := client.Zones.Get(rs.Primary.Attributes["zone"], false)
 
 		p := rs.Primary
 
@@ -581,7 +581,7 @@ func testAccCheckZoneDestroy(s *terraform.State) error {
 			continue
 		}
 
-		zone, _, err := client.Zones.Get(rs.Primary.Attributes["zone"], true)
+		zone, _, err := client.Zones.Get(rs.Primary.Attributes["zone"], false)
 
 		if err == nil {
 			return fmt.Errorf("zone still exists: %#v: %#v", err, zone)
