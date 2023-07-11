@@ -52,7 +52,9 @@ func notifyListToResourceData(d *schema.ResourceData, nl *monitor.NotifyList) er
 			ni := make(map[string]interface{})
 			ni["type"] = n.Type
 			if n.Config != nil {
-				ni["config"] = n.Config
+				configWithoutHeaders := n.Config
+				delete(configWithoutHeaders, "headers")
+				ni["config"] = configWithoutHeaders
 			}
 			notifications[i] = ni
 		}
