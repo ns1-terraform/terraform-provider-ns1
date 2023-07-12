@@ -403,7 +403,8 @@ func zoneCreate(d *schema.ResourceData, meta interface{}) error {
 // zoneRead reads the given zone data from ns1
 func zoneRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	z, resp, err := client.Zones.Get(d.Get("zone").(string))
+	// false means the records aren't fetched
+	z, resp, err := client.Zones.Get(d.Get("zone").(string), false)
 	if err != nil {
 		if err == ns1.ErrZoneMissing {
 			log.Printf("[DEBUG] NS1 zone (%s) not found", d.Id())

@@ -1,3 +1,7 @@
+## 2.0.4 (July 11, 2023)
+* Version Bump to PENG-2344: Zone resource no longer returns record information
+* Fixed bug in NotifyList headers
+
 ## 2.0.2 (March 14, 2023)
 Version Bump to fix tagging issue
 

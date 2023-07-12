@@ -61,13 +61,13 @@ func dnsView() *schema.Resource {
 	}
 }
 
-func dnsViewToResourceData(d *schema.ResourceData, v *dns.DNSView) error {
+func dnsViewToResourceData(d *schema.ResourceData, v *dns.View) error {
 	d.SetId(v.Name)
 	d.Set("name", v.Name)
-	d.Set("created_at", v.Created_at)
-	d.Set("updated_at", v.Updated_at)
-	d.Set("read_acls", v.Read_acls)
-	d.Set("update_acls", v.Update_acls)
+	d.Set("created_at", v.CreatedAt)
+	d.Set("updated_at", v.UpdatedAt)
+	d.Set("read_acls", v.ReadACLs)
+	d.Set("update_acls", v.UpdateACLs)
 	d.Set("zones", v.Zones)
 	d.Set("networks", v.Networks)
 	d.Set("preference", v.Preference)
@@ -75,27 +75,27 @@ func dnsViewToResourceData(d *schema.ResourceData, v *dns.DNSView) error {
 	return nil
 }
 
-func resourceDataToDNSView(v *dns.DNSView, d *schema.ResourceData) error {
+func resourceDataToDNSView(v *dns.View, d *schema.ResourceData) error {
 	v.Name = d.Get("name").(string)
-	v.Created_at = d.Get("created_at").(int)
-	v.Updated_at = d.Get("updated_at").(int)
+	v.CreatedAt = d.Get("created_at").(int)
+	v.UpdatedAt = d.Get("updated_at").(int)
 	if acls, ok := d.GetOk("read_acls"); ok {
 		readAclsRaw := acls.([]interface{})
-		v.Read_acls = make([]string, len(readAclsRaw))
+		v.ReadACLs = make([]string, len(readAclsRaw))
 		for i, readAcls := range readAclsRaw {
-			v.Read_acls[i] = readAcls.(string)
+			v.ReadACLs[i] = readAcls.(string)
 		}
 	} else {
-		v.Read_acls = []string{}
+		v.ReadACLs = []string{}
 	}
 	if acls, ok := d.GetOk("update_acls"); ok {
 		updateAclsRaw := acls.([]interface{})
-		v.Update_acls = make([]string, len(updateAclsRaw))
+		v.UpdateACLs = make([]string, len(updateAclsRaw))
 		for i, updateAcls := range updateAclsRaw {
-			v.Update_acls[i] = updateAcls.(string)
+			v.UpdateACLs[i] = updateAcls.(string)
 		}
 	} else {
-		v.Update_acls = []string{}
+		v.UpdateACLs = []string{}
 	}
 	if z, ok := d.GetOk("zones"); ok {
 		zonesRaw := z.(*schema.Set)
@@ -123,7 +123,7 @@ func resourceDataToDNSView(v *dns.DNSView, d *schema.ResourceData) error {
 // DNSViewCreate creates the given DNS View in ns1
 func DNSViewCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	v := dns.DNSView{}
+	v := dns.View{}
 	if err := resourceDataToDNSView(&v, d); err != nil {
 		return err
 	}
@@ -154,7 +154,7 @@ func DNSViewRead(d *schema.ResourceData, meta interface{}) error {
 // DNSViewUpdate updates the DNS view with given parameters in ns1
 func DNSViewUpdate(view_schema *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	v := dns.DNSView{
+	v := dns.View{
 		Name: view_schema.Id(),
 	}
 	if err := resourceDataToDNSView(&v, view_schema); err != nil {
@@ -170,7 +170,7 @@ func DNSViewUpdate(view_schema *schema.ResourceData, meta interface{}) error {
 // DNSViewDelete deletes the given DNS view from ns1
 func DNSViewDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	v := dns.DNSView{}
+	v := dns.View{}
 	resourceDataToDNSView(&v, d)
 	resp, err := client.View.Delete(v.Name)
 	d.SetId("")

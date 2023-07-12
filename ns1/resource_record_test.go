@@ -849,13 +849,13 @@ func ExpectOverrideTTLNotNil() bool {
 func testAccCheckRecordOverrideTTL(r *dns.Record, expectedNil bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if expectedNil {
-			if r.Override_TTL != nil {
-				return fmt.Errorf("Override TTL: got: %#v want: null", *r.Override_TTL)
+			if r.OverrideTTL != nil {
+				return fmt.Errorf("Override TTL: got: %#v want: null", *r.OverrideTTL)
 			}
 			return nil
 		}
-		if r.Override_TTL == nil {
-			return fmt.Errorf("Override TTL: got: %v want: notNil", r.Override_TTL)
+		if r.OverrideTTL == nil {
+			return fmt.Errorf("Override TTL: got: %v want: notNil", r.OverrideTTL)
 		}
 		return nil
 	}
