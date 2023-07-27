@@ -1,3 +1,6 @@
+## 2.0.5 (July 27, 2023)
+* Version Bump Golang SDK v2.7.7 => v2.7.8 to fix monitor creation
+
 ## 2.0.4 (July 11, 2023)
 * Version Bump to PENG-2344: Zone resource no longer returns record information
 * Fixed bug in NotifyList headers
