@@ -1,3 +1,7 @@
+## 2.0.6 (September 18, 2023)
+ENHANCEMENTS
+* Added support for global IP whitelist
+
 ## 2.0.5 (July 27, 2023)
 * Version Bump Golang SDK v2.7.7 => v2.7.8 to fix monitor creation
 
