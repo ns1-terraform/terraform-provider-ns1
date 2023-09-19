@@ -1,3 +1,7 @@
+## 2.0.7 (September 19, 2023)
+ENHANCEMENTS
+* Added support for more record types (CERT, CSYNC, DHCID, HTTPS, SMIMEA, SVCB & TLSA)
+
 ## 2.0.6 (September 18, 2023)
 ENHANCEMENTS
 * Added support for global IP whitelist
