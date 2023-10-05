@@ -166,13 +166,6 @@ It is suggested to migrate to a regular "answers" block. Using Terraform 0.12+, 
 					},
 				},
 			},
-			"local_tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 			"tags": {
 				Type:     schema.TypeMap,
 				Optional: true,
