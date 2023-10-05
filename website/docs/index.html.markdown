@@ -17,6 +17,8 @@ Use the navigation to the left to read about the available resources.
 
 ## Example Usage
 
+Additional usage examples can be found in https://github.com/ns1-terraform/terraform-provider-ns1/tree/master/examples
+
 ```hcl
 terraform {
   required_providers {

@@ -1,3 +1,18 @@
+## 2.0.7 (September 19, 2023)
+ENHANCEMENTS
+* Added support for more record types (CERT, CSYNC, DHCID, HTTPS, SMIMEA, SVCB & TLSA)
+
+## 2.0.6 (September 18, 2023)
+ENHANCEMENTS
+* Added support for global IP whitelist
+
+## 2.0.5 (July 27, 2023)
+* Version Bump Golang SDK v2.7.7 => v2.7.8 to fix monitor creation
+
+## 2.0.4 (July 11, 2023)
+* Version Bump to PENG-2344: Zone resource no longer returns record information
+* Fixed bug in NotifyList headers
+
 ## 2.0.2 (March 14, 2023)
 Version Bump to fix tagging issue
 

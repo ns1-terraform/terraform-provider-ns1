@@ -52,7 +52,9 @@ func notifyListToResourceData(d *schema.ResourceData, nl *monitor.NotifyList) er
 			ni := make(map[string]interface{})
 			ni["type"] = n.Type
 			if n.Config != nil {
-				ni["config"] = n.Config
+				configWithoutHeaders := n.Config
+				delete(configWithoutHeaders, "headers")
+				ni["config"] = configWithoutHeaders
 			}
 			notifications[i] = ni
 		}
@@ -89,7 +91,7 @@ func resourceDataToNotifyList(nl *monitor.NotifyList, d *schema.ResourceData) er
 				case "webhook":
 					url := config["url"]
 					if url != nil {
-						ns[i] = monitor.NewWebNotification(url.(string))
+						ns[i] = monitor.NewWebNotification(url.(string), nil)
 					} else {
 						return fmt.Errorf("wrong config for webhook expected url field into config")
 					}

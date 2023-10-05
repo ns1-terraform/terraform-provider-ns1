@@ -2,10 +2,11 @@ package ns1
 
 import (
 	"fmt"
-	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
-	"gopkg.in/ns1/ns1-go.v2/rest/model/pulsar"
 	"log"
 	"testing"
+
+	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
+	"gopkg.in/ns1/ns1-go.v2/rest/model/pulsar"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -19,8 +20,8 @@ func TestAccApplication_basic(t *testing.T) {
 		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
 	)
 	d := pulsar.DefaultConfig{
-		Http:                 false,
-		Https:                false,
+		HTTP:                 false,
+		HTTPS:                false,
 		RequestTimeoutMillis: 0,
 		JobTimeoutMillis:     0,
 		UseXhr:               false,
@@ -58,8 +59,8 @@ func TestAccApplication_updated(t *testing.T) {
 		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
 	)
 	basicConfig := pulsar.DefaultConfig{
-		Http:                 false,
-		Https:                false,
+		HTTP:                 false,
+		HTTPS:                false,
 		RequestTimeoutMillis: 0,
 		JobTimeoutMillis:     0,
 		UseXhr:               false,
@@ -67,8 +68,8 @@ func TestAccApplication_updated(t *testing.T) {
 	}
 
 	updatedConfig := pulsar.DefaultConfig{
-		Http:                 true,
-		Https:                false,
+		HTTP:                 true,
+		HTTPS:                false,
 		RequestTimeoutMillis: 100,
 		JobTimeoutMillis:     100,
 		UseXhr:               false,
