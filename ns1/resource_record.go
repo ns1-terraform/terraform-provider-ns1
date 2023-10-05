@@ -523,7 +523,7 @@ func recordStateFunc(d *schema.ResourceData, meta interface{}) ([]*schema.Resour
 	return []*schema.ResourceData{d}, nil
 }
 
-// ignores case difference between state and resoruce written in terraform file
+// ignores case difference between state and resource written in terraform file
 // so we can keep data consistency between tf state and ddi since ddi is case insensitive
 func caseSensitivityDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 	return strings.EqualFold(old, new)
