@@ -173,13 +173,6 @@ It is suggested to migrate to a regular "answers" block. Using Terraform 0.12+, 
 					Type: schema.TypeString,
 				},
 			},
-			"blocked_tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 			"tags": {
 				Type:     schema.TypeMap,
 				Optional: true,
@@ -466,6 +459,7 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		}
 	}
 
+	// Even though blocked_tags are not evaluated on GET, dual update logic is currently enforced on POST
 	if _, tagsExist := d.GetOk("tags"); tagsExist == true {
 		if _, blockedTagsExist := d.GetOk("blocked_tags"); blockedTagsExist == false {
 			r.BlockedTags = []string{}

@@ -414,42 +414,6 @@ func TestAccRecord_WithTags(t *testing.T) {
 	})
 }
 
-func TestAccRecord_WithBlockedTags(t *testing.T) {
-	var record dns.Record
-	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
-	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
-	domainName := fmt.Sprintf("blocked_tags.%s", zoneName)
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t); testAccURLFWDPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckRecordDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccRecordWithTags(rString),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.blocked_tags", &record),
-					testAccCheckRecordDomain(&record, domainName),
-					testAccCheckRecordTagData(
-						map[string]string{"tag1": "location1", "tag2": "location2"},
-						&record,
-					),
-					testAccCheckRecordBlockedTagData(
-						[]string{"blocked"},
-						&record,
-					),
-				),
-			},
-			{
-				ResourceName:      "ns1_record.it",
-				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("%s/%s/A", zoneName, domainName),
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
 func TestAccRecord_validationError(t *testing.T) {
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 
@@ -1042,16 +1006,6 @@ func testAccCheckRecordTagData(expected interface{}, r *dns.Record) resource.Tes
 	}
 }
 
-func testAccCheckRecordBlockedTagData(expected interface{}, r *dns.Record) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		recordBlockedTags := r.BlockedTags
-		if !reflect.DeepEqual(recordBlockedTags, expected) {
-			return fmt.Errorf("blocked_tags: got: %#v want: %#v", recordBlockedTags, expected)
-		}
-		return nil
-	}
-}
-
 func testAccCheckRecordAnswerRdata(
 	t *testing.T, r *dns.Record, answerIdx int, expected []string,
 ) resource.TestCheckFunc {
@@ -1496,25 +1450,6 @@ resource "ns1_record" "tagged" {
     answer = "1.2.3.4"
   }
   tags = jsonencode({"tag1": "location1", "tag2": "location2"})
-}
-
-resource "ns1_zone" "test" {
-  zone = "terraform-test-%s.io"
-}
-`, rString)
-}
-
-func testAccRecordWithBlockedTags(rString string) string {
-	return fmt.Sprintf(`
-resource "ns1_record" "blocked_tags" {
-  zone     = "${ns1_zone.test.zone}"
-  domain   = "blocked_tags.${ns1_zone.test.zone}"
-  type     = "A"
-  answers {
-    answer = "1.2.3.4"
-  }
-  tags = jsonencode({"tag1": "location1", "tag2": "location2"})
-  blocked_tags = jsonencode(["blocked"])
 }
 
 resource "ns1_zone" "test" {
