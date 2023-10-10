@@ -2,6 +2,8 @@ module github.com/terraform-providers/terraform-provider-ns1
 
 go 1.19
 
+replace gopkg.in/ns1/ns1-go.v2 => /home/ponbiki/workspace/ns1-go/
+
 require (
 	github.com/fatih/structs v1.1.0
 	github.com/hashicorp/go-retryablehttp v0.7.2

@@ -389,7 +389,7 @@ func TestAccRecord_WithTags(t *testing.T) {
 	domainName := fmt.Sprintf("tagged.%s", zoneName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t); testAccURLFWDPreCheck(t) },
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRecordDestroy,
 		Steps: []resource.TestStep{
@@ -405,7 +405,7 @@ func TestAccRecord_WithTags(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "ns1_record.it",
+				ResourceName:      "ns1_record.tagged",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/A", zoneName, domainName),
 				ImportStateVerify: true,
@@ -767,7 +767,7 @@ func testAccURLFWDPreCheck(t *testing.T) {
 		t.Fatalf("failed to create test zone %s: %s", name, err)
 	}
 
-	record := dns.NewRecord(name, fmt.Sprintf("domain.%s", name), "URLFWD")
+	record := dns.NewRecord(name, fmt.Sprintf("domain.%s", name), "URLFWD", nil, nil)
 	record.Answers = []*dns.Answer{{Rdata: []string{"/", "https://example.com", "301", "2", "0"}}}
 
 	_, err = client.Records.Create(record)
@@ -1449,7 +1449,7 @@ resource "ns1_record" "tagged" {
   answers {
     answer = "1.2.3.4"
   }
-  tags = jsonencode({"tag1": "location1", "tag2": "location2"})
+  tags = {tag1 = "location1", tag2 = "location2"}
 }
 
 resource "ns1_zone" "test" {
