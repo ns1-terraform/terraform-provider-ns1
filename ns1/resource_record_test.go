@@ -90,6 +90,10 @@ func TestAccRecord_updated(t *testing.T) {
 					testAccCheckRecordAnswerRdata(
 						t, &record, 0, []string{fmt.Sprintf("test2.%s", zoneName)},
 					),
+					testAccCheckRecordTagData(
+						map[string]string{"tag1": "location1", "tag2": "location2"},
+						&record,
+					),
 				),
 			},
 			{
@@ -1198,6 +1202,8 @@ resource "ns1_record" "it" {
   filters {
     filter = "geotarget_country"
   }
+
+  tags = {tag1: "location1", tag2: "location2"}
 }
 
 resource "ns1_zone" "test" {

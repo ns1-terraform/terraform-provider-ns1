@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -83,6 +84,7 @@ func TestAccZone_updated(t *testing.T) {
 					testAccCheckZoneExpiry(&zone, 2592000),
 					testAccCheckZoneNxTTL(&zone, 3601),
 					testAccCheckZoneDNSSEC(&zone, false),
+					testAccCheckZoneTags(&zone, map[string]string{"tag1": "location1"}),
 				),
 			},
 			{
@@ -727,6 +729,15 @@ func testAccCheckZoneDNSSEC(zone *dns.Zone, expected bool) resource.TestCheckFun
 	}
 }
 
+func testAccCheckZoneTags(zone *dns.Zone, expected map[string]string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if !reflect.DeepEqual(zone.Tags, expected) {
+			return fmt.Errorf("Tags: got: %v want: %v", zone.Tags, expected)
+		}
+		return nil
+	}
+}
+
 func testAccCheckZoneHostmaster(zone *dns.Zone, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if zone.Hostmaster != expected {
@@ -773,6 +784,7 @@ resource "ns1_zone" "it" {
   expiry  = 2592000
   nx_ttl  = 3601
   dnssec  = false
+  tags    = {tag1 = "location1"}
   # link    = "1.2.3.4.in-addr.arpa" # TODO
   # primary = "1.2.3.4.in-addr.arpa" # TODO
 }
