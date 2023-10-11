@@ -35,7 +35,7 @@ func TestAccPulsarJob_basic(t *testing.T) {
 					testAccCheckPulsarJobActive(&job, true),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccURLPath"),
 				),
 			},
@@ -90,7 +90,7 @@ func TestAccPulsarJob_updated_same_type(t *testing.T) {
 					testAccCheckPulsarJobActive(&job, true),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccURLPath"),
 				),
 			},
@@ -105,7 +105,7 @@ func TestAccPulsarJob_updated_same_type(t *testing.T) {
 					testAccCheckPulsarJobActive(&job, false),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccUpdatedHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccUpdatedHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccUpdatedURLPath"),
 				),
 			},
@@ -176,7 +176,7 @@ func TestAccPulsarJob_updated_different_type(t *testing.T) {
 					testAccCheckPulsarJobActive(&job, true),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccURLPath"),
 				),
 			},
@@ -226,7 +226,7 @@ func TestAccPulsarJob_updated_different_type(t *testing.T) {
 					testAccCheckPulsarJobActive(&job, false),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccUpdatedHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccUpdatedHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccUpdatedURLPath"),
 				),
 			},
@@ -276,7 +276,7 @@ func TestAccPulsarJob_BlendMetricWeights(t *testing.T) {
 					testAccCheckPulsarJobActive(&job, true),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccCompleteHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccCompleteHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccCompleteURLPath"),
 					testAccCHeckPulsarJobBlendMetricWeights_timestamp(&job, 123),
 					testAccCHeckPulsarJobBlendMetricWeights_weights(&job, weights),
@@ -298,7 +298,7 @@ func TestAccPulsarJob_BlendMetricWeights(t *testing.T) {
 					testAccCheckPulsarJobExists("ns1_pulsarjob.it", &job),
 					testAccCheckPulsarJobName(&job, jobName),
 					testAccCheckPulsarJobTypeID(&job, "custom"),
-					testAccCheckPulsarJobSHost(&job, "testAccHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccUrlPath"),
 					testAccCheckPulsarJobAppID(&job, &app),
 					testAccCheckPulsarJobActive(&job, true),
@@ -385,7 +385,7 @@ func testAccJSPulsarJobBasic(appName, jobName string) string {
 		type_id = "latency"
 		app_id = "${ns1_application.app.id}"
 		config {
-			host = "testAccHost"
+			host = "testAccHost.com"
 			url_path = "/testAccURLPath"
 		}
 }
@@ -404,7 +404,7 @@ func testAccJSPulsarJobUpdated(appName, jobName string) string {
 		active = false
 		shared = false
 		config {
-			host = "testAccUpdatedHost"
+			host = "testAccUpdatedHost.com"
 			url_path = "/testAccUpdatedURLPath"
 		}
 }
@@ -421,7 +421,7 @@ func testAccJSPulsarJobBlendMetricWeights(appName, jobName string) string {
 		type_id = "latency"
 		app_id = "${ns1_application.app.id}"
 		config {
-			host = "testAccCompleteHost"
+			host = "testAccCompleteHost.com"
 			url_path = "/testAccCompleteURLPath"
 		}
 		blend_metric_weights {
@@ -481,7 +481,7 @@ func testAccBBPulsarJobConverted(appName, jobName string) string {
 		type_id = "custom"
 		app_id = "${ns1_application.app.id}"
 		config {
-			host = ""
+			host = "testAccBBPulsarJobConverted.com"
 			url_path = ""
 		}
 }
@@ -498,7 +498,7 @@ func testAccBBPulsarJobBlendMetricWeights(appName, jobName string) string {
 		type_id = "custom"
 		app_id = "${ns1_application.app.id}"
 		config {
-			host = "testAccHost"
+			host = "testAccHost.com"
 			url_path = "/testAccUrlPath"
 		}
 		blend_metric_weights {

@@ -90,6 +90,10 @@ func TestAccRecord_updated(t *testing.T) {
 					testAccCheckRecordAnswerRdata(
 						t, &record, 0, []string{fmt.Sprintf("test2.%s", zoneName)},
 					),
+					testAccCheckRecordTagData(
+						map[string]string{"tag1": "location1", "tag2": "location2"},
+						&record,
+					),
 				),
 			},
 			{
@@ -411,6 +415,38 @@ func TestAccRecord_URLFWD(t *testing.T) {
 				ResourceName:      "ns1_record.urlfwd",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/URLFWD", zoneName, domainName),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccRecord_WithTags(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("tagged.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordWithTags(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.tagged", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTagData(
+						map[string]string{"tag1": "location1", "tag2": "location2"},
+						&record,
+					),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.tagged",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/A", zoneName, domainName),
 				ImportStateVerify: true,
 			},
 		},
@@ -770,7 +806,7 @@ func testAccURLFWDPreCheck(t *testing.T) {
 		t.Fatalf("failed to create test zone %s: %s", name, err)
 	}
 
-	record := dns.NewRecord(name, fmt.Sprintf("domain.%s", name), "URLFWD")
+	record := dns.NewRecord(name, fmt.Sprintf("domain.%s", name), "URLFWD", nil, nil)
 	record.Answers = []*dns.Answer{{Rdata: []string{"/", "https://example.com", "301", "2", "0"}}}
 
 	_, err = client.Records.Create(record)
@@ -1009,6 +1045,16 @@ func testAccCheckRecordAnswerMetaUp(expected interface{}, r *dns.Record) resourc
 	}
 }
 
+func testAccCheckRecordTagData(expected interface{}, r *dns.Record) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		recordTags := r.Tags
+		if !reflect.DeepEqual(recordTags, expected) {
+			return fmt.Errorf("tags: got: %#v want: %#v", recordTags, expected)
+		}
+		return nil
+	}
+}
+
 func testAccCheckRecordAnswerRdata(
 	t *testing.T, r *dns.Record, answerIdx int, expected []string,
 ) resource.TestCheckFunc {
@@ -1201,6 +1247,8 @@ resource "ns1_record" "it" {
   filters {
     filter = "geotarget_country"
   }
+
+  tags = {tag1: "location1", tag2: "location2"}
 }
 
 resource "ns1_zone" "test" {
@@ -1459,6 +1507,24 @@ resource "ns1_record" "urlfwd" {
   answers {
     answer = "/ https://example.com 301 2 0"
   }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordWithTags(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "tagged" {
+  zone     = "${ns1_zone.test.zone}"
+  domain   = "tagged.${ns1_zone.test.zone}"
+  type     = "A"
+  answers {
+    answer = "1.2.3.4"
+  }
+  tags = {tag1 = "location1", tag2 = "location2"}
 }
 
 resource "ns1_zone" "test" {

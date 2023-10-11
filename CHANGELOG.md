@@ -1,3 +1,9 @@
+## 2.0.9 (October 11, 2023)
+ENHANCEMENTS
+* Added support for zone and record tags
+BUG FIX
+* Updated test host names
+
 ## 2.0.8 (October 5, 2023)
 BUG FIX
 

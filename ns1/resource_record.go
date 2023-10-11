@@ -166,6 +166,20 @@ It is suggested to migrate to a regular "answers" block. Using Terraform 0.12+, 
 					},
 				},
 			},
+			"blocked_tags": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 		Create:   RecordCreate,
 		Read:     RecordRead,
@@ -211,6 +225,22 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	d.Set("zone", r.Zone)
 	d.Set("type", r.Type)
 	d.Set("ttl", r.TTL)
+
+	if len(r.Tags) > 0 {
+		terraformTags := make(map[string]interface{}, len(r.Tags))
+		for k, v := range r.Tags {
+			terraformTags[k] = v
+		}
+		d.Set("tags", terraformTags)
+	}
+
+	if len(r.BlockedTags) > 0 {
+		terraformBlockedTags := make([]interface{}, 0)
+		for _, v := range r.BlockedTags {
+			terraformBlockedTags = append(terraformBlockedTags, v)
+		}
+		d.Set("blocked_tags", terraformBlockedTags)
+	}
 
 	d.Set("override_ttl", nil)
 	if r.Type == "ALIAS" && r.OverrideTTL != nil {
@@ -444,6 +474,20 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			r.Regions[region["name"].(string)] = ns1R
 		}
 	}
+
+	// Even though blocked_tags are not evaluated on GET, dual update logic is currently enforced on POST
+	if _, tagsExist := d.GetOk("tags"); tagsExist == true {
+		if _, blockedTagsExist := d.GetOk("blocked_tags"); blockedTagsExist == false {
+			r.BlockedTags = []string{}
+			log.Println("empty 'blocked tags' key added")
+		}
+	}
+	if _, blockedTagsExist := d.GetOk("blocked_tags"); blockedTagsExist == true {
+		if _, tagsExist := d.GetOk("tags"); tagsExist == false {
+			r.Tags = map[string]string{}
+			log.Println("empty 'tags' key added")
+		}
+	}
 	return nil
 }
 
@@ -461,7 +505,31 @@ func removeEmptyMeta(v map[string]interface{}) {
 // RecordCreate creates DNS record in ns1
 func RecordCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r := dns.NewRecord(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+
+	terraformTags := d.Get("tags").(map[string]interface{})
+	tags := make(map[string]string)
+
+	for key, value := range terraformTags {
+		switch value := value.(type) {
+		case string:
+			tags[key] = value
+		}
+	}
+
+	terraformBlockedTags := d.Get("blocked_tags").([]interface{})
+	blockedTags := make([]string, 0)
+
+	for _, v := range terraformBlockedTags {
+		blockedTags = append(blockedTags, v.(string))
+	}
+
+	r := dns.NewRecord(
+		d.Get("zone").(string),
+		d.Get("domain").(string),
+		d.Get("type").(string),
+		tags,
+		blockedTags,
+	)
 	if err := resourceDataToRecord(r, d); err != nil {
 		return err
 	}
@@ -500,7 +568,31 @@ func RecordDelete(d *schema.ResourceData, meta interface{}) error {
 // RecordUpdate updates the given dns record in ns1
 func RecordUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	r := dns.NewRecord(d.Get("zone").(string), d.Get("domain").(string), d.Get("type").(string))
+
+	terraformTags := d.Get("tags").(map[string]interface{})
+	tags := make(map[string]string)
+
+	for key, value := range terraformTags {
+		switch value := value.(type) {
+		case string:
+			tags[key] = value
+		}
+	}
+
+	terraformBlockedTags := d.Get("blocked_tags").([]interface{})
+	blockedTags := make([]string, 0)
+
+	for _, v := range terraformBlockedTags {
+		blockedTags = append(blockedTags, v.(string))
+	}
+
+	r := dns.NewRecord(
+		d.Get("zone").(string),
+		d.Get("domain").(string),
+		d.Get("type").(string),
+		tags,
+		blockedTags,
+	)
 	if err := resourceDataToRecord(r, d); err != nil {
 		return err
 	}

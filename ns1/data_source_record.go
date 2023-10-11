@@ -100,6 +100,10 @@ func dataSourceRecord() *schema.Resource {
 					},
 				},
 			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
 		},
 		Read: RecordRead,
 	}
