@@ -4,6 +4,11 @@ ENHANCEMENTS
 BUG FIX
 * Updated test host names
 
+## 2.0.8 (October 5, 2023)
+BUG FIX
+
+* `ns1-go` client version bump fixes removing filter chains from records
+
 ## 2.0.7 (September 19, 2023)
 ENHANCEMENTS
 * Added support for more record types (CERT, CSYNC, DHCID, HTTPS, SMIMEA, SVCB & TLSA)

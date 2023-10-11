@@ -8,6 +8,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.1
 	github.com/stretchr/testify v1.8.1
 	gopkg.in/ns1/ns1-go.v2 v2.7.12
+
 )
 
 require (

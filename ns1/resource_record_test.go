@@ -106,6 +106,41 @@ func TestAccRecord_updated(t *testing.T) {
 	})
 }
 
+func TestAccRecord_remove_all_filters(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("test.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordBasic(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordFilterCount(&record, 3),
+				),
+			},
+			{
+				Config: testAccRecordUpdatedNoFilters(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordFilterCount(&record, 0),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.it",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/CNAME", zoneName, domainName),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccRecord_meta(t *testing.T) {
 	var record dns.Record
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
@@ -820,6 +855,16 @@ func testAccCheckRecordExists(n string, record *dns.Record) resource.TestCheckFu
 	}
 }
 
+func testAccCheckRecordFilterCount(r *dns.Record, expected int) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if len(r.Filters) != expected {
+			return fmt.Errorf("r.Filters, got: %d, want: %d", len(r.Filters), expected)
+		}
+
+		return nil
+	}
+}
+
 func testAccCheckRecordDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*ns1.Client)
 
@@ -1208,6 +1253,30 @@ resource "ns1_record" "it" {
 
 resource "ns1_zone" "test" {
   zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordUpdatedNoFilters(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+	zone              = "${ns1_zone.test.zone}"
+	domain            = "test.${ns1_zone.test.zone}"
+	type              = "CNAME"
+	ttl               = 60
+	
+	answers {
+		answer = "test1.${ns1_zone.test.zone}"
+		region = "cal"
+	}
+	
+	regions {
+		name = "cal"
+	}
+}
+	
+resource "ns1_zone" "test" {
+	zone = "terraform-test-%s.io"
 }
 `, rString)
 }
