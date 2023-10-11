@@ -1,3 +1,9 @@
+## 2.0.9 (October 11, 2023)
+ENHANCEMENTS
+* Added support for zone and record tags
+BUG FIX
+* Updated test host names
+
 ## 2.0.7 (September 19, 2023)
 ENHANCEMENTS
 * Added support for more record types (CERT, CSYNC, DHCID, HTTPS, SMIMEA, SVCB & TLSA)
