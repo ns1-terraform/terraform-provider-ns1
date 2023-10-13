@@ -1,3 +1,7 @@
+## 2.0.10 (October 12, 2023)
+BUGFIX
+* `ns1-go` client version bump to fix omitting tags
+
 ## 2.0.9 (October 11, 2023)
 ENHANCEMENTS
 * Added support for zone and record tags
