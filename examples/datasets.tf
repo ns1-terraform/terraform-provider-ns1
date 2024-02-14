@@ -1,5 +1,5 @@
 resource "ns1_dataset" "my_dataset" {
-  name     = "%s"
+  name     = "my dataset"
   datatype {
     type  = "num_queries"
     scope = "account"

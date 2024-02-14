@@ -2,7 +2,7 @@
 ENHANCEMENTS
 * `Adds support for Datasets
 
-* ## 2.0.10 (October 12, 2023)
+## 2.0.10 (October 12, 2023)
 BUGFIX
 * `ns1-go` client version bump to fix omitting tags
 
