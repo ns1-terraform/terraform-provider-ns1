@@ -77,6 +77,7 @@ func Provider() *schema.Provider {
 			"ns1_subnet":            resourceSubnet(),
 			"ns1_dnsview":           dnsView(),
 			"ns1_account_whitelist": accountWhitelistResource(),
+			"ns1_dataset":           datasetResource(),
 		},
 		ConfigureFunc: ns1Configure,
 	}
