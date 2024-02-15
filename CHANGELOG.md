@@ -1,4 +1,4 @@
-## 2.0.11 (February 14, 2024)
+## 2.1.0 (February 14, 2024)
 ENHANCEMENTS
 * `Adds support for Datasets
 
