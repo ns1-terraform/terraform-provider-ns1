@@ -9,8 +9,8 @@ resource "ns1_redirect" "example" {
   target           = "https://url.com/target/path"
   forwarding_mode  = "all"
   forwarding_type  = "permanent"
-  ssl_enabled      = true
-  force_redirect   = true
+  https_enabled    = true
+  https_forced     = true
   query_forwarding = true
   tags             = []
 }

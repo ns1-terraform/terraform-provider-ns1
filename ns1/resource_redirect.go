@@ -55,6 +55,10 @@ func redirectConfigResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"last_updated": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 			// Optional
 			"forwarding_mode": {
 				Type:         schema.TypeString,
@@ -68,12 +72,12 @@ func redirectConfigResource() *schema.Resource {
 				Default:      "permanent",
 				ValidateFunc: forwardingTypeStringEnum.ValidateFunc,
 			},
-			"ssl_enabled": {
+			"https_enabled": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
 			},
-			"force_redirect": {
+			"https_forced": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
@@ -117,6 +121,14 @@ func redirectCertificateResource() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			"valid_from": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"valid_until": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 			"errors": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -125,6 +137,10 @@ func redirectCertificateResource() *schema.Resource {
 			"processing": {
 				Type:     schema.TypeBool,
 				Optional: true,
+				Computed: true,
+			},
+			"last_updated": {
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 		},
@@ -152,8 +168,8 @@ func RedirectConfigCreate(d *schema.ResourceData, meta interface{}) error {
 		tags,
 		getFwModep(d, "forwarding_mode"),
 		getFwTypep(d, "forwarding_type"),
-		getBoolp(d, "ssl_enabled"),
-		getBoolp(d, "force_redirect"),
+		getBoolp(d, "https_enabled"),
+		getBoolp(d, "https_forced"),
 		getBoolp(d, "query_forwarding"),
 	)
 
@@ -208,8 +224,8 @@ func RedirectConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 		tags,
 		getFwModep(d, "forwarding_mode"),
 		getFwTypep(d, "forwarding_type"),
-		getBoolp(d, "ssl_enabled"),
-		getBoolp(d, "force_redirect"),
+		getBoolp(d, "https_enabled"),
+		getBoolp(d, "https_forced"),
 		getBoolp(d, "query_forwarding"),
 	)
 	id := d.Id()
@@ -366,17 +382,20 @@ func redirectConfigToResourceData(d *schema.ResourceData, r *redirect.Configurat
 	if r.ForwardingType != nil {
 		d.Set("forwarding_type", r.ForwardingType.String())
 	}
-	if r.SslEnabled != nil {
-		d.Set("ssl_enabled", *r.SslEnabled)
+	if r.HttpsEnabled != nil {
+		d.Set("https_enabled", *r.HttpsEnabled)
 	}
-	if r.ForceRedirect != nil {
-		d.Set("force_redirect", *r.ForceRedirect)
+	if r.HttpsForced != nil {
+		d.Set("https_forced", *r.HttpsForced)
 	}
 	if r.QueryForwarding != nil {
 		d.Set("query_forwarding", *r.QueryForwarding)
 	}
 	if r.Tags != nil {
 		d.Set("tags", r.Tags)
+	}
+	if r.LastUpdated != nil {
+		d.Set("last_updated", *r.LastUpdated)
 	}
 	return nil
 }
@@ -389,11 +408,20 @@ func redirectCertToResourceData(d *schema.ResourceData, r *redirect.Certificate)
 	if r.Certificate != nil {
 		d.Set("certificate", *r.Certificate)
 	}
+	if r.ValidFrom != nil {
+		d.Set("valid_from", *r.ValidFrom)
+	}
+	if r.ValidUntil != nil {
+		d.Set("valid_until", *r.ValidUntil)
+	}
 	if r.Errors != nil {
 		d.Set("errors", *r.Errors)
 	}
 	if r.Processing != nil {
 		d.Set("processing", *r.Processing)
+	}
+	if r.LastUpdated != nil {
+		d.Set("last_updated", *r.LastUpdated)
 	}
 	return nil
 }

@@ -49,8 +49,8 @@ resource "ns1_redirect" "it" {
   target           = "https://url.com/target/path"
   forwarding_mode  = "capture"
   forwarding_type  = "masking"
-  ssl_enabled      = true
-  force_redirect   = true
+  https_enabled    = true
+  https_forced     = true
   query_forwarding = true
   tags             = [ "test", "it" ]
 }
@@ -73,8 +73,8 @@ resource "ns1_redirect" "it" {
   target           = "https://url.com/target/path"
   forwarding_mode  = "capture"
   forwarding_type  = "permanent"
-  ssl_enabled      = true
-  force_redirect   = true
+  https_enabled    = true
+  https_forced     = true
   query_forwarding = true
   tags             = [ "test", "it" ]
 }

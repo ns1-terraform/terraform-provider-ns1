@@ -42,10 +42,11 @@ The following arguments are supported:
                   prefer the new target page);
   * __masking__   preserves the redirected domain in the browser's address bar (this lets users see the
                   address they entered, even though the displayed content comes from a different web page).
-* `ssl_enabled` - (Optional - defaults to true) Enables HTTPS support on the source domain by using Let's Encrypt certificates.
-* `force_redirect` - (Optional - defaults to true) Forces redirect for users that try to visit HTTP domain to HTTPS instead.
+* `https_enabled` - (Optional - defaults to true) Enables HTTPS support on the source domain by using Let's Encrypt certificates.
+* `https_forced` - (Optional - defaults to true) Forces redirect for users that try to visit HTTP domain to HTTPS instead.
 * `query_forwarding` - (Optional - defaults to false) Enables the query string of a URL to be applied directly to the new target URL.
 * `tags` - (Optional - array) Tags associated with the configuration.
+* `last_updated` - (Read Only) The Unix timestamp representing when the redirect configuration was last updated.
 
 ## Attributes Reference
 
@@ -76,8 +77,11 @@ The following arguments are supported:
 * `domain` - (Required) The domain the redirect refers to.
 * `id` - (Optional) The certificate id, if already created.
 * `certificate` - (Read Only) The certificate value.
+* `valid_from` - (Read Only) The Unix timestamp representing when the certificate first started being valid.
+* `valid_until` - (Read Only) The Unix timestamp representing when the certificate will stop being valid.
 * `processing` - (Read Only) Whether the certificate is active.
 * `errors` - (Read Only) Any error encountered when applying the certificate.
+* `last_updated` - (Read Only) The Unix timestamp representing when the certificate was last signed.
 
 ## Attributes Reference
 
