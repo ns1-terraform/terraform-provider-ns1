@@ -3,7 +3,7 @@ layout: "ns1"
 page_title: "NS1: ns1_monitoring_regions"
 sidebar_current: "docs-ns1-datasource-monitoring-regions"
 description: |-
-  Provides detials of all available monitoring regions.
+  Provides details of all available monitoring regions.
 ---
 
 # Data Source: ns1_monitoring_regions
