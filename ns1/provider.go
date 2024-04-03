@@ -56,10 +56,11 @@ func Provider() *schema.Provider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"ns1_zone":     dataSourceZone(),
-			"ns1_dnssec":   dataSourceDNSSEC(),
-			"ns1_record":   dataSourceRecord(),
-			"ns1_networks": dataSourceNetworks(),
+			"ns1_zone":               dataSourceZone(),
+			"ns1_dnssec":             dataSourceDNSSEC(),
+			"ns1_record":             dataSourceRecord(),
+			"ns1_networks":           dataSourceNetworks(),
+			"ns1_monitoring_regions": dataSourceMonitoringRegions(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ns1_zone":                 resourceZone(),

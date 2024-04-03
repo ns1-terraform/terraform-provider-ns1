@@ -1,6 +1,10 @@
+## 2.2.0 (March 7, 2024)
+ENHANCEMENTS
+* Adds support for listing available monitoring regions
+  
 ## 2.1.0 (February 14, 2024)
 ENHANCEMENTS
-* `Adds support for Datasets
+* Adds support for Datasets
 
 ## 2.0.10 (October 12, 2023)
 BUGFIX
