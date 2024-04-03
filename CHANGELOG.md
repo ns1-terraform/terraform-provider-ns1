@@ -1,7 +1,11 @@
+## 2.2.1 (April 3, 2024)
+BUGFIX
+* `ns1-go` client version bump to fix omitting tags
+
 ## 2.2.0 (March 7, 2024)
 ENHANCEMENTS
 * Adds support for listing available monitoring regions
-  
+
 ## 2.1.0 (February 14, 2024)
 ENHANCEMENTS
 * Adds support for Datasets
@@ -88,7 +92,7 @@ instead of the previous syntax:
  default_config = {
 ```
 
-* Added `networks` resource it provides details about NS1 Networks. Use this if you would simply like to read information from NS1 into your configurations, for example: 
+* Added `networks` resource it provides details about NS1 Networks. Use this if you would simply like to read information from NS1 into your configurations, for example:
 
 ```hcl
 # Get details about NS1 Networks.
@@ -303,7 +307,7 @@ BUG FIXES:
 ENHANCEMENTS:
 
 * Add more verbose logging output for failed requests [#160](https://github.com/ns1-terraform/terraform-provider-ns1/pull/160)
-* Update to documentation to reflect proper usage for monitoring datafeeds [#154](https://github.com/ns1-terraform/terraform-provider-ns1/pull/154) 
+* Update to documentation to reflect proper usage for monitoring datafeeds [#154](https://github.com/ns1-terraform/terraform-provider-ns1/pull/154)
 
 BUG FIXES:
 
@@ -460,14 +464,14 @@ BUG FIXES:
   than falling over, and shouldn't require limiting parallelism to avoid 429 errors. ([#74](https://github.com/terraform-providers/terraform-provider-ns1/issues/74))
  * We were explicitly sending defaults for `port` and `notify` fields in `secondaries`, now they are implicit.
    Sending the default `port` prevented using IP ranges. ([#82](https://github.com/terraform-providers/terraform-provider-ns1/issues/82))
- 
+
 ENHANCEMENTS:
 
 * Allow secondary zone -> primary zone in-place. Old behavior was to force a new resource (DELETE/PUT) on any
   change to secondary. Now the only one that requires a new resource is when a zone _becomes_ a secondary. See
   the note in docs. ([#75](https://github.com/terraform-providers/terraform-provider-ns1/issues/75))
 * Support for CAA records. ([#78](https://github.com/terraform-providers/terraform-provider-ns1/issues/78))
-  
+
 DEPRECATION:
 
 * We've bumped the CI tests to run under Go 1.12. Provider still works with 1.11, but we're developing on and
@@ -498,7 +502,7 @@ ENHANCEMENTS:
 IMPROVEMENTS:
 
 * acc tests: Randomize zone names to help prevent collisions ([#64](https://github.com/terraform-providers/terraform-provider-ns1/issues/64))
-* Ignore order of location fields (comma sep strings) in record regions block [[#68](https://github.com/terraform-providers/terraform-provider-ns1/issues/68)] 
+* Ignore order of location fields (comma sep strings) in record regions block [[#68](https://github.com/terraform-providers/terraform-provider-ns1/issues/68)]
 * Correct and improve docs around "regions" in record resource ([#69](https://github.com/terraform-providers/terraform-provider-ns1/issues/69))
 
 ## 1.5.1 (August 30, 2019)
