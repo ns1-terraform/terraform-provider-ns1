@@ -72,19 +72,19 @@ func TestAccNotifyList_multiple(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNotifyListExists("ns1_notifylist.test_multiple", &nl),
 					testAccCheckNotifyListName(&nl, "terraform test multiple"),
+					testAccCheckNotifyTypeOrder(&nl, "pagerduty", "webhook"),
 				),
 			},
-			// This fails because the schema.TypeList is ordered. We want to switch
-			// this to schema.TypeSet but cannot due to SDK issue #652 / #895, fix for
-			// which is waiting for review, see
-			// https://github.com/hashicorp/terraform-plugin-sdk/pull/1042
-			//			{
-			//				Config: testAccNotifyListMultipleDifferentOrder ,
-			//				Check: resource.ComposeTestCheckFunc(
-			//					testAccCheckNotifyListExists("ns1_notifylist.test_multiple2", &nl),
-			//					testAccCheckNotifyListName(&nl, "terraform test multiple2"),
-			//				),
-			//			},
+			// Despite the change in order the object is the same: we want to make sure
+			// that it's not actually modified and the order stays the same
+			{
+				Config: testAccNotifyListMultipleDifferentOrder,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNotifyListExists("ns1_notifylist.test_multiple", &nl),
+					testAccCheckNotifyListName(&nl, "terraform test multiple different order"),
+					testAccCheckNotifyTypeOrder(&nl, "pagerduty", "webhook"),
+				),
+			},
 			{
 				ResourceName:      "ns1_notifylist.test_multiple",
 				ImportState:       true,
@@ -157,27 +157,6 @@ func TestAccNotifyList_ManualDelete(t *testing.T) {
 	})
 }
 
-func testAccCheckNotifyListState(key, value string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources["ns1_notifylist.test"]
-		if !ok {
-			return fmt.Errorf("not found: %s", "ns1_notifylist.test")
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("no ID is set")
-		}
-
-		p := rs.Primary
-		if p.Attributes[key] != value {
-			return fmt.Errorf(
-				"%s != %s (actual: %s)", key, value, p.Attributes[key])
-		}
-
-		return nil
-	}
-}
-
 func testAccCheckNotifyListExists(n string, nl *monitor.NotifyList) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -231,6 +210,21 @@ func testAccCheckNotifyListName(nl *monitor.NotifyList, expected string) resourc
 	return func(s *terraform.State) error {
 		if nl.Name != expected {
 			return fmt.Errorf("nl.Name: got: %#v want: %#v", nl.Name, expected)
+		}
+		return nil
+	}
+}
+
+func testAccCheckNotifyTypeOrder(nl *monitor.NotifyList, type1, type2 string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if len(nl.Notifications) < 2 {
+			return fmt.Errorf("nl.Name: got: %#v want: 2 elements", nl.Notifications)
+		}
+		if nl.Notifications[0].Type != type1 {
+			return fmt.Errorf("nl.Name: got: %#v want: %#v", nl.Notifications[0].Type, type1)
+		}
+		if nl.Notifications[1].Type != type2 {
+			return fmt.Errorf("nl.Name: got: %#v want: %#v", nl.Notifications[1].Type, type2)
 		}
 		return nil
 	}
@@ -315,8 +309,8 @@ resource "ns1_notifylist" "test_multiple" {
 `
 
 const testAccNotifyListMultipleDifferentOrder = `
-resource "ns1_notifylist" "test_multiple2" {
-  name = "terraform test multiple2"
+resource "ns1_notifylist" "test_multiple" {
+  name = "terraform test multiple different order"
   notifications {
     type = "webhook"
     config = {
