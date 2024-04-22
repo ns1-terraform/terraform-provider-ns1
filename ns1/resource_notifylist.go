@@ -66,9 +66,8 @@ func notifyListToResourceData(d *schema.ResourceData, nl *monitor.NotifyList) er
 func resourceDataToNotifyList(nl *monitor.NotifyList, d *schema.ResourceData) error {
 	nl.ID = d.Id()
 
-	index := 0
 	if rawNotifications := d.Get("notifications").(*schema.Set); rawNotifications.Len() > 0 {
-		ns := make([]*monitor.Notification, rawNotifications.Len())
+		ns := make([]*monitor.Notification, 0, rawNotifications.Len())
 		for _, notificationRaw := range rawNotifications.List() {
 			ni := notificationRaw.(map[string]interface{})
 			config := ni["config"].(map[string]interface{})
@@ -78,28 +77,28 @@ func resourceDataToNotifyList(nl *monitor.NotifyList, d *schema.ResourceData) er
 				case "email":
 					email := config["email"]
 					if email != nil {
-						ns[index] = monitor.NewEmailNotification(email.(string))
+						ns = append(ns, monitor.NewEmailNotification(email.(string)))
 					} else {
 						return fmt.Errorf("wrong config for email expected email field into config")
 					}
 				case "datafeed":
 					sourceId := config["sourceid"]
 					if sourceId != nil {
-						ns[index] = monitor.NewFeedNotification(sourceId.(string))
+						ns = append(ns, monitor.NewFeedNotification(sourceId.(string)))
 					} else {
 						return fmt.Errorf("wrong config for datafeed expected sourceid field into config")
 					}
 				case "webhook":
 					url := config["url"]
 					if url != nil {
-						ns[index] = monitor.NewWebNotification(url.(string), nil)
+						ns = append(ns, monitor.NewWebNotification(url.(string), nil))
 					} else {
 						return fmt.Errorf("wrong config for webhook expected url field into config")
 					}
 				case "pagerduty":
 					serviceKey := config["service_key"]
 					if serviceKey != nil {
-						ns[index] = monitor.NewPagerDutyNotification(serviceKey.(string))
+						ns = append(ns, monitor.NewPagerDutyNotification(serviceKey.(string)))
 					} else {
 						return fmt.Errorf("wrong config for pagerduty expected serviceKey field into config")
 					}
@@ -108,18 +107,16 @@ func resourceDataToNotifyList(nl *monitor.NotifyList, d *schema.ResourceData) er
 					username := config["username"]
 					channel := config["channel"]
 					if url != nil && username != nil && channel != nil {
-						ns[index] = monitor.NewSlackNotification(url.(string), username.(string), channel.(string))
+						ns = append(ns, monitor.NewSlackNotification(url.(string), username.(string), channel.(string)))
 					} else {
 						return fmt.Errorf("wrong config for slack expected url, username and channel fields into config")
 					}
 				default:
 					return fmt.Errorf("%s is not a valid notifier type", ni["type"])
 				}
-				// Only increase if not empty
-				index++
 			}
 		}
-		nl.Notifications = ns[:index]
+		nl.Notifications = ns
 	}
 	return nil
 }
