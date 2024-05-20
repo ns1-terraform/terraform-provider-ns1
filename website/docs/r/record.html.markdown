@@ -150,6 +150,7 @@ The following arguments are supported:
   [Answers](#answers-1) are documented below.
 * `filters` - (Optional) One or more NS1 filters for the record(order matters).
   [Filters](#filters-1) are documented below.
+* `tags` - map of tags in the form of `"key" = "value"` where both key and value are strings
 
 #### Answers
 
