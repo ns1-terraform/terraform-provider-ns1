@@ -108,6 +108,7 @@ The following arguments are supported:
   workflow for creating zones with the NS record in terraform state. See
   above for an example. Note that this option only has an effect when a zone is
   being created.
+* `tags` - map of tags in the form of `"key" = "value"` where both key and value are strings
 * `tsig` - [TSIG](#TSIG-2) is documented below
 
 #### Secondaries
