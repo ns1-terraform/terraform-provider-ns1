@@ -53,6 +53,9 @@ The following arguments are supported:
 All of the arguments listed above are exported as attributes, with no
 additions.
 
+Note that https_enabled=true causes a certificate to be requested if none exist: the resulting certificate object
+would not be tracked by the state, so it's recommended to create the certificate object manually in order to track it in terraform state.
+
 ## NS1 Documentation
 
 [Redirect Api Doc](https://ns1.com/api#redirect)
