@@ -1,3 +1,12 @@
+## 2.3.0 (June 6, 2024)
+ENHANCEMENTS
+* Adds support for redirect endpoints
+
+## 2.2.2 (May 21, 2024)
+BUGFIX
+* Lifting ordering constraint on ns1_notifylist notifications objects
+* Documentation fix for `tags`
+
 ## 2.2.1 (April 3, 2024)
 BUGFIX
 * `ns1-go` client version bump to fix omitting tags
