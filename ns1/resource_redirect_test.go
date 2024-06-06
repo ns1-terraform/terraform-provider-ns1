@@ -40,6 +40,16 @@ func TestAccRedirectConfig_basic(t *testing.T) {
 					testAccCheckRedirectConfigTags(&redirect, []string{}),
 				),
 			},
+			{
+				ResourceName:      "ns1_redirect.it",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "ns1_redirect_certificate.example",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

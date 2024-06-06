@@ -93,10 +93,11 @@ func redirectConfigResource() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
 		},
-		Create: RedirectConfigCreate,
-		Read:   RedirectConfigRead,
-		Update: RedirectConfigUpdate,
-		Delete: RedirectConfigDelete,
+		Create:   RedirectConfigCreate,
+		Read:     RedirectConfigRead,
+		Update:   RedirectConfigUpdate,
+		Delete:   RedirectConfigDelete,
+		Importer: &schema.ResourceImporter{},
 	}
 }
 
@@ -144,10 +145,11 @@ func redirectCertificateResource() *schema.Resource {
 				Computed: true,
 			},
 		},
-		Create: RedirectCertCreate,
-		Read:   RedirectCertRead,
-		Update: RedirectCertUpdate,
-		Delete: RedirectCertDelete,
+		Create:   RedirectCertCreate,
+		Read:     RedirectCertRead,
+		Update:   RedirectCertUpdate,
+		Delete:   RedirectCertDelete,
+		Importer: &schema.ResourceImporter{},
 	}
 }
 
@@ -304,7 +306,7 @@ func validateDomain(val interface{}, key string) (warns []string, errs []error) 
 	return warns, errs
 }
 
-// validatePath verifies that the pstringath matches a valid URL path.
+// validatePath verifies that the path matches a valid URL path.
 func validatePath(val interface{}, key string) (warns []string, errs []error) {
 	v := val.(string)
 
