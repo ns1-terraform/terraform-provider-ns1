@@ -2,6 +2,7 @@ package ns1
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -27,6 +28,7 @@ func TestAccRedirectConfig_basic(t *testing.T) {
 					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
 					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
 					testAccCheckRedirectConfigFwType(&redirect, "masking"),
+					testAccCheckRedirectConfigTags(&redirect, []string{"test", "it"}),
 				),
 			},
 			{
@@ -35,6 +37,7 @@ func TestAccRedirectConfig_basic(t *testing.T) {
 					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
 					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
 					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
+					testAccCheckRedirectConfigTags(&redirect, []string{"test"}),
 				),
 			},
 		},
@@ -44,6 +47,7 @@ func TestAccRedirectConfig_basic(t *testing.T) {
 func testAccRedirectBasic(rString string) string {
 	return fmt.Sprintf(`
 resource "ns1_redirect" "it" {
+	certificate_id   = "${ns1_redirect_certificate.example.id}"
   domain           = "test.${ns1_zone.test.zone}"
   path             = "/from/path/*"
   target           = "https://url.com/target/path"
@@ -68,6 +72,7 @@ resource "ns1_zone" "test" {
 func testAccRedirectUpdated(rString string) string {
 	return fmt.Sprintf(`
 resource "ns1_redirect" "it" {
+	certificate_id   = "${ns1_redirect_certificate.example.id}"
   domain           = "test.${ns1_zone.test.zone}"
   path             = "/from/path/*"
   target           = "https://url.com/target/path"
@@ -76,7 +81,7 @@ resource "ns1_redirect" "it" {
   https_enabled    = true
   https_forced     = true
   query_forwarding = true
-  tags             = [ "test", "it" ]
+  tags             = [ "test" ]
 }
 
 resource "ns1_redirect_certificate" "example" {
@@ -168,6 +173,25 @@ func testAccCheckRedirectConfigFwType(cfg *redirect.Configuration, expected stri
 	return func(s *terraform.State) error {
 		if cfg.ForwardingType.String() != expected {
 			return fmt.Errorf("Name: got: %s want: %s", cfg.ForwardingType.String(), expected)
+		}
+		return nil
+	}
+}
+
+func testAccCheckRedirectConfigTags(cfg *redirect.Configuration, expected []string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		diff := false
+		if len(cfg.Tags) != len(expected) {
+			diff = true
+		} else {
+			for i, _ := range expected {
+				if cfg.Tags[i] != expected[i] {
+					diff = true
+				}
+			}
+		}
+		if diff {
+			return fmt.Errorf("Name: got: %s want: %s", strings.Join(cfg.Tags, ","), strings.Join(expected, ","))
 		}
 		return nil
 	}

@@ -51,15 +51,15 @@ func redirectConfigResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"certificate_id": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
 			"last_updated": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			// Optional
+			"certificate_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"forwarding_mode": {
 				Type:         schema.TypeString,
 				Optional:     true,
