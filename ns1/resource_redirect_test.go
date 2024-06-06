@@ -37,7 +37,7 @@ func TestAccRedirectConfig_basic(t *testing.T) {
 					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
 					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
 					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
-					testAccCheckRedirectConfigTags(&redirect, []string{"test"}),
+					testAccCheckRedirectConfigTags(&redirect, []string{}),
 				),
 			},
 		},
@@ -81,7 +81,7 @@ resource "ns1_redirect" "it" {
   https_enabled    = true
   https_forced     = true
   query_forwarding = true
-  tags             = [ "test" ]
+  tags             = [ ]
 }
 
 resource "ns1_redirect_certificate" "example" {
@@ -184,7 +184,7 @@ func testAccCheckRedirectConfigTags(cfg *redirect.Configuration, expected []stri
 		if len(cfg.Tags) != len(expected) {
 			diff = true
 		} else {
-			for i, _ := range expected {
+			for i := range expected {
 				if cfg.Tags[i] != expected[i] {
 					diff = true
 				}

@@ -213,6 +213,9 @@ func RedirectConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	var tags []string
 	terraformTags := d.Get("tags").([]interface{})
+	if terraformTags != nil {
+		tags = []string{}
+	}
 	for _, t := range terraformTags {
 		tags = append(tags, t.(string))
 	}
