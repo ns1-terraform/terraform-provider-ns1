@@ -54,6 +54,72 @@ func TestAccRedirectConfig_basic(t *testing.T) {
 	})
 }
 
+func TestAccRedirectConfig_untracked_cert(t *testing.T) {
+	var redirect redirect.Configuration
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	domainName := fmt.Sprintf("terraform-test-%s.io", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRedirectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRedirectNoCert(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
+					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigFwType(&redirect, "masking"),
+					testAccCheckRedirectConfigTags(&redirect, []string{}),
+				),
+			},
+			{
+				Config: testAccRedirectNoCertUpdated(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
+					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
+					testAccCheckRedirectConfigTags(&redirect, []string{}),
+				),
+			},
+		},
+	})
+}
+
+func TestAccRedirectConfig_http_to_https(t *testing.T) {
+	var redirect redirect.Configuration
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	domainName := fmt.Sprintf("terraform-test-%s.io", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRedirectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRedirectHTTP(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
+					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
+					testAccCheckRedirectConfigHTTPS(&redirect, false),
+					testAccCheckRedirectConfigCertIdPresent(&redirect, false),
+				),
+			},
+			{
+				Config: testAccRedirectNoCertUpdated(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
+					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
+					testAccCheckRedirectConfigHTTPS(&redirect, true),
+					testAccCheckRedirectConfigCertIdPresent(&redirect, true),
+				),
+			},
+		},
+	})
+}
+
 func testAccRedirectBasic(rString string) string {
 	return fmt.Sprintf(`
 resource "ns1_redirect" "it" {
@@ -96,6 +162,57 @@ resource "ns1_redirect" "it" {
 
 resource "ns1_redirect_certificate" "example" {
   domain       = "*.${ns1_zone.test.zone}"
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRedirectNoCert(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_redirect" "it" {
+  domain           = "test.${ns1_zone.test.zone}"
+  path             = "/from/path/*"
+  target           = "https://url.com/target/path"
+  forwarding_mode  = "capture"
+  forwarding_type  = "masking"
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRedirectNoCertUpdated(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_redirect" "it" {
+  domain           = "test.${ns1_zone.test.zone}"
+  path             = "/from/path/*"
+  target           = "https://url.com/target/path"
+  forwarding_mode  = "capture"
+  forwarding_type  = "permanent"
+  https_enabled    = true
+  https_forced     = true
+  tags             = []
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRedirectHTTP(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_redirect" "it" {
+  domain           = "test.${ns1_zone.test.zone}"
+  path             = "/from/path/*"
+  target           = "https://url.com/target/path"
+  https_enabled    = false
+  https_forced     = false
 }
 
 resource "ns1_zone" "test" {
@@ -173,7 +290,7 @@ func testAccCheckRedirectConfigExists(n string, cfg *redirect.Configuration) res
 func testAccCheckRedirectConfigDomain(cfg *redirect.Configuration, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if cfg.Domain != expected {
-			return fmt.Errorf("Name: got: %s want: %s", cfg.Domain, expected)
+			return fmt.Errorf("Domain: got: %s want: %s", cfg.Domain, expected)
 		}
 		return nil
 	}
@@ -182,7 +299,25 @@ func testAccCheckRedirectConfigDomain(cfg *redirect.Configuration, expected stri
 func testAccCheckRedirectConfigFwType(cfg *redirect.Configuration, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if cfg.ForwardingType.String() != expected {
-			return fmt.Errorf("Name: got: %s want: %s", cfg.ForwardingType.String(), expected)
+			return fmt.Errorf("ForwardingType: got: %s want: %s", cfg.ForwardingType.String(), expected)
+		}
+		return nil
+	}
+}
+
+func testAccCheckRedirectConfigHTTPS(cfg *redirect.Configuration, expected bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if *cfg.HttpsEnabled != expected {
+			return fmt.Errorf("HttpsEnabled: got: %t want: %t", *cfg.HttpsEnabled, expected)
+		}
+		return nil
+	}
+}
+
+func testAccCheckRedirectConfigCertIdPresent(cfg *redirect.Configuration, expected bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if (cfg.CertificateID != nil) != expected {
+			return fmt.Errorf("CertificateID present: got: %t want: %t", cfg.CertificateID != nil, expected)
 		}
 		return nil
 	}

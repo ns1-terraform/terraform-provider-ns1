@@ -59,6 +59,7 @@ func redirectConfigResource() *schema.Resource {
 			"certificate_id": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"forwarding_mode": {
 				Type:         schema.TypeString,
@@ -175,6 +176,8 @@ func RedirectConfigCreate(d *schema.ResourceData, meta interface{}) error {
 		getBoolp(d, "query_forwarding"),
 	)
 
+	r.CertificateID = getStringp(d, "certificate_id")
+
 	cfg, resp, err := client.Redirects.Create(r)
 	if err != nil {
 		return ConvertToNs1Error(resp, err)
@@ -235,8 +238,8 @@ func RedirectConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 	)
 	id := d.Id()
 	r.ID = &id
-	certId := d.Get("certificate_id").(string)
-	r.CertificateID = &certId
+
+	r.CertificateID = getStringp(d, "certificate_id")
 
 	cfg, resp, err := client.Redirects.Update(r)
 	if err != nil {
@@ -340,13 +343,25 @@ func validateURL(val interface{}, key string) (warns []string, errs []error) {
 
 // return nil if the value is not set, a valid pointer if it is
 func getBoolp(d *schema.ResourceData, key string) *bool {
-	val, exists := d.GetOk(key)
-	if exists {
+	val := d.Get(key)
+	if val != nil {
 		ret := val.(bool)
 		return &ret
 	} else {
 		return nil
 	}
+}
+
+// return nil if the value is not set, a valid pointer if it is
+func getStringp(d *schema.ResourceData, key string) *string {
+	val := d.Get(key)
+	if val != nil {
+		ret := val.(string)
+		if ret != "" {
+			return &ret
+		}
+	}
+	return nil
 }
 
 // return nil if the value is not set, a valid pointer if it is
