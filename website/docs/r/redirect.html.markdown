@@ -28,7 +28,8 @@ The following arguments are supported:
 * `path` - (Required) The path on the domain to redirect from.
 * `target` - (Required) The URL to redirect to.
 * `id` - (Optional) The redirect id, if already created.
-* `certificate_id` - (Optional) The certificate redirect id, if already created.
+* `certificate_id` - (Optional) The certificate redirect id.
+                  This field is mandatory if https_enabled is not false.
 * `forwarding_mode` - (Optional - defaults to "all") How the target is interpreted:
   * __all__       appends the entire incoming path to the target destination;
   * __capture__   appends only the part of the incoming path corresponding to the wildcard (*);
@@ -52,9 +53,6 @@ The following arguments are supported:
 
 All of the arguments listed above are exported as attributes, with no
 additions.
-
-Note that https_enabled=true causes a certificate to be requested if none exist: the resulting certificate object
-would not be tracked by the state, so it's recommended to create the certificate object manually in order to track it in terraform state.
 
 ## NS1 Documentation
 

@@ -1,6 +1,7 @@
 package ns1
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -177,6 +178,9 @@ func RedirectConfigCreate(d *schema.ResourceData, meta interface{}) error {
 	)
 
 	r.CertificateID = getStringp(d, "certificate_id")
+	if r.CertificateID == nil && (r.HttpsEnabled == nil || *r.HttpsEnabled) {
+		return errors.New("a certificate is required when https_enabled is not false")
+	}
 
 	cfg, resp, err := client.Redirects.Create(r)
 	if err != nil {
@@ -240,6 +244,9 @@ func RedirectConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 	r.ID = &id
 
 	r.CertificateID = getStringp(d, "certificate_id")
+	if r.CertificateID == nil && (r.HttpsEnabled == nil || *r.HttpsEnabled) {
+		return errors.New("a certificate is required when https_enabled is not false")
+	}
 
 	cfg, resp, err := client.Redirects.Update(r)
 	if err != nil {

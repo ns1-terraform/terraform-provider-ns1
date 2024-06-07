@@ -4,7 +4,7 @@ resource "ns1_redirect_certificate" "example" {
 }
 
 resource "ns1_redirect" "example" {
-	certificate_id   = "${ns1_redirect_certificate.example.id}"
+  certificate_id   = "${ns1_redirect_certificate.example.id}"
   domain           = "www.example.com"
   path             = "/from/path"
   target           = "https://url.com/target/path"
