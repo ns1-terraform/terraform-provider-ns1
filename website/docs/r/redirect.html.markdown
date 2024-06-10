@@ -29,7 +29,6 @@ The following arguments are supported:
 * `target` - (Required) The URL to redirect to.
 * `id` - (Optional) The redirect id, if already created.
 * `certificate_id` - (Optional) The certificate redirect id.
-                  This field is mandatory if https_enabled is not false.
 * `forwarding_mode` - (Optional - defaults to "all") How the target is interpreted:
   * __all__       appends the entire incoming path to the target destination;
   * __capture__   appends only the part of the incoming path corresponding to the wildcard (*);
@@ -43,7 +42,7 @@ The following arguments are supported:
                   prefer the new target page);
   * __masking__   preserves the redirected domain in the browser's address bar (this lets users see the
                   address they entered, even though the displayed content comes from a different web page).
-* `https_enabled` - (Optional - defaults to true) Enables HTTPS support on the source domain by using Let's Encrypt certificates.
+* `https_enabled` - (Read Only) True if HTTPS is supported on the source domain by using Let's Encrypt certificates.
 * `https_forced` - (Optional - defaults to true) Forces redirect for users that try to visit HTTP domain to HTTPS instead.
 * `query_forwarding` - (Optional - defaults to false) Enables the query string of a URL to be applied directly to the new target URL.
 * `tags` - (Optional - array) Tags associated with the configuration.

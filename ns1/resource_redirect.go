@@ -1,10 +1,10 @@
 package ns1
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"regexp"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -52,6 +52,10 @@ func redirectConfigResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"https_enabled": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"last_updated": {
 				Type:     schema.TypeInt,
 				Computed: true,
@@ -74,15 +78,10 @@ func redirectConfigResource() *schema.Resource {
 				Default:      "permanent",
 				ValidateFunc: forwardingTypeStringEnum.ValidateFunc,
 			},
-			"https_enabled": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
-			},
 			"https_forced": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  true,
+				Computed: true,
 			},
 			"query_forwarding": {
 				Type:     schema.TypeBool,
@@ -177,9 +176,14 @@ func RedirectConfigCreate(d *schema.ResourceData, meta interface{}) error {
 		getBoolp(d, "query_forwarding"),
 	)
 
-	r.CertificateID = getStringp(d, "certificate_id")
-	if r.CertificateID == nil && (r.HttpsEnabled == nil || *r.HttpsEnabled) {
-		return errors.New("a certificate is required when https_enabled is not false")
+	cert := getStringp(d, "certificate_id")
+	if cert != nil {
+		r.CertificateID = cert
+		t := true
+		r.HttpsEnabled = &t
+	} else {
+		f := false
+		r.HttpsEnabled = &f
 	}
 
 	cfg, resp, err := client.Redirects.Create(r)
@@ -243,9 +247,14 @@ func RedirectConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 	id := d.Id()
 	r.ID = &id
 
-	r.CertificateID = getStringp(d, "certificate_id")
-	if r.CertificateID == nil && (r.HttpsEnabled == nil || *r.HttpsEnabled) {
-		return errors.New("a certificate is required when https_enabled is not false")
+	cert := getStringp(d, "certificate_id")
+	if cert != nil {
+		r.CertificateID = cert
+		t := true
+		r.HttpsEnabled = &t
+	} else {
+		f := false
+		r.HttpsEnabled = &f
 	}
 
 	cfg, resp, err := client.Redirects.Update(r)
@@ -260,6 +269,16 @@ func RedirectCertCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 
 	cert, resp, err := client.RedirectCertificates.Create(d.Get("domain").(string))
+	if err == nil && cert.ID != nil {
+		for i := 0; i < 20; i++ {
+			// 20 x 500 milliseconds = max 10 seconds plus network delay
+			time.Sleep(500 * time.Millisecond)
+			cert, _, err = client.RedirectCertificates.Get(*cert.ID)
+			if cert.Certificate != nil || cert.Errors != nil {
+				break
+			}
+		}
+	}
 	if err != nil {
 		return ConvertToNs1Error(resp, err)
 	}
@@ -288,7 +307,19 @@ func RedirectCertRead(d *schema.ResourceData, meta interface{}) error {
 // RedirectCertDelete deletes the redirect certificate from ns1
 func RedirectCertDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	resp, err := client.RedirectCertificates.Delete(d.Get("id").(string))
+	id := d.Get("id").(string)
+	resp, err := client.RedirectCertificates.Delete(id)
+	if err == nil {
+		for i := 0; i < 20; i++ {
+			// 20 x 500 milliseconds = max 10 seconds plus network delay
+			time.Sleep(500 * time.Millisecond)
+			_, _, err := client.RedirectCertificates.Get(id)
+			if err != nil {
+				break
+			}
+		}
+	}
+
 	d.SetId("")
 	return ConvertToNs1Error(resp, err)
 }

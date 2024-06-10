@@ -29,6 +29,8 @@ func TestAccRedirectConfig_basic(t *testing.T) {
 					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
 					testAccCheckRedirectConfigFwType(&redirect, "masking"),
 					testAccCheckRedirectConfigTags(&redirect, []string{"test", "it"}),
+					testAccCheckRedirectConfigHTTPS(&redirect, true),
+					testAccCheckRedirectConfigCertIdPresent(&redirect, true),
 				),
 			},
 			{
@@ -38,6 +40,8 @@ func TestAccRedirectConfig_basic(t *testing.T) {
 					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
 					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
 					testAccCheckRedirectConfigTags(&redirect, []string{}),
+					testAccCheckRedirectConfigHTTPS(&redirect, true),
+					testAccCheckRedirectConfigCertIdPresent(&redirect, true),
 				),
 			},
 			{
@@ -70,6 +74,7 @@ func TestAccRedirectConfig_http_to_https(t *testing.T) {
 					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
 					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
 					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
+					testAccCheckRedirectConfigTags(&redirect, []string{}),
 					testAccCheckRedirectConfigHTTPS(&redirect, false),
 					testAccCheckRedirectConfigCertIdPresent(&redirect, false),
 				),
@@ -80,8 +85,31 @@ func TestAccRedirectConfig_http_to_https(t *testing.T) {
 					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
 					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
 					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
+					testAccCheckRedirectConfigTags(&redirect, []string{}),
 					testAccCheckRedirectConfigHTTPS(&redirect, true),
 					testAccCheckRedirectConfigCertIdPresent(&redirect, true),
+				),
+			},
+			{
+				Config: testAccRedirectHTTPwithCert(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
+					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
+					testAccCheckRedirectConfigTags(&redirect, []string{}),
+					testAccCheckRedirectConfigHTTPS(&redirect, true),
+					testAccCheckRedirectConfigCertIdPresent(&redirect, true),
+				),
+			},
+			{
+				Config: testAccRedirectHTTP(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
+					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
+					testAccCheckRedirectConfigTags(&redirect, []string{}),
+					testAccCheckRedirectConfigHTTPS(&redirect, false),
+					testAccCheckRedirectConfigCertIdPresent(&redirect, false),
 				),
 			},
 		},
@@ -91,13 +119,12 @@ func TestAccRedirectConfig_http_to_https(t *testing.T) {
 func testAccRedirectBasic(rString string) string {
 	return fmt.Sprintf(`
 resource "ns1_redirect" "it" {
-	certificate_id   = "${ns1_redirect_certificate.example.id}"
+  certificate_id   = "${ns1_redirect_certificate.example.id}"
   domain           = "test.${ns1_zone.test.zone}"
   path             = "/from/path/*"
   target           = "https://url.com/target/path"
   forwarding_mode  = "capture"
   forwarding_type  = "masking"
-  https_enabled    = true
   https_forced     = true
   query_forwarding = true
   tags             = [ "test", "it" ]
@@ -116,13 +143,12 @@ resource "ns1_zone" "test" {
 func testAccRedirectUpdated(rString string) string {
 	return fmt.Sprintf(`
 resource "ns1_redirect" "it" {
-	certificate_id   = "${ns1_redirect_certificate.example.id}"
+  certificate_id   = "${ns1_redirect_certificate.example.id}"
   domain           = "test.${ns1_zone.test.zone}"
   path             = "/from/path/*"
   target           = "https://url.com/target/path"
   forwarding_mode  = "capture"
   forwarding_type  = "permanent"
-  https_enabled    = true
   https_forced     = true
   query_forwarding = true
   tags             = [ ]
@@ -144,8 +170,26 @@ resource "ns1_redirect" "it" {
   domain           = "test.${ns1_zone.test.zone}"
   path             = "/from/path/*"
   target           = "https://url.com/target/path"
-  https_enabled    = false
   https_forced     = false
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRedirectHTTPwithCert(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_redirect" "it" {
+  certificate_id   = ""
+  domain           = "test.${ns1_zone.test.zone}"
+  path             = "/from/path/*"
+  target           = "https://url.com/target/path"
+}
+
+resource "ns1_redirect_certificate" "example" {
+  domain       = "*.${ns1_zone.test.zone}"
 }
 
 resource "ns1_zone" "test" {
