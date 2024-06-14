@@ -389,11 +389,11 @@ func testAccCheckRedirectConfigTags(cfg *redirect.Configuration, expected []stri
 }
 
 func eraseAll(t *testing.T, domain string) func() {
-	client, err := sharedClient()
-	if err != nil {
-		t.Fatalf("failed to get shared client: %e", err)
-	}
 	return func() {
+		client, err := sharedClient()
+		if err != nil {
+			t.Fatalf("failed to get shared client: %e", err)
+		}
 		// delete all configs
 		redirects := client.Redirects
 		cfgs, _, err := redirects.List()
