@@ -151,6 +151,13 @@ func resourceZone() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 		Create:   zoneCreate,
 		Read:     zoneRead,
@@ -208,6 +215,14 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	if z.Link != nil && *z.Link != "" {
 		d.Set("link", *z.Link)
 	}
+	if len(z.Tags) > 0 {
+		terraformTags := make(map[string]interface{}, len(z.Tags))
+		for k, v := range z.Tags {
+			terraformTags[k] = v
+		}
+		d.Set("tags", terraformTags)
+	}
+
 	return nil
 }
 
@@ -287,6 +302,14 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 		z.Secondary.OtherPorts = make([]int, len(otherPortsRaw))
 		for i, otherPort := range otherPortsRaw {
 			z.Secondary.OtherPorts[i] = otherPort.(int)
+		}
+	}
+
+	if v, ok := d.GetOk("tags"); ok {
+		tagsRaw := v.(map[string]interface{})
+		z.Tags = make(map[string]string, len(tagsRaw))
+		for t, val := range tagsRaw {
+			z.Tags[t] = val.(string)
 		}
 	}
 	// TODO: support OtherNetworks after ns1-go supports it
@@ -403,7 +426,8 @@ func zoneCreate(d *schema.ResourceData, meta interface{}) error {
 // zoneRead reads the given zone data from ns1
 func zoneRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	z, resp, err := client.Zones.Get(d.Get("zone").(string))
+	// false means the records aren't fetched
+	z, resp, err := client.Zones.Get(d.Get("zone").(string), false)
 	if err != nil {
 		if err == ns1.ErrZoneMissing {
 			log.Printf("[DEBUG] NS1 zone (%s) not found", d.Id())

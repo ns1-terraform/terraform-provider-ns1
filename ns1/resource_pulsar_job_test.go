@@ -16,7 +16,7 @@ import (
 // Creating basic Pulsar jobs
 func TestAccPulsarJob_basic(t *testing.T) {
 	var (
-		job     = pulsar.PulsarJob{}
+		job     = pulsar.Job{}
 		jobName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 		appName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 	)
@@ -35,7 +35,7 @@ func TestAccPulsarJob_basic(t *testing.T) {
 					testAccCheckPulsarJobActive(&job, true),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccURLPath"),
 				),
 			},
@@ -67,7 +67,7 @@ func TestAccPulsarJob_basic(t *testing.T) {
 func TestAccPulsarJob_updated_same_type(t *testing.T) {
 	var (
 		app     = pulsar.Application{}
-		job     = pulsar.PulsarJob{}
+		job     = pulsar.Job{}
 		jobName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 		appName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 
@@ -90,7 +90,7 @@ func TestAccPulsarJob_updated_same_type(t *testing.T) {
 					testAccCheckPulsarJobActive(&job, true),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccURLPath"),
 				),
 			},
@@ -105,7 +105,7 @@ func TestAccPulsarJob_updated_same_type(t *testing.T) {
 					testAccCheckPulsarJobActive(&job, false),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccUpdatedHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccUpdatedHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccUpdatedURLPath"),
 				),
 			},
@@ -151,7 +151,7 @@ func TestAccPulsarJob_updated_same_type(t *testing.T) {
 // Updating pulsar jobs changing its type (JavaScript <-> Bulk Beacon)
 func TestAccPulsarJob_updated_different_type(t *testing.T) {
 	var (
-		job     = pulsar.PulsarJob{}
+		job     = pulsar.Job{}
 		jobName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 		app     = pulsar.Application{}
 		appName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
@@ -176,7 +176,7 @@ func TestAccPulsarJob_updated_different_type(t *testing.T) {
 					testAccCheckPulsarJobActive(&job, true),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccURLPath"),
 				),
 			},
@@ -226,7 +226,7 @@ func TestAccPulsarJob_updated_different_type(t *testing.T) {
 					testAccCheckPulsarJobActive(&job, false),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccUpdatedHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccUpdatedHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccUpdatedURLPath"),
 				),
 			},
@@ -237,7 +237,7 @@ func TestAccPulsarJob_updated_different_type(t *testing.T) {
 // Creating Pulsar jobs with Blend Metric Weights
 func TestAccPulsarJob_BlendMetricWeights(t *testing.T) {
 	var (
-		job     = pulsar.PulsarJob{}
+		job     = pulsar.Job{}
 		jobName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 
 		app     = pulsar.Application{}
@@ -276,7 +276,7 @@ func TestAccPulsarJob_BlendMetricWeights(t *testing.T) {
 					testAccCheckPulsarJobActive(&job, true),
 					testAccCheckPulsarJobShared(&job, false),
 					testAccCheckPulsarJobSCommunity(&job, false),
-					testAccCheckPulsarJobSHost(&job, "testAccCompleteHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccCompleteHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccCompleteURLPath"),
 					testAccCHeckPulsarJobBlendMetricWeights_timestamp(&job, 123),
 					testAccCHeckPulsarJobBlendMetricWeights_weights(&job, weights),
@@ -298,7 +298,7 @@ func TestAccPulsarJob_BlendMetricWeights(t *testing.T) {
 					testAccCheckPulsarJobExists("ns1_pulsarjob.it", &job),
 					testAccCheckPulsarJobName(&job, jobName),
 					testAccCheckPulsarJobTypeID(&job, "custom"),
-					testAccCheckPulsarJobSHost(&job, "testAccHost"),
+					testAccCheckPulsarJobSHost(&job, "testAccHost.com"),
 					testAccCheckPulsarJobSUrlPath(&job, "/testAccUrlPath"),
 					testAccCheckPulsarJobAppID(&job, &app),
 					testAccCheckPulsarJobActive(&job, true),
@@ -315,7 +315,7 @@ func TestAccPulsarJob_BlendMetricWeights(t *testing.T) {
 // Manually deleting Pulsar Jobs
 func TestAccPulsarJob_ManualDelete(t *testing.T) {
 	var (
-		job     = pulsar.PulsarJob{}
+		job     = pulsar.Job{}
 		jobName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
 
 		appName = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
@@ -385,7 +385,7 @@ func testAccJSPulsarJobBasic(appName, jobName string) string {
 		type_id = "latency"
 		app_id = "${ns1_application.app.id}"
 		config {
-			host = "testAccHost"
+			host = "testAccHost.com"
 			url_path = "/testAccURLPath"
 		}
 }
@@ -404,7 +404,7 @@ func testAccJSPulsarJobUpdated(appName, jobName string) string {
 		active = false
 		shared = false
 		config {
-			host = "testAccUpdatedHost"
+			host = "testAccUpdatedHost.com"
 			url_path = "/testAccUpdatedURLPath"
 		}
 }
@@ -421,7 +421,7 @@ func testAccJSPulsarJobBlendMetricWeights(appName, jobName string) string {
 		type_id = "latency"
 		app_id = "${ns1_application.app.id}"
 		config {
-			host = "testAccCompleteHost"
+			host = "testAccCompleteHost.com"
 			url_path = "/testAccCompleteURLPath"
 		}
 		blend_metric_weights {
@@ -481,7 +481,7 @@ func testAccBBPulsarJobConverted(appName, jobName string) string {
 		type_id = "custom"
 		app_id = "${ns1_application.app.id}"
 		config {
-			host = ""
+			host = "testAccBBPulsarJobConverted.com"
 			url_path = ""
 		}
 }
@@ -498,7 +498,7 @@ func testAccBBPulsarJobBlendMetricWeights(appName, jobName string) string {
 		type_id = "custom"
 		app_id = "${ns1_application.app.id}"
 		config {
-			host = "testAccHost"
+			host = "testAccHost.com"
 			url_path = "/testAccUrlPath"
 		}
 		blend_metric_weights {
@@ -520,7 +520,7 @@ func testAccBBPulsarJobBlendMetricWeights(appName, jobName string) string {
 `, appName, jobName)
 }
 
-func testAccCheckPulsarJobExists(n string, job *pulsar.PulsarJob) resource.TestCheckFunc {
+func testAccCheckPulsarJobExists(n string, job *pulsar.Job) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -571,7 +571,7 @@ func testAccCheckPulsarJobDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckPulsarJobName(job *pulsar.PulsarJob, expected string) resource.TestCheckFunc {
+func testAccCheckPulsarJobName(job *pulsar.Job, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if job.Name != expected {
 			return fmt.Errorf("job.Name: got: %s want: %s", job.Name, expected)
@@ -580,7 +580,7 @@ func testAccCheckPulsarJobName(job *pulsar.PulsarJob, expected string) resource.
 	}
 }
 
-func testAccCheckPulsarJobTypeID(job *pulsar.PulsarJob, expected string) resource.TestCheckFunc {
+func testAccCheckPulsarJobTypeID(job *pulsar.Job, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if job.TypeID != expected {
 			return fmt.Errorf("job.TypeID: got: %s want: %s", job.TypeID, expected)
@@ -589,7 +589,7 @@ func testAccCheckPulsarJobTypeID(job *pulsar.PulsarJob, expected string) resourc
 	}
 }
 
-func testAccCheckPulsarJobAppID(job *pulsar.PulsarJob, app *pulsar.Application) resource.TestCheckFunc {
+func testAccCheckPulsarJobAppID(job *pulsar.Job, app *pulsar.Application) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if job.AppID != app.ID {
 			return fmt.Errorf("job.AppID: got: %s want: %s", job.AppID, app.ID)
@@ -598,7 +598,7 @@ func testAccCheckPulsarJobAppID(job *pulsar.PulsarJob, app *pulsar.Application) 
 	}
 }
 
-func testAccCheckPulsarJobActive(job *pulsar.PulsarJob, expected bool) resource.TestCheckFunc {
+func testAccCheckPulsarJobActive(job *pulsar.Job, expected bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if job.Active != expected {
 			return fmt.Errorf("job.Active: got: %t want: %t", job.Active, expected)
@@ -607,7 +607,7 @@ func testAccCheckPulsarJobActive(job *pulsar.PulsarJob, expected bool) resource.
 	}
 }
 
-func testAccCheckPulsarJobShared(job *pulsar.PulsarJob, expected bool) resource.TestCheckFunc {
+func testAccCheckPulsarJobShared(job *pulsar.Job, expected bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if job.Shared != expected {
 			return fmt.Errorf("job.Shared: got: %t want: %t", job.Shared, expected)
@@ -616,7 +616,7 @@ func testAccCheckPulsarJobShared(job *pulsar.PulsarJob, expected bool) resource.
 	}
 }
 
-func testAccCheckPulsarJobSCommunity(job *pulsar.PulsarJob, expected bool) resource.TestCheckFunc {
+func testAccCheckPulsarJobSCommunity(job *pulsar.Job, expected bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if job.Community != expected {
 			return fmt.Errorf("job.Community: got: %t want: %t", job.Community, expected)
@@ -625,7 +625,7 @@ func testAccCheckPulsarJobSCommunity(job *pulsar.PulsarJob, expected bool) resou
 	}
 }
 
-func testAccCheckPulsarJobSHost(job *pulsar.PulsarJob, expected string) resource.TestCheckFunc {
+func testAccCheckPulsarJobSHost(job *pulsar.Job, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if *job.Config.Host != expected {
 			return fmt.Errorf("job.Config.Host: got: %s want: %s", *job.Config.Host, expected)
@@ -634,16 +634,16 @@ func testAccCheckPulsarJobSHost(job *pulsar.PulsarJob, expected string) resource
 	}
 }
 
-func testAccCheckPulsarJobSUrlPath(job *pulsar.PulsarJob, expected string) resource.TestCheckFunc {
+func testAccCheckPulsarJobSUrlPath(job *pulsar.Job, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if *job.Config.URL_Path != expected {
-			return fmt.Errorf("job.Config.URL_Path: got: %s want: %s", *job.Config.URL_Path, expected)
+		if *job.Config.URLPath != expected {
+			return fmt.Errorf("job.Config.URL_Path: got: %s want: %s", *job.Config.URLPath, expected)
 		}
 		return nil
 	}
 }
 
-func testAccCHeckPulsarJobBlendMetricWeights_timestamp(job *pulsar.PulsarJob, expected int) resource.TestCheckFunc {
+func testAccCHeckPulsarJobBlendMetricWeights_timestamp(job *pulsar.Job, expected int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if job.Config.BlendMetricWeights.Timestamp != expected {
 			return fmt.Errorf("job.Config.BlendMetricWeights.Timestamp: got: %v want: %v", job.Config.BlendMetricWeights.Timestamp, expected)
@@ -652,7 +652,7 @@ func testAccCHeckPulsarJobBlendMetricWeights_timestamp(job *pulsar.PulsarJob, ex
 	}
 }
 
-func testAccCHeckPulsarJobBlendMetricWeights_weights(job *pulsar.PulsarJob, expected []pulsar.Weights) resource.TestCheckFunc {
+func testAccCHeckPulsarJobBlendMetricWeights_weights(job *pulsar.Job, expected []pulsar.Weights) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		numberWeights := len(job.Config.BlendMetricWeights.Weights)
 		numberExpected := len(expected)
@@ -678,7 +678,7 @@ func testAccCHeckPulsarJobBlendMetricWeights_weights(job *pulsar.PulsarJob, expe
 	}
 }
 
-func testAccManualDeletePulsarJob(job *pulsar.PulsarJob) func() {
+func testAccManualDeletePulsarJob(job *pulsar.Job) func() {
 	return func() {
 		client := testAccProvider.Meta().(*ns1.Client)
 		_, err := client.PulsarJobs.Delete(job)

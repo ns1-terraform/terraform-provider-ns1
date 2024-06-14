@@ -99,6 +99,10 @@ func dataSourceZone() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
 		},
 		Read: zoneRead,
 	}

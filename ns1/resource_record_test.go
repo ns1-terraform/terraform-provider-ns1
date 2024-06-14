@@ -102,6 +102,41 @@ func TestAccRecord_updated(t *testing.T) {
 	})
 }
 
+func TestAccRecord_remove_all_filters(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("test.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordBasic(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordFilterCount(&record, 3),
+				),
+			},
+			{
+				Config: testAccRecordUpdatedNoFilters(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordFilterCount(&record, 0),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.it",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/CNAME", zoneName, domainName),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccRecord_meta(t *testing.T) {
 	var record dns.Record
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
@@ -376,6 +411,91 @@ func TestAccRecord_URLFWD(t *testing.T) {
 				ResourceName:      "ns1_record.urlfwd",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/URLFWD", zoneName, domainName),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccRecord_WithTags(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("tagged.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordWithTags(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.tagged", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTagData(
+						map[string]string{"tag1": "location1", "tag2": "location2"},
+						&record,
+					),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.tagged",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/A", zoneName, domainName),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccRecord_updatedWithTags(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("test.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordBasic(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 60),
+					testAccCheckRecordUseClientSubnet(&record, true),
+					testAccCheckRecordRegionName(&record, []string{"cal"}),
+					// testAccCheckRecordAnswerMetaWeight(&record, 10),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{fmt.Sprintf("test1.%s", zoneName)},
+					),
+				),
+			},
+			{
+				Config: testAccRecordUpdatedWithTags(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 120),
+					testAccCheckRecordUseClientSubnet(&record, false),
+					testAccCheckRecordRegionName(&record, []string{"ny", "wa"}),
+					// testAccCheckRecordAnswerMetaWeight(&record, 5),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{fmt.Sprintf("test2.%s", zoneName)},
+					),
+					testAccCheckRecordTagData(
+						map[string]string{"tag1": "location1", "tag2": "location2"},
+						&record,
+					),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.it",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/CNAME", zoneName, domainName),
 				ImportStateVerify: true,
 			},
 		},
@@ -735,7 +855,7 @@ func testAccURLFWDPreCheck(t *testing.T) {
 		t.Fatalf("failed to create test zone %s: %s", name, err)
 	}
 
-	record := dns.NewRecord(name, fmt.Sprintf("domain.%s", name), "URLFWD")
+	record := dns.NewRecord(name, fmt.Sprintf("domain.%s", name), "URLFWD", nil, nil)
 	record.Answers = []*dns.Answer{{Rdata: []string{"/", "https://example.com", "301", "2", "0"}}}
 
 	_, err = client.Records.Create(record)
@@ -779,6 +899,16 @@ func testAccCheckRecordExists(n string, record *dns.Record) resource.TestCheckFu
 		}
 
 		*record = *foundRecord
+
+		return nil
+	}
+}
+
+func testAccCheckRecordFilterCount(r *dns.Record, expected int) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if len(r.Filters) != expected {
+			return fmt.Errorf("r.Filters, got: %d, want: %d", len(r.Filters), expected)
+		}
 
 		return nil
 	}
@@ -849,13 +979,13 @@ func ExpectOverrideTTLNotNil() bool {
 func testAccCheckRecordOverrideTTL(r *dns.Record, expectedNil bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if expectedNil {
-			if r.Override_TTL != nil {
-				return fmt.Errorf("Override TTL: got: %#v want: null", *r.Override_TTL)
+			if r.OverrideTTL != nil {
+				return fmt.Errorf("Override TTL: got: %#v want: null", *r.OverrideTTL)
 			}
 			return nil
 		}
-		if r.Override_TTL == nil {
-			return fmt.Errorf("Override TTL: got: %v want: notNil", r.Override_TTL)
+		if r.OverrideTTL == nil {
+			return fmt.Errorf("Override TTL: got: %v want: notNil", r.OverrideTTL)
 		}
 		return nil
 	}
@@ -959,6 +1089,16 @@ func testAccCheckRecordAnswerMetaUp(expected interface{}, r *dns.Record) resourc
 			if !reflect.DeepEqual(ch, up) {
 				return fmt.Errorf("r.Answers[0].Meta.Up: map: %#v want: %#v", up, ch)
 			}
+		}
+		return nil
+	}
+}
+
+func testAccCheckRecordTagData(expected interface{}, r *dns.Record) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		recordTags := r.Tags
+		if !reflect.DeepEqual(recordTags, expected) {
+			return fmt.Errorf("tags: got: %#v want: %#v", recordTags, expected)
 		}
 		return nil
 	}
@@ -1160,6 +1300,30 @@ resource "ns1_record" "it" {
 
 resource "ns1_zone" "test" {
   zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordUpdatedNoFilters(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+	zone              = "${ns1_zone.test.zone}"
+	domain            = "test.${ns1_zone.test.zone}"
+	type              = "CNAME"
+	ttl               = 60
+	
+	answers {
+		answer = "test1.${ns1_zone.test.zone}"
+		region = "cal"
+	}
+	
+	regions {
+		name = "cal"
+	}
+}
+	
+resource "ns1_zone" "test" {
+	zone = "terraform-test-%s.io"
 }
 `, rString)
 }
@@ -1390,6 +1554,81 @@ resource "ns1_record" "urlfwd" {
   answers {
     answer = "/ https://example.com 301 2 0"
   }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordWithTags(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "tagged" {
+  zone     = "${ns1_zone.test.zone}"
+  domain   = "tagged.${ns1_zone.test.zone}"
+  type     = "A"
+  answers {
+    answer = "1.2.3.4"
+  }
+  tags = {tag1 = "location1", tag2 = "location2"}
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordUpdatedWithTags(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "test.${ns1_zone.test.zone}"
+  type              = "CNAME"
+  ttl               = 120
+  use_client_subnet = false
+
+  // meta {
+  //   weight = 5
+  //   connections = 3
+  //   // up = false // Ignored by d.GetOk("meta.0.up") due to known issue
+  // }
+
+  answers {
+    answer = "test2.${ns1_zone.test.zone}"
+    region = "ny"
+
+    // meta {
+    //   weight = 5
+    //   up = true
+    // }
+  }
+
+  regions {
+    name = "ny"
+    // meta {
+    //   us_state = ["NY"]
+    // }
+  }
+
+  regions {
+    name = "wa"
+    // meta {
+    //   us_state = ["WA"]
+    // }
+  }
+
+  filters {
+    filter = "select_first_n"
+    config = {N=1}
+  }
+
+  filters {
+    filter = "geotarget_country"
+  }
+
+  tags = {tag1: "location1", tag2: "location2"}
 }
 
 resource "ns1_zone" "test" {

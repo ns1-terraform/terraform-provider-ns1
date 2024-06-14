@@ -143,7 +143,7 @@ func pulsarJobResource() *schema.Resource {
 	}
 }
 
-func pulsarJobToResourceData(d *schema.ResourceData, j *pulsar.PulsarJob) error {
+func pulsarJobToResourceData(d *schema.ResourceData, j *pulsar.Job) error {
 	d.SetId(j.JobID)
 	d.Set("customer", j.Customer)
 	d.Set("name", j.Name)
@@ -163,19 +163,19 @@ func pulsarJobToResourceData(d *schema.ResourceData, j *pulsar.PulsarJob) error 
 	return nil
 }
 
-func jobConfigToResourceData(d *schema.ResourceData, j *pulsar.PulsarJob) error {
+func jobConfigToResourceData(d *schema.ResourceData, j *pulsar.Job) error {
 	config := make(map[string]interface{})
 	if j.Config.Host != nil {
 		config["host"] = *j.Config.Host
 	}
-	if j.Config.URL_Path != nil {
-		config["url_path"] = *j.Config.URL_Path
+	if j.Config.URLPath != nil {
+		config["url_path"] = *j.Config.URLPath
 	}
-	if j.Config.Http != nil {
-		config["http"] = *j.Config.Http
+	if j.Config.HTTP != nil {
+		config["http"] = *j.Config.HTTP
 	}
-	if j.Config.Https != nil {
-		config["https"] = *j.Config.Https
+	if j.Config.HTTPS != nil {
+		config["https"] = *j.Config.HTTPS
 	}
 	if j.Config.RequestTimeoutMillis != nil {
 		config["request_timeout_millis"] = *j.Config.RequestTimeoutMillis
@@ -228,7 +228,7 @@ func weightsToResourceData(w *pulsar.Weights) map[string]interface{} {
 	return weight
 }
 
-func resourceDataToPulsarJob(j *pulsar.PulsarJob, d *schema.ResourceData) error {
+func resourceDataToPulsarJob(j *pulsar.Job, d *schema.ResourceData) error {
 	j.Name = d.Get("name").(string)
 	j.TypeID = d.Get("type_id").(string)
 	j.JobID = d.Id()
@@ -274,15 +274,15 @@ func resourceDataToJobConfig(v interface{}) (*pulsar.JobConfig, error) {
 	}
 	if v, ok := rawconfig["url_path"]; ok {
 		url_path := v.(string)
-		j.URL_Path = &url_path
+		j.URLPath = &url_path
 	}
 	if v, ok := rawconfig["http"]; ok {
 		b := v.(bool)
-		j.Http = &b
+		j.HTTP = &b
 	}
 	if v, ok := rawconfig["https"]; ok {
 		b := v.(bool)
-		j.Https = &b
+		j.HTTPS = &b
 	}
 	if v, ok := rawconfig["request_timeout_millis"]; ok {
 		i := v.(int)
@@ -336,7 +336,7 @@ func resourceDataToWeights(v interface{}) []*pulsar.Weights {
 // PulsarJobCreate creates the given Pulsar Job in ns1
 func PulsarJobCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	j := pulsar.PulsarJob{}
+	j := pulsar.Job{}
 	if err := resourceDataToPulsarJob(&j, d); err != nil {
 		return err
 	}
@@ -376,7 +376,7 @@ func pulsarJobRead(d *schema.ResourceData, meta interface{}) error {
 // PulsarJobUpdate updates the Pulsar Job with given parameters in ns1
 func PulsarJobUpdate(job_schema *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	j := pulsar.PulsarJob{
+	j := pulsar.Job{
 		JobID: job_schema.Id(),
 		AppID: job_schema.Get("app_id").(string),
 	}
@@ -394,7 +394,7 @@ func PulsarJobUpdate(job_schema *schema.ResourceData, meta interface{}) error {
 // pulsarJobDelete deletes the given Pulsar Job from ns1
 func pulsarJobDelete(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
-	j := pulsar.PulsarJob{}
+	j := pulsar.Job{}
 	resourceDataToPulsarJob(&j, d)
 	resp, err := client.PulsarJobs.Delete(&j)
 	d.SetId("")
