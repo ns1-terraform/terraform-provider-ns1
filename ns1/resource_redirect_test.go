@@ -116,6 +116,43 @@ func TestAccRedirectConfig_http_to_https(t *testing.T) {
 	})
 }
 
+func TestAccRedirectConfig_remoteChanges(t *testing.T) {
+	var redirect redirect.Configuration
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	domainName := fmt.Sprintf("terraform-test-%s.io", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRedirectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRedirectBasic(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
+					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigFwType(&redirect, "masking"),
+					testAccCheckRedirectConfigTags(&redirect, []string{"test", "it"}),
+					testAccCheckRedirectConfigHTTPS(&redirect, true),
+					testAccCheckRedirectConfigCertIdPresent(&redirect, true),
+				),
+			},
+			{
+				PreConfig: eraseAll(t, domainName),
+				Config:    testAccRedirectBasic(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
+					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigFwType(&redirect, "masking"),
+					testAccCheckRedirectConfigTags(&redirect, []string{"test", "it"}),
+					testAccCheckRedirectConfigHTTPS(&redirect, true),
+					testAccCheckRedirectConfigCertIdPresent(&redirect, true),
+				),
+			},
+		},
+	})
+}
+
 func testAccRedirectBasic(rString string) string {
 	return fmt.Sprintf(`
 resource "ns1_redirect" "it" {
@@ -131,7 +168,7 @@ resource "ns1_redirect" "it" {
 }
 
 resource "ns1_redirect_certificate" "example" {
-  domain       = "*.${ns1_zone.test.zone}"
+  domain = "*.${ns1_zone.test.zone}"
 }
 
 resource "ns1_zone" "test" {
@@ -155,7 +192,7 @@ resource "ns1_redirect" "it" {
 }
 
 resource "ns1_redirect_certificate" "example" {
-  domain       = "*.${ns1_zone.test.zone}"
+  domain = "*.${ns1_zone.test.zone}"
 }
 
 resource "ns1_zone" "test" {
@@ -189,7 +226,7 @@ resource "ns1_redirect" "it" {
 }
 
 resource "ns1_redirect_certificate" "example" {
-  domain       = "*.${ns1_zone.test.zone}"
+  domain = "*.${ns1_zone.test.zone}"
 }
 
 resource "ns1_zone" "test" {
@@ -316,5 +353,42 @@ func testAccCheckRedirectConfigTags(cfg *redirect.Configuration, expected []stri
 			return fmt.Errorf("Name: got: %s want: %s", strings.Join(cfg.Tags, ","), strings.Join(expected, ","))
 		}
 		return nil
+	}
+}
+
+func eraseAll(t *testing.T, domain string) func() {
+	client, err := sharedClient()
+	if err != nil {
+		t.Fatalf("failed to get shared client: %e", err)
+	}
+	return func() {
+		// delete all configs
+		redirects := client.Redirects
+		cfgs, _, err := redirects.List()
+		if err != nil {
+			t.Fatalf("failed to get list of redirects: %e", err)
+		}
+		for _, v := range cfgs {
+			if v.ID != nil && strings.HasSuffix(v.Domain, domain) {
+				_, err = redirects.Delete(*v.ID)
+				if err != nil {
+					t.Fatalf("failed to delete redirect %s: %e", v.Domain+"/"+v.Path, err)
+				}
+			}
+		}
+		// delete all certs
+		certificates := client.RedirectCertificates
+		certs, _, err := certificates.List()
+		if err != nil {
+			t.Fatalf("failed to get list of certificates: %e", err)
+		}
+		for _, v := range certs {
+			if v.ID != nil && strings.HasSuffix(v.Domain, domain) {
+				_, err = certificates.Delete(*v.ID)
+				if err != nil {
+					t.Fatalf("failed to delete cert %s: %e", v.Domain, err)
+				}
+			}
+		}
 	}
 }

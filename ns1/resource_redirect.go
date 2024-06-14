@@ -289,15 +289,26 @@ func RedirectCertCreate(d *schema.ResourceData, meta interface{}) error {
 // RedirectCertRead reads the redirect certificate from ns1
 func RedirectCertRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
+	id := d.Get("id").(string)
 
-	cert, resp, err := client.RedirectCertificates.Get(d.Get("id").(string))
+	cert, resp, err := client.RedirectCertificates.Get(id)
+	if err == nil && cert.Errors != nil && *cert.Errors == "Revoking" {
+		// wait for delete
+		for i := 0; i < 20; i++ {
+			// 20 x 500 milliseconds = max 10 seconds plus network delay
+			time.Sleep(500 * time.Millisecond)
+			_, _, err = client.RedirectCertificates.Get(id)
+			if err != nil {
+				break
+			}
+		}
+	}
 	if err != nil {
-		if err == ns1.ErrRedirectNotFound {
+		if err == ns1.ErrRedirectCertificateNotFound {
 			log.Printf("[DEBUG] NS1 redirect certificate (%s) not found", d.Id())
 			d.SetId("")
 			return nil
 		}
-
 		return ConvertToNs1Error(resp, err)
 	}
 

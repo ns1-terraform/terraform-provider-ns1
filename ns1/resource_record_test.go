@@ -1311,17 +1311,17 @@ resource "ns1_record" "it" {
 	domain            = "test.${ns1_zone.test.zone}"
 	type              = "CNAME"
 	ttl               = 60
-	
+
 	answers {
 		answer = "test1.${ns1_zone.test.zone}"
 		region = "cal"
 	}
-	
+
 	regions {
 		name = "cal"
 	}
 }
-	
+
 resource "ns1_zone" "test" {
 	zone = "terraform-test-%s.io"
 }
@@ -1365,7 +1365,7 @@ resource "ns1_record" "it" {
 	type              = "A"
 	answers {
 	  answer = "1.2.3.4"
-  
+
 	  meta = {
 		up = true
 		subdivisions = jsonencode({
@@ -1397,7 +1397,7 @@ resource "ns1_monitoringjob" "test" {
   name = "terraform-test-%s"
   active = true
   regions = [
-    "ams"
+    "nrt"
   ]
   job_type = "http"
   frequency = 60

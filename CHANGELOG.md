@@ -1,6 +1,8 @@
 ## 2.3.0 (June 6, 2024)
 ENHANCEMENTS
 * Adds support for redirect endpoints
+BUGFIX
+* Lifting ordering constraint on regions in record resource
 
 ## 2.2.2 (May 21, 2024)
 BUGFIX
