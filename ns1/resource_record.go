@@ -449,8 +449,8 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		}
 		r.Filters = filters
 	}
-	if regions := d.Get("regions").([]interface{}); len(regions) > 0 {
-		for _, regionRaw := range regions {
+	if regions := d.Get("regions").(*schema.Set); regions.Len() > 0 {
+		for _, regionRaw := range regions.List() {
 			region := regionRaw.(map[string]interface{})
 			ns1R := data.Region{
 				Meta: data.Meta{},
