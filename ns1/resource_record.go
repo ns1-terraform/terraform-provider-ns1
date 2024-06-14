@@ -129,7 +129,7 @@ It is suggested to migrate to a regular "answers" block. Using Terraform 0.12+, 
 				},
 			},
 			"regions": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -302,16 +302,10 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		}
 	}
 	if len(r.Regions) > 0 {
-		keys := make([]string, 0, len(r.Regions))
-		for regionName := range r.Regions {
-			keys = append(keys, regionName)
-		}
-		sort.Strings(keys)
 		regions := make([]map[string]interface{}, 0, len(r.Regions))
-		for _, k := range keys {
+		for name, region := range r.Regions {
 			newRegion := make(map[string]interface{})
-			region := r.Regions[k]
-			newRegion["name"] = k
+			newRegion["name"] = name
 			newRegion["meta"] = region.Meta.StringMap()
 			regions = append(regions, newRegion)
 		}
@@ -455,8 +449,8 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		}
 		r.Filters = filters
 	}
-	if regions := d.Get("regions").([]interface{}); len(regions) > 0 {
-		for _, regionRaw := range regions {
+	if regions := d.Get("regions").(*schema.Set); regions.Len() > 0 {
+		for _, regionRaw := range regions.List() {
 			region := regionRaw.(map[string]interface{})
 			ns1R := data.Region{
 				Meta: data.Meta{},
