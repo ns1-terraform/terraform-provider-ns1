@@ -179,11 +179,14 @@ func RedirectConfigCreate(d *schema.ResourceData, meta interface{}) error {
 	cert := getStringp(d, "certificate_id")
 	if cert != nil {
 		_, _, err := client.RedirectCertificates.Get(*cert)
-		if err == nil || err != ns1.ErrRedirectCertificateNotFound {
-			r.CertificateID = cert
-			t := true
-			r.HttpsEnabled = &t
+		if err == ns1.ErrRedirectCertificateNotFound {
+			cert = nil
 		}
+	}
+	if cert != nil {
+		r.CertificateID = cert
+		t := true
+		r.HttpsEnabled = &t
 	} else {
 		f := false
 		r.HttpsEnabled = &f
