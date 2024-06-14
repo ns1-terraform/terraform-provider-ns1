@@ -2,6 +2,7 @@ package ns1
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"testing"
 
@@ -18,7 +19,7 @@ func TestAccRedirectConfig_basic(t *testing.T) {
 	domainName := fmt.Sprintf("terraform-test-%s.io", rString)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheck(t); testAccRedirectPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRedirectDestroy,
 		Steps: []resource.TestStep{
@@ -64,7 +65,7 @@ func TestAccRedirectConfig_http_to_https(t *testing.T) {
 	domainName := fmt.Sprintf("terraform-test-%s.io", rString)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheck(t); testAccRedirectPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRedirectDestroy,
 		Steps: []resource.TestStep{
@@ -101,6 +102,31 @@ func TestAccRedirectConfig_http_to_https(t *testing.T) {
 					testAccCheckRedirectConfigCertIdPresent(&redirect, true),
 				),
 			},
+		},
+	})
+}
+
+func TestAccRedirectConfig_https_to_http(t *testing.T) {
+	var redirect redirect.Configuration
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	domainName := fmt.Sprintf("terraform-test-%s.io", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t); testAccRedirectPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRedirectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRedirectBasic(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
+					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigFwType(&redirect, "masking"),
+					testAccCheckRedirectConfigTags(&redirect, []string{"test", "it"}),
+					testAccCheckRedirectConfigHTTPS(&redirect, true),
+					testAccCheckRedirectConfigCertIdPresent(&redirect, true),
+				),
+			},
 			{
 				Config: testAccRedirectHTTP(rString),
 				Check: resource.ComposeTestCheckFunc(
@@ -122,7 +148,7 @@ func TestAccRedirectConfig_remoteChanges(t *testing.T) {
 	domainName := fmt.Sprintf("terraform-test-%s.io", rString)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheck(t); testAccRedirectPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckRedirectDestroy,
 		Steps: []resource.TestStep{
@@ -207,7 +233,10 @@ resource "ns1_redirect" "it" {
   domain           = "test.${ns1_zone.test.zone}"
   path             = "/from/path/*"
   target           = "https://url.com/target/path"
+  forwarding_mode  = "all"
+  forwarding_type  = "permanent"
   https_forced     = false
+  tags             = [ ]
 }
 
 resource "ns1_zone" "test" {
@@ -223,6 +252,9 @@ resource "ns1_redirect" "it" {
   domain           = "test.${ns1_zone.test.zone}"
   path             = "/from/path/*"
   target           = "https://url.com/target/path"
+  forwarding_mode  = "all"
+  forwarding_type  = "permanent"
+  tags             = [ ]
 }
 
 resource "ns1_redirect_certificate" "example" {
@@ -390,5 +422,17 @@ func eraseAll(t *testing.T, domain string) func() {
 				}
 			}
 		}
+	}
+}
+
+// See if we have redirect permissions by trying to list redirects
+func testAccRedirectPreCheck(t *testing.T) {
+	client, err := sharedClient()
+	if err != nil {
+		log.Fatalf("failed to get shared client: %s", err)
+	}
+	_, _, err = client.Redirects.List()
+	if err != nil {
+		t.Skipf("account not authorized for redirects, skipping test")
 	}
 }

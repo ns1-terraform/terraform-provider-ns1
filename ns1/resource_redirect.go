@@ -178,9 +178,12 @@ func RedirectConfigCreate(d *schema.ResourceData, meta interface{}) error {
 
 	cert := getStringp(d, "certificate_id")
 	if cert != nil {
-		r.CertificateID = cert
-		t := true
-		r.HttpsEnabled = &t
+		_, _, err := client.RedirectCertificates.Get(*cert)
+		if err == nil || err != ns1.ErrRedirectCertificateNotFound {
+			r.CertificateID = cert
+			t := true
+			r.HttpsEnabled = &t
+		}
 	} else {
 		f := false
 		r.HttpsEnabled = &f
@@ -249,6 +252,12 @@ func RedirectConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	cert := getStringp(d, "certificate_id")
 	if cert != nil {
+		_, _, err := client.RedirectCertificates.Get(*cert)
+		if err == ns1.ErrRedirectCertificateNotFound {
+			cert = nil
+		}
+	}
+	if cert != nil {
 		r.CertificateID = cert
 		t := true
 		r.HttpsEnabled = &t
@@ -269,16 +278,6 @@ func RedirectCertCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 
 	cert, resp, err := client.RedirectCertificates.Create(d.Get("domain").(string))
-	if err == nil && cert.ID != nil {
-		for i := 0; i < 20; i++ {
-			// 20 x 500 milliseconds = max 10 seconds plus network delay
-			time.Sleep(500 * time.Millisecond)
-			cert, _, err = client.RedirectCertificates.Get(*cert.ID)
-			if cert.Certificate != nil || cert.Errors != nil {
-				break
-			}
-		}
-	}
 	if err != nil {
 		return ConvertToNs1Error(resp, err)
 	}
