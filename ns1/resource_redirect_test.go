@@ -3,7 +3,7 @@ package ns1
 import (
 	"fmt"
 	"log"
-	"slices"
+	"sort"
 	"strings"
 	"testing"
 
@@ -376,8 +376,8 @@ func testAccCheckRedirectConfigTags(cfg *redirect.Configuration, expected []stri
 		if len(cfg.Tags) != len(expected) {
 			diff = true
 		} else {
-			slices.Sort(expected)
-			slices.Sort(cfg.Tags)
+			sort.Strings(expected)
+			sort.Strings(cfg.Tags)
 			for i := range expected {
 				if cfg.Tags[i] != expected[i] {
 					diff = true
