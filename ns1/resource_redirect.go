@@ -89,7 +89,7 @@ func redirectConfigResource() *schema.Resource {
 				Default:  false,
 			},
 			"tags": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
@@ -120,7 +120,6 @@ func redirectCertificateResource() *schema.Resource {
 			},
 			"certificate": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
 			"valid_from": {
@@ -133,22 +132,20 @@ func redirectCertificateResource() *schema.Resource {
 			},
 			"errors": {
 				Type:     schema.TypeString,
-				Optional: true,
 				Computed: true,
 			},
-			"processing": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Computed: true,
-			},
+			// "processing": {
+			// 	Type:     schema.TypeBool,
+			// 	Computed: true,
+			// },
 			"last_updated": {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
 		},
-		Create:   RedirectCertCreate,
-		Read:     RedirectCertRead,
-		Update:   RedirectCertUpdate,
+		Create: RedirectCertCreate,
+		Read:   RedirectCertRead,
+		// Update:   RedirectCertUpdate,
 		Delete:   RedirectCertDelete,
 		Importer: &schema.ResourceImporter{},
 	}
@@ -158,23 +155,21 @@ func redirectCertificateResource() *schema.Resource {
 func RedirectConfigCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 
-	var tags []string
-	terraformTags := d.Get("tags").([]interface{})
-	for _, t := range terraformTags {
-		tags = append(tags, t.(string))
-	}
-
 	r := redirect.NewConfiguration(
 		d.Get("domain").(string),
 		d.Get("path").(string),
 		d.Get("target").(string),
-		tags,
+		[]string{},
 		getFwModep(d, "forwarding_mode"),
 		getFwTypep(d, "forwarding_type"),
 		getBoolp(d, "https_enabled"),
 		getBoolp(d, "https_forced"),
 		getBoolp(d, "query_forwarding"),
 	)
+
+	for _, t := range d.Get("tags").(*schema.Set).List() {
+		r.Tags = append(r.Tags, t.(string))
+	}
 
 	cert := getStringp(d, "certificate_id")
 	if cert != nil {
@@ -230,20 +225,11 @@ func RedirectConfigDelete(d *schema.ResourceData, meta interface{}) error {
 func RedirectConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 
-	var tags []string
-	terraformTags := d.Get("tags").([]interface{})
-	if terraformTags != nil {
-		tags = []string{}
-	}
-	for _, t := range terraformTags {
-		tags = append(tags, t.(string))
-	}
-
 	r := redirect.NewConfiguration(
 		d.Get("domain").(string),
 		d.Get("path").(string),
 		d.Get("target").(string),
-		tags,
+		[]string{},
 		getFwModep(d, "forwarding_mode"),
 		getFwTypep(d, "forwarding_type"),
 		getBoolp(d, "https_enabled"),
@@ -252,6 +238,10 @@ func RedirectConfigUpdate(d *schema.ResourceData, meta interface{}) error {
 	)
 	id := d.Id()
 	r.ID = &id
+
+	for _, t := range d.Get("tags").(*schema.Set).List() {
+		r.Tags = append(r.Tags, t.(string))
+	}
 
 	cert := getStringp(d, "certificate_id")
 	if cert != nil {
@@ -488,9 +478,9 @@ func redirectCertToResourceData(d *schema.ResourceData, r *redirect.Certificate)
 	if r.Errors != nil {
 		d.Set("errors", *r.Errors)
 	}
-	if r.Processing != nil {
-		d.Set("processing", *r.Processing)
-	}
+	// if r.Processing != nil {
+	// 	d.Set("processing", *r.Processing)
+	// }
 	if r.LastUpdated != nil {
 		d.Set("last_updated", *r.LastUpdated)
 	}
