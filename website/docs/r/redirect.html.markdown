@@ -79,7 +79,6 @@ The following arguments are supported:
 * `certificate` - (Read Only) The certificate value.
 * `valid_from` - (Read Only) The Unix timestamp representing when the certificate first started being valid.
 * `valid_until` - (Read Only) The Unix timestamp representing when the certificate will stop being valid.
-* `processing` - (Read Only) Whether the certificate is active.
 * `errors` - (Read Only) Any error encountered when applying the certificate.
 * `last_updated` - (Read Only) The Unix timestamp representing when the certificate was last signed.
 
