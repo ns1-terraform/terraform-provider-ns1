@@ -1,4 +1,4 @@
-## 2.3.0 (June 17, 2024)
+## 2.3.0 (June 18, 2024)
 ENHANCEMENTS
 * Adds support for redirect endpoints
 BUGFIX
