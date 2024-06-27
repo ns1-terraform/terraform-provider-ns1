@@ -1,3 +1,7 @@
+## 2.3.1 (June 28, 2024)
+BUGFIX
+* Fix issue with updating regions in record resource
+
 ## 2.3.0 (June 18, 2024)
 ENHANCEMENTS
 * Adds support for redirect endpoints

@@ -449,9 +449,15 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 		}
 		r.Filters = filters
 	}
-	if regions := d.Get("regions").(*schema.Set); regions.Len() > 0 {
+	if regions := d.Get("regions").(*schema.Set); regions != nil {
+		r.Regions = data.Regions{}
 		for _, regionRaw := range regions.List() {
 			region := regionRaw.(map[string]interface{})
+			name := region["name"].(string)
+			if name == "" {
+				// silently ignore - the name is required but TF can append empty entries in the set
+				continue
+			}
 			ns1R := data.Region{
 				Meta: data.Meta{},
 			}
@@ -465,21 +471,7 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 
 				ns1R.Meta = *meta
 			}
-			r.Regions[region["name"].(string)] = ns1R
-		}
-	}
-
-	// Even though blocked_tags are not evaluated on GET, dual update logic is currently enforced on POST
-	if _, tagsExist := d.GetOk("tags"); tagsExist == true {
-		if _, blockedTagsExist := d.GetOk("blocked_tags"); blockedTagsExist == false {
-			r.BlockedTags = []string{}
-			log.Println("empty 'blocked tags' key added")
-		}
-	}
-	if _, blockedTagsExist := d.GetOk("blocked_tags"); blockedTagsExist == true {
-		if _, tagsExist := d.GetOk("tags"); tagsExist == false {
-			r.Tags = map[string]string{}
-			log.Println("empty 'tags' key added")
+			r.Regions[name] = ns1R
 		}
 	}
 	return nil
