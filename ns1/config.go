@@ -29,7 +29,6 @@ type Config struct {
 	Key                  string
 	Endpoint             string
 	IgnoreSSL            bool
-	EnableDDI            bool
 	RateLimitParallelism int
 	RetryMax             int
 	UserAgent            string
@@ -67,10 +66,6 @@ func (c *Config) Client() (*ns1.Client, error) {
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 		httpClient.Transport = tr
-	}
-
-	if c.EnableDDI {
-		decos = append(decos, ns1.SetDDIAPI())
 	}
 
 	// If NS1_DEBUG is set, define custom Doer to log HTTP requests made by SDK

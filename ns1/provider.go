@@ -30,12 +30,6 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("NS1_IGNORE_SSL", nil),
 				Description: descriptions["ignore_ssl"],
 			},
-			"enable_ddi": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				DefaultFunc: schema.EnvDefaultFunc("NS1_ENABLE_DDI", nil),
-				Description: descriptions["enable_ddi"],
-			},
 			"rate_limit_parallelism": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -108,9 +102,6 @@ func ns1Configure(d *schema.ResourceData) (interface{}, error) {
 	if v, ok := d.GetOk("ignore_ssl"); ok {
 		config.IgnoreSSL = v.(bool)
 	}
-	if v, ok := d.GetOk("enable_ddi"); ok {
-		config.EnableDDI = v.(bool)
-	}
 	if v, ok := d.GetOk("rate_limit_parallelism"); ok {
 		config.RateLimitParallelism = v.(int)
 	}
@@ -134,7 +125,6 @@ func init() {
 		"rate_limit_parallelism": "Tune response to rate limits, see docs",
 		"retry_max":              "Maximum retries for 50x errors (-1 to disable)",
 		"user_agent":             "User-Agent string to use in NS1 API requests",
-		"enable_ddi":             "Deprecated, no longer in use",
 	}
 
 	structs.DefaultTagName = "json"
