@@ -116,7 +116,7 @@ func TestAccTeam_ManualDelete(t *testing.T) {
 func TestAccTeam_import_test(t *testing.T) {
 	var team account.Team
 	n := fmt.Sprintf("terraform test team %s", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
-	ignored_fields := []string{"dhcp_manage_dhcp", "dhcp_view_dhcp", "ipam_manage_ipam", "ipam_view_ipam", "dns_records"}
+	ignored_fields := []string{"dns_records"}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

@@ -444,7 +444,7 @@ func TestAccUser_import_test(t *testing.T) {
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
 	name := fmt.Sprintf("terraform acc test user %s", rString)
 	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
-	ignored_fields := []string{"dhcp_manage_dhcp", "dhcp_view_dhcp", "ipam_manage_ipam", "ipam_view_ipam"}
+	ignored_fields := []string{""}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },

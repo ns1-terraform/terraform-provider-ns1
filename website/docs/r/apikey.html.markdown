@@ -70,18 +70,13 @@ The following arguments are supported:
 * `account_view_invoices` - (Optional) Whether the apikey can view invoices.
 * `account_manage_ip_whitelist` - (Optional) Whether the apikey can manage ip whitelist.
 * `monitoring_manage_lists` - (Optional) Whether the apikey can modify notification lists.
-* `monitoring_manage_jobs` - (Optional) Whether the apikey can modify monitoring jobs.
+* `monitoring_manage_jobs` - (Optional) Whether the user can create, update, and delete monitoring jobs.
+* `monitoring_create_jobs` - (Optional) Whether the user can create monitoring jobs when manage_jobs is not set to true.
+* `monitoring_update_jobs` - (Optional) Whether the user can update monitoring jobs when manage_jobs is not set to true.
+* `monitoring_delete_jobs` - (Optional) Whether the user can delete monitoring jobs when manage_jobs is not set to true.
 * `monitoring_view_jobs` - (Optional) Whether the apikey can view monitoring jobs.
 * `security_manage_global_2fa` - (Optional) Whether the apikey can manage global two factor authentication.
 * `security_manage_active_directory` - (Optional) Whether the apikey can manage global active directory.
-Only relevant for the DDI product.
-* `dhcp_manage_dhcp` - (Optional) Whether the apikey can manage DHCP.
-Only relevant for the DDI product.
-* `dhcp_view_dhcp` - (Optional) Whether the apikey can view DHCP.
-Only relevant for the DDI product.
-* `ipam_manage_ipam` - (Optional) Whether the apikey can manage IPAM.
-Only relevant for the DDI product.
-* `ipam_view_ipam` - (Optional) Whether the apikey can view IPAM.
 Only relevant for the DDI product.
 
 ## Attributes Reference

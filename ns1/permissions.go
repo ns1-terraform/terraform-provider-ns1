@@ -149,6 +149,24 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 		Default:          false,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
+	s["monitoring_create_jobs"] = &schema.Schema{
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
+	}
+	s["monitoring_update_jobs"] = &schema.Schema{
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
+	}
+	s["monitoring_delete_jobs"] = &schema.Schema{
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
+	}
 	s["monitoring_view_jobs"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
@@ -162,30 +180,6 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
 	s["security_manage_active_directory"] = &schema.Schema{
-		Type:             schema.TypeBool,
-		Optional:         true,
-		Default:          true,
-		DiffSuppressFunc: suppressPermissionDiff,
-	}
-	s["dhcp_manage_dhcp"] = &schema.Schema{
-		Type:             schema.TypeBool,
-		Optional:         true,
-		Default:          true,
-		DiffSuppressFunc: suppressPermissionDiff,
-	}
-	s["dhcp_view_dhcp"] = &schema.Schema{
-		Type:             schema.TypeBool,
-		Optional:         true,
-		Default:          true,
-		DiffSuppressFunc: suppressPermissionDiff,
-	}
-	s["ipam_manage_ipam"] = &schema.Schema{
-		Type:             schema.TypeBool,
-		Optional:         true,
-		Default:          true,
-		DiffSuppressFunc: suppressPermissionDiff,
-	}
-	s["ipam_view_ipam"] = &schema.Schema{
 		Type:             schema.TypeBool,
 		Optional:         true,
 		Default:          true,
@@ -248,18 +242,13 @@ func permissionsToResourceData(d *schema.ResourceData, permissions account.Permi
 	d.Set("account_manage_ip_whitelist", permissions.Account.ManageIPWhitelist)
 	d.Set("monitoring_manage_lists", permissions.Monitoring.ManageLists)
 	d.Set("monitoring_manage_jobs", permissions.Monitoring.ManageJobs)
+	d.Set("monitoring_create_jobs", permissions.Monitoring.CreateJobs)
+	d.Set("monitoring_update_jobs", permissions.Monitoring.UpdateJobs)
+	d.Set("monitoring_delete_jobs", permissions.Monitoring.DeleteJobs)
 	d.Set("monitoring_view_jobs", permissions.Monitoring.ViewJobs)
 	if permissions.Security != nil {
 		d.Set("security_manage_global_2fa", permissions.Security.ManageGlobal2FA)
 		d.Set("security_manage_active_directory", permissions.Security.ManageActiveDirectory)
-	}
-	if permissions.DHCP != nil {
-		d.Set("dhcp_manage_dhcp", permissions.DHCP.ManageDHCP)
-		d.Set("dhcp_view_dhcp", permissions.DHCP.ViewDHCP)
-	}
-	if permissions.IPAM != nil {
-		d.Set("ipam_manage_ipam", permissions.IPAM.ManageIPAM)
-		d.Set("ipam_view_ipam", permissions.IPAM.ViewIPAM)
 	}
 	if permissions.DNS.RecordsAllow != nil {
 		d.Set("dns_records_allow", dnsRecordsACLtoSchema(permissions.DNS.RecordsAllow))
@@ -351,6 +340,15 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	if v, ok := d.GetOk("monitoring_manage_jobs"); ok {
 		p.Monitoring.ManageJobs = v.(bool)
 	}
+	if v, ok := d.GetOk("monitoring_create_jobs"); ok {
+		p.Monitoring.CreateJobs = v.(bool)
+	}
+	if v, ok := d.GetOk("monitoring_update_jobs"); ok {
+		p.Monitoring.UpdateJobs = v.(bool)
+	}
+	if v, ok := d.GetOk("monitoring_delete_jobs"); ok {
+		p.Monitoring.DeleteJobs = v.(bool)
+	}
 	if v, ok := d.GetOk("monitoring_view_jobs"); ok {
 		p.Monitoring.ViewJobs = v.(bool)
 	}
@@ -362,30 +360,6 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	}
 	if v, ok := d.GetOk("security_manage_active_directory"); ok {
 		p.Security.ManageActiveDirectory = v.(bool)
-	}
-	for _, thing := range []string{"dhcp_manage_dhcp", "dhcp_view_dhcp"} {
-		_, ok := d.GetOkExists(thing)
-		if d.HasChange(thing) || ok {
-			p.DHCP = &account.PermissionsDHCP{}
-		}
-	}
-	if v, ok := d.GetOk("dhcp_manage_dhcp"); ok {
-		p.DHCP.ManageDHCP = v.(bool)
-	}
-	if v, ok := d.GetOk("dhcp_view_dhcp"); ok {
-		p.DHCP.ViewDHCP = v.(bool)
-	}
-	for _, thing := range []string{"ipam_manage_ipam", "ipam_view_ipam"} {
-		_, ok := d.GetOkExists(thing)
-		if d.HasChange(thing) || ok {
-			p.IPAM = &account.PermissionsIPAM{}
-		}
-	}
-	if v, ok := d.GetOk("ipam_manage_ipam"); ok {
-		p.IPAM.ManageIPAM = v.(bool)
-	}
-	if v, ok := d.GetOk("ipam_view_ipam"); ok {
-		p.IPAM.ViewIPAM = v.(bool)
 	}
 	return p
 }
