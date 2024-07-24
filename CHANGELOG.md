@@ -1,3 +1,6 @@
+## 2.4.0 (July 22, 2024)
+* Remove ns1_subnet provider, used for dhcp/ipam resources
+
 ## 2.3.1 (June 28, 2024)
 BUGFIX
 * Fix issue with updating regions in record resource
