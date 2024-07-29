@@ -9,10 +9,6 @@ import (
 func permissionInstanceStateUpgradeV0(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
 	rawState["security_manage_global_2fa"] = false
 	rawState["security_manage_active_directory"] = false
-	rawState["dhcp_manage_dhcp"] = false
-	rawState["dhcp_view_dhcp"] = false
-	rawState["ipam_manage_ipam"] = false
-	rawState["ipam_view_ipam"] = false
 
 	return rawState, nil
 }
