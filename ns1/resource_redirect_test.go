@@ -54,9 +54,9 @@ func TestAccRedirectConfig_basic(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				ResourceName: "ns1_redirect_certificate.example",
-				ImportState:  true,
-				// ImportStateVerify: true,
+				ResourceName:      "ns1_redirect_certificate.example",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
