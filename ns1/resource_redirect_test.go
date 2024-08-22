@@ -210,7 +210,7 @@ resource "ns1_redirect" "it" {
   certificate_id   = "${ns1_redirect_certificate.example.id}"
   domain           = "test.${ns1_zone.test.zone}"
   path             = "/from/path/*"
-  target           = "https://url.com/target/path"
+  target           = "https://url.com/target/path?q=param#frag"
   forwarding_mode  = "capture"
   forwarding_type  = "permanent"
   https_forced     = true
