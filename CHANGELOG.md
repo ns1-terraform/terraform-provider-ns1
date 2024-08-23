@@ -1,3 +1,6 @@
+## 2.4.1 (August 23, 2024)
+* Fixed validation regex for redirects
+
 ## 2.4.0 (July 22, 2024)
 * Remove ns1_subnet provider, used for dhcp/ipam resources
 

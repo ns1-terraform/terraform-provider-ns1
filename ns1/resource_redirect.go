@@ -338,7 +338,7 @@ func RedirectCertUpdate(d *schema.ResourceData, meta interface{}) error {
 func validateDomain(val interface{}, key string) (warns []string, errs []error) {
 	v := val.(string)
 
-	match, err := regexp.MatchString("^(\\*\\.)?([\\w-]+\\.)*[\\w-]+$", v)
+	match, err := regexp.MatchString("^(\\*\\.)?([a-zA-Z0-9\\-]+\\.)+[a-zA-Z0-9]+$", v)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("%s is invalid, got: %s, error: %e", key, v, err))
 	}
@@ -354,7 +354,7 @@ func validateDomain(val interface{}, key string) (warns []string, errs []error) 
 func validatePath(val interface{}, key string) (warns []string, errs []error) {
 	v := val.(string)
 
-	match, err := regexp.MatchString("^[*]?[a-zA-Z0-9\\.\\-/$!+(_)' ]+[*]?$", v)
+	match, err := regexp.MatchString("^[*]?[a-zA-Z0-9\\.\\-/_~%%]+[*]?$", v)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("%s is invalid, got: %s, error: %e", key, v, err))
 	}
@@ -370,7 +370,7 @@ func validatePath(val interface{}, key string) (warns []string, errs []error) {
 func validateURL(val interface{}, key string) (warns []string, errs []error) {
 	v := val.(string)
 
-	match, err := regexp.MatchString("^(http://|https://)?[a-zA-Z0-9\\.\\-/$!+(_)' ]+$", v)
+	match, err := regexp.MatchString("^(http://|https://)?[a-zA-Z0-9\\-\\.]+(:\\d+)?(/[a-zA-Z0-9\\.\\-/_~%%:]*)?(\\?[a-zA-Z0-9\\.\\-/_~%%=+&#]+)?(#[a-zA-Z0-9\\.\\-/_~%%]+)?$", v)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("%s is invalid, got: %s, error: %e", key, v, err))
 	}

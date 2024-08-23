@@ -29,6 +29,7 @@ func TestAccRedirectConfig_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
 					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigTarget(&redirect, "https://url.com/target/path"),
 					testAccCheckRedirectConfigFwType(&redirect, "masking"),
 					testAccCheckRedirectConfigTags(&redirect, []string{"test", "it"}),
 					testAccCheckRedirectConfigHTTPS(&redirect, true),
@@ -40,6 +41,7 @@ func TestAccRedirectConfig_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
 					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigTarget(&redirect, "https://url.com/target/path?q=param#frag"),
 					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
 					testAccCheckRedirectConfigTags(&redirect, []string{}),
 					testAccCheckRedirectConfigHTTPS(&redirect, true),
@@ -75,6 +77,7 @@ func TestAccRedirectConfig_http_to_https(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
 					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigTarget(&redirect, "https://url.com/target/path"),
 					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
 					testAccCheckRedirectConfigTags(&redirect, []string{}),
 					testAccCheckRedirectConfigHTTPS(&redirect, false),
@@ -86,6 +89,7 @@ func TestAccRedirectConfig_http_to_https(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
 					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigTarget(&redirect, "https://url.com/target/path?q=param#frag"),
 					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
 					testAccCheckRedirectConfigTags(&redirect, []string{}),
 					testAccCheckRedirectConfigHTTPS(&redirect, true),
@@ -97,6 +101,7 @@ func TestAccRedirectConfig_http_to_https(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
 					testAccCheckRedirectConfigDomain(&redirect, "test."+domainName),
+					testAccCheckRedirectConfigTarget(&redirect, "https://url.com/target/path"),
 					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
 					testAccCheckRedirectConfigTags(&redirect, []string{}),
 					testAccCheckRedirectConfigHTTPS(&redirect, true),
@@ -210,7 +215,7 @@ resource "ns1_redirect" "it" {
   certificate_id   = "${ns1_redirect_certificate.example.id}"
   domain           = "test.${ns1_zone.test.zone}"
   path             = "/from/path/*"
-  target           = "https://url.com/target/path"
+  target           = "https://url.com/target/path?q=param#frag"
   forwarding_mode  = "capture"
   forwarding_type  = "permanent"
   https_forced     = true
@@ -338,6 +343,15 @@ func testAccCheckRedirectConfigDomain(cfg *redirect.Configuration, expected stri
 	return func(s *terraform.State) error {
 		if cfg.Domain != expected {
 			return fmt.Errorf("Domain: got: %s want: %s", cfg.Domain, expected)
+		}
+		return nil
+	}
+}
+
+func testAccCheckRedirectConfigTarget(cfg *redirect.Configuration, expected string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if cfg.Target != expected {
+			return fmt.Errorf("Target: got: %s want: %s", cfg.Domain, expected)
 		}
 		return nil
 	}
