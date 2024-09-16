@@ -1,3 +1,6 @@
+## 2.4.2 (September 16, 2024)
+* Modified domain regex for redirects to allow internationalised domains
+
 ## 2.4.1 (August 23, 2024)
 * Fixed validation regex for redirects
 
