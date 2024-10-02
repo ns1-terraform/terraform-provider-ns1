@@ -370,7 +370,7 @@ func validatePath(val interface{}, key string) (warns []string, errs []error) {
 func validateURL(val interface{}, key string) (warns []string, errs []error) {
 	v := val.(string)
 
-	match, err := regexp.MatchString("^(http://|https://)?[a-zA-Z0-9\\-\\.]+(:\\d+)?(/[a-zA-Z0-9\\.\\-/_~%%:]*)?(\\?[a-zA-Z0-9\\.\\-/_~%%=+&#]+)?(#[a-zA-Z0-9\\.\\-/_~%%]+)?$", v)
+	match, err := regexp.MatchString("^(http://|https://)?[a-zA-Z0-9\\-\\.]+(:\\d+)?(/[a-zA-Z0-9\\.\\-/_~%%:$&()*+,;=@!]*)?(\\?[a-zA-Z0-9\\.\\-/_~%%:$&()*+,;=@!]*)?(#[a-zA-Z0-9\\.\\-/_~%%:$&()*+,;=@!?]+)?$", v)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("%s is invalid, got: %s, error: %e", key, v, err))
 	}

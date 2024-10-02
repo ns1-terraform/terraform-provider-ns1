@@ -1,3 +1,6 @@
+## 2.4.3 (October 2, 2024)
+* Modified target regex for redirects to align with server
+
 ## 2.4.2 (September 16, 2024)
 * Modified domain regex for redirects to allow internationalised domains
 
