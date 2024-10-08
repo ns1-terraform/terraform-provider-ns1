@@ -28,7 +28,9 @@ The following arguments are supported:
 * `path` - (Required) The path on the domain to redirect from.
 * `target` - (Required) The URL to redirect to.
 * `id` - (Optional) The redirect id, if already created.
-* `certificate_id` - (Optional) The certificate redirect id.
+* `certificate_id` - (Optional) The certificate redirect id. If not specified the redirect will be created as HTTP,
+                  but it may be turned to HTTPS if a certificate exists for the source domain on the server.
+                  If the certificate is managed in terraform it's recommended to set explictly to "${ns1_redirect_certificate.name.id}".
 * `forwarding_mode` - (Optional - defaults to "all") How the target is interpreted:
   * __all__       appends the entire incoming path to the target destination;
   * __capture__   appends only the part of the incoming path corresponding to the wildcard (*);
