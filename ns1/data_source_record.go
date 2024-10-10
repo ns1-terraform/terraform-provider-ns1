@@ -23,6 +23,10 @@ func dataSourceRecord() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"override_address_records": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"override_ttl": {
 				Type:     schema.TypeBool,
 				Computed: true,

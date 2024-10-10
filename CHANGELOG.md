@@ -1,3 +1,7 @@
+## 2.4.4 (October 10, 2024)
+BUGFIX
+* Adds support for setting override_address_records for ALIAS records
+
 ## 2.4.3 (October 2, 2024)
 * Modified target regex for redirects to align with server
 

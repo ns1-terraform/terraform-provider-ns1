@@ -75,6 +75,10 @@ func recordResource() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			"override_address_records": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"override_ttl": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -242,10 +246,19 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		d.Set("blocked_tags", terraformBlockedTags)
 	}
 
+	if r.Type == "ALIAS" {
+		d.Set("override_address_records", false)
+		if r.OverrideAddressRecords != nil {
+			err := d.Set("override_address_records", *r.OverrideAddressRecords)
+			if err != nil {
+				return fmt.Errorf("[DEBUG] Error setting override_address_records for: %s, error: %#v", r.Domain, err)
+			}
+		}
+	}
+
 	d.Set("override_ttl", nil)
 	if r.Type == "ALIAS" && r.OverrideTTL != nil {
 		err := d.Set("override_ttl", *r.OverrideTTL)
-
 		if err != nil {
 			return fmt.Errorf("[DEBUG] Error setting override_ttl for: %s, error: %#v", r.Domain, err)
 		}
@@ -407,6 +420,9 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 	}
 
 	if r.Type == "ALIAS" {
+		Override_AddressRecords := d.Get("override_address_records").(bool)
+		r.OverrideAddressRecords = &Override_AddressRecords
+
 		Override_TTL := d.Get("override_ttl").(bool)
 		r.OverrideTTL = &Override_TTL
 	}

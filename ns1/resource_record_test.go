@@ -861,6 +861,153 @@ func TestAccRecord_OverrideTTLTrueToFalse(t *testing.T) {
 	})
 }
 
+func TestAccRecord_OverrideAddressRecordsNilToTrue(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	tfFileBasicAlias := testAccRecordBasicALIAS(rString)
+	tfFileOverrideAddressRecordsAliasTrue := testAccRecordBasicALIASOverrideAddressRecords(rString, true)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			// Create an ALIAS record with override_address_records not set
+			{
+				Config: tfFileBasicAlias,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideAddressRecords(&record, false),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileBasicAlias,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			// Change override_address_records to true Plan and Apply
+			{
+				Config:             tfFileOverrideAddressRecordsAliasTrue,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: tfFileOverrideAddressRecordsAliasTrue,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideAddressRecords(&record, true),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileOverrideAddressRecordsAliasTrue,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+func TestAccRecord_OverrideAddressRecordsTrueToNil(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	tfFileBasicAlias := testAccRecordBasicALIAS(rString)
+	tfFileOverrideAddressRecordsAliasTrue := testAccRecordBasicALIASOverrideAddressRecords(rString, true)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			// Create an ALIAS record with override_address_records true
+			{
+				Config: tfFileOverrideAddressRecordsAliasTrue,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideAddressRecords(&record, true),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileOverrideAddressRecordsAliasTrue,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			{
+				Config:             tfFileBasicAlias,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			// Change override_address_records from true setting to "null" results in false
+			{
+				Config: tfFileBasicAlias,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideAddressRecords(&record, false),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileBasicAlias,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+func TestAccRecord_OverrideAddressRecordsTrueToFalse(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	tfFileOverrideAddressRecordsAliasTrue := testAccRecordBasicALIASOverrideAddressRecords(rString, true)
+	tfFileDoNotOverrideAddressRecordsAliasFalse := testAccRecordBasicALIASOverrideAddressRecords(rString, false)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			// Create an ALIAS record with override_address_records true
+			{
+				Config: tfFileOverrideAddressRecordsAliasTrue,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideAddressRecords(&record, true),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileOverrideAddressRecordsAliasTrue,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			// Change override_address_records to false setting to false Plan and Apply
+			{
+				Config:             tfFileDoNotOverrideAddressRecordsAliasFalse,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+			{
+				Config: tfFileDoNotOverrideAddressRecordsAliasFalse,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordOverrideAddressRecords(&record, false),
+				),
+			},
+			// Plan again to detect "loop" conditions
+			{
+				Config:             tfFileDoNotOverrideAddressRecordsAliasFalse,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
 func TestAccRecord_Link(t *testing.T) {
 	var record1 dns.Record
 	var record2 dns.Record
@@ -1047,6 +1194,16 @@ func ExpectOverrideTTLNil() bool {
 
 func ExpectOverrideTTLNotNil() bool {
 	return false
+}
+
+func testAccCheckRecordOverrideAddressRecords(r *dns.Record, expected bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if *r.OverrideAddressRecords != expected {
+			return fmt.Errorf("Override Address Records: got: %#v want: %#v", *r.OverrideAddressRecords, expected)
+		}
+
+		return nil
+	}
 }
 
 func testAccCheckRecordOverrideTTL(r *dns.Record, expectedNil bool) resource.TestCheckFunc {
@@ -1271,6 +1428,25 @@ resource "ns1_zone" "test" {
   zone = "%s"
 }
 `, domain, zone)
+}
+
+func testAccRecordBasicALIASOverrideAddressRecords(rString string, overrideAddressRecords bool) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+  zone              			= "${ns1_zone.test.zone}"
+  domain            			= "${ns1_zone.test.zone}"
+  type              			= "ALIAS"
+  ttl               			= 60
+  override_address_records 		= %v
+  answers {
+    answer = "test.${ns1_zone.test.zone}"
+  }
+}
+
+resource "ns1_zone" "test" {
+	zone = "terraform-test-%s.io"
+}
+`, overrideAddressRecords, rString)
 }
 
 func testAccRecordBasicALIASOverrideTTL(rString string, overridettl bool) string {
