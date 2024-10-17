@@ -1,3 +1,7 @@
+## 2.4.5 (October 17, 2024)
+BUGFIX
+* `ns1-go` client version bump to allow wiping out record regions
+
 ## 2.4.4 (October 10, 2024)
 BUGFIX
 * Adds support for setting override_address_records for ALIAS records

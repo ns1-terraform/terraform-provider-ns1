@@ -566,6 +566,19 @@ func TestAccRecord_updatedWithRegions(t *testing.T) {
 				),
 			},
 			{
+				Config: testAccRecordUpdatedWithNoRegions(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.it", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 60),
+					testAccCheckRecordUseClientSubnet(&record, true),
+					testAccCheckRecordRegionName(&record, []string{}),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{fmt.Sprintf("test1.%s", zoneName)},
+					),
+				),
+			},
+			{
 				ResourceName:      "ns1_record.it",
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/CNAME", zoneName, domainName),
@@ -1959,6 +1972,38 @@ resource "ns1_zone" "test" {
   zone = "terraform-test-%s.io"
 }
 `, rString)
+}
+
+func testAccRecordUpdatedWithNoRegions(rString string) string {
+	return fmt.Sprintf(`
+	resource "ns1_record" "it" {
+	  zone              = "${ns1_zone.test.zone}"
+	  domain            = "test.${ns1_zone.test.zone}"
+	  type              = "CNAME"
+	  ttl               = 60
+
+	  answers {
+	    answer = "test1.${ns1_zone.test.zone}"
+	  }
+
+	  filters {
+	    filter = "geotarget_country"
+	  }
+
+	  filters {
+	    filter = "select_first_n"
+	    config = {N=1}
+	  }
+
+	  filters {
+	    filter = "up"
+	  }
+	}
+
+	resource "ns1_zone" "test" {
+	  zone = "terraform-test-%s.io"
+	}
+	`, rString)
 }
 
 // zone and domain have leading and trailing dots and should fail validation.
