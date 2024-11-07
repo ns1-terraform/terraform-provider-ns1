@@ -1,3 +1,7 @@
+## 2.5.0 (November 7, 2024)
+ENHANCEMENTS
+* Adds support for alert endpoints
+
 ## 2.4.5 (October 17, 2024)
 BUGFIX
 * `ns1-go` client version bump to allow wiping out record regions

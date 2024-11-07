@@ -6,7 +6,7 @@ resource "ns1_alert" "email_on_zone_transfer_failure" {
   zone_names = [ns1_zone.alert_example_one.zone, ns1_zone.alert_example_two.zone]
 }
 
-# Nofitication list
+# Notification list
 resource "ns1_notifylist" "email_list" {
   name = "email list"
   notifications {
