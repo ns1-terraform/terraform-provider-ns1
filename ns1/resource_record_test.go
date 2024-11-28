@@ -606,6 +606,10 @@ func TestAccRecord_validationError(t *testing.T) {
 				*/
 				ExpectError: regexp.MustCompile(`(?s)(Error: (zone|domain) has an invalid (leading|trailing) "\.", got: .*){4}`),
 			},
+			{
+				Config:      testAccRecordNoAnswers(rString),
+				ExpectError: regexp.MustCompile(`Invalid body`),
+			},
 		},
 	})
 }
@@ -2014,6 +2018,19 @@ resource "ns1_record" "it" {
   domain            = ".test.terraform-test-%s.io."
   type              = "CNAME"
   ttl               = 60
+}
+`, rString, rString)
+}
+
+// there must be at least one answer
+func testAccRecordNoAnswers(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "it" {
+  zone              = "terraform-test-%s.io"
+  domain            = "test.terraform-test-%s.io"
+  type              = "CNAME"
+  ttl               = 60
+  answers {}
 }
 `, rString, rString)
 }
