@@ -1909,8 +1909,6 @@ resource "ns1_record" "it" {
   regions {
     name = "cal"
     meta = {
-			// country   = "CA,MX,RU,US"
-			// georegion = "AFRICA,EUROPE,US-CENTRAL,US-EAST,US-WEST"
 			country   = "RU,CA,MX,US"
 			georegion = "EUROPE,US-CENTRAL,US-WEST,AFRICA,US-EAST"
       weight    = 100
