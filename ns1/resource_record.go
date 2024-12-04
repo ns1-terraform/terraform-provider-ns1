@@ -370,47 +370,51 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 
 	if shortAnswers := d.Get("short_answers").([]interface{}); len(shortAnswers) > 0 {
 		for _, answerRaw := range shortAnswers {
-			answer := answerRaw.(string)
-			switch d.Get("type") {
-			case "TXT", "SPF":
-				r.AddAnswer(dns.NewTXTAnswer(answer))
-			case "CAA":
-				r.AddAnswer(dns.NewAnswer(strings.SplitN(answer, " ", 3)))
-			default:
-				r.AddAnswer(dns.NewAnswer(strings.Split(answer, " ")))
+			if answerRaw != nil {
+				answer := answerRaw.(string)
+				switch d.Get("type") {
+				case "TXT", "SPF":
+					r.AddAnswer(dns.NewTXTAnswer(answer))
+				case "CAA":
+					r.AddAnswer(dns.NewAnswer(strings.SplitN(answer, " ", 3)))
+				default:
+					r.AddAnswer(dns.NewAnswer(strings.Split(answer, " ")))
+				}
 			}
 		}
 	}
 	if answers := d.Get("answers").([]interface{}); len(answers) > 0 {
 		for _, answerRaw := range answers {
-			answer := answerRaw.(map[string]interface{})
-			var a *dns.Answer
+			if answerRaw != nil {
+				answer := answerRaw.(map[string]interface{})
+				var a *dns.Answer
 
-			v := answer["answer"].(string)
-			switch d.Get("type") {
-			case "TXT", "SPF":
-				a = dns.NewTXTAnswer(v)
-			case "CAA":
-				a = dns.NewAnswer(strings.SplitN(v, " ", 3))
-			default:
-				a = dns.NewAnswer(strings.Split(v, " "))
-			}
-
-			if v, ok := answer["region"]; ok {
-				a.RegionName = v.(string)
-			}
-
-			if v, ok := answer["meta"]; ok {
-				log.Println("answer meta", v)
-				meta, err := metaHandler(v)
-				if err != nil {
-					return err
+				v := answer["answer"].(string)
+				switch d.Get("type") {
+				case "TXT", "SPF":
+					a = dns.NewTXTAnswer(v)
+				case "CAA":
+					a = dns.NewAnswer(strings.SplitN(v, " ", 3))
+				default:
+					a = dns.NewAnswer(strings.Split(v, " "))
 				}
 
-				a.Meta = meta
-			}
+				if v, ok := answer["region"]; ok {
+					a.RegionName = v.(string)
+				}
 
-			r.AddAnswer(a)
+				if v, ok := answer["meta"]; ok {
+					log.Println("answer meta", v)
+					meta, err := metaHandler(v)
+					if err != nil {
+						return err
+					}
+
+					a.Meta = meta
+				}
+
+				r.AddAnswer(a)
+			}
 		}
 	}
 	log.Println("number of answers found:", len(r.Answers))
@@ -447,21 +451,23 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 	r.UseClientSubnet = &useClientSubnet
 
 	if rawFilters := d.Get("filters").([]interface{}); len(rawFilters) > 0 {
-		filters := make([]*filter.Filter, len(rawFilters))
-		for i, filterRaw := range rawFilters {
-			fi := filterRaw.(map[string]interface{})
-			config := make(map[string]interface{})
-			f := filter.Filter{
-				Type:   fi["filter"].(string),
-				Config: config,
+		filters := make([]*filter.Filter, 0, len(rawFilters))
+		for _, filterRaw := range rawFilters {
+			if filterRaw != nil {
+				fi := filterRaw.(map[string]interface{})
+				config := make(map[string]interface{})
+				f := filter.Filter{
+					Type:   fi["filter"].(string),
+					Config: config,
+				}
+				if disabled, ok := fi["disabled"]; ok {
+					f.Disabled = disabled.(bool)
+				}
+				if rawConfig, ok := fi["config"]; ok {
+					f.Config = rawConfig.(map[string]interface{})
+				}
+				filters = append(filters, &f)
 			}
-			if disabled, ok := fi["disabled"]; ok {
-				f.Disabled = disabled.(bool)
-			}
-			if rawConfig, ok := fi["config"]; ok {
-				f.Config = rawConfig.(map[string]interface{})
-			}
-			filters[i] = &f
 		}
 		r.Filters = filters
 	}
