@@ -1,4 +1,4 @@
-## 2.5.0 (November 7, 2024)
+## 2.5.0 (December 13, 2024)
 ENHANCEMENTS
 * Adds support for alert endpoints
 
