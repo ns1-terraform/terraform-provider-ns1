@@ -338,7 +338,7 @@ func RedirectCertUpdate(d *schema.ResourceData, meta interface{}) error {
 func validateDomain(val interface{}, key string) (warns []string, errs []error) {
 	v := val.(string)
 
-	match, err := regexp.MatchString("^(\\*\\.)?([a-zA-Z0-9-]{1,63}\\.)+[a-zA-Z0-9-]{0,62}[a-zA-Z0-9]$", v)
+	match, err := regexp.MatchString("^(\\*\\.)?([a-zA-Z0-9-_]{1,63}\\.)+[a-zA-Z0-9-]{0,62}[a-zA-Z0-9]$", v)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("%s is invalid, got: %s, error: %e", key, v, err))
 	}

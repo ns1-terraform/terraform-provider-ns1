@@ -1,3 +1,7 @@
+## 2.5.1 (February 5, 2025)
+ENHANCEMENTS
+* Allow underscore for non-HTTPS redirects
+
 ## 2.5.0 (December 13, 2024)
 ENHANCEMENTS
 * Adds support for alert endpoints
