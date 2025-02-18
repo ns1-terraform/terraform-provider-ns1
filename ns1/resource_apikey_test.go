@@ -29,13 +29,15 @@ func TestAccAPIKey_basic(t *testing.T) {
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, name),
 					testAccCheckAPIKeyIPWhitelists(&apiKey, []string{"1.1.1.1", "2.2.2.2"}),
+					testAccCheckAPIKeyNotEmpty(&apiKey),
 					resource.TestCheckResourceAttr("ns1_apikey.it", "ip_whitelist_strict", "true"),
 				),
 			},
 			{
-				ResourceName:      "ns1_apikey.it",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ns1_apikey.it",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"key"}, // importing existing key won't have the key
 			},
 		},
 	})
@@ -57,6 +59,7 @@ func TestAccAPIKey_updated(t *testing.T) {
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, name),
 					testAccCheckAPIKeyIPWhitelists(&apiKey, []string{"1.1.1.1", "2.2.2.2"}),
+					testAccCheckAPIKeyNotEmpty(&apiKey),
 					resource.TestCheckResourceAttr("ns1_apikey.it", "ip_whitelist_strict", "true"),
 				),
 			},
@@ -66,13 +69,15 @@ func TestAccAPIKey_updated(t *testing.T) {
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, updatedName),
 					testAccCheckAPIKeyIPWhitelists(&apiKey, []string{}),
+					testAccCheckAPIKeyNotEmpty(&apiKey),
 					resource.TestCheckResourceAttr("ns1_apikey.it", "ip_whitelist_strict", "false"),
 				),
 			},
 			{
-				ResourceName:      "ns1_apikey.it",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ns1_apikey.it",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"key"}, // importing existing key won't have the key
 			},
 		},
 	})
@@ -122,14 +127,14 @@ func TestAccAPIKey_teamKey(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, name),
-					// ensure Key attribute is populated on create of apikey joined to team
-					resource.TestCheckResourceAttrSet("ns1_apikey.it", "key"),
+					testAccCheckAPIKeyNotEmpty(&apiKey),
 				),
 			},
 			{
-				ResourceName:      "ns1_apikey.it",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ns1_apikey.it",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"key"}, // importing existing key won't have the key
 			},
 		},
 	})
@@ -150,6 +155,7 @@ func TestAccAPIKey_permissions(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, name),
+					testAccCheckAPIKeyNotEmpty(&apiKey),
 				),
 			},
 			{
@@ -157,6 +163,7 @@ func TestAccAPIKey_permissions(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, name),
+					testAccCheckAPIKeyNotEmpty(&apiKey),
 				),
 			},
 			{
@@ -164,6 +171,7 @@ func TestAccAPIKey_permissions(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, name),
+					testAccCheckAPIKeyNotEmpty(&apiKey),
 					// The key should still have this permission, it would have inherited it from the team.
 					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_ip_whitelist", "true"),
@@ -175,15 +183,17 @@ func TestAccAPIKey_permissions(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
 					testAccCheckAPIKeyName(&apiKey, name),
+					testAccCheckAPIKeyNotEmpty(&apiKey),
 					// But if an apply is ran again, the permission will be removed.
 					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_account_settings", "false"),
 					resource.TestCheckResourceAttr("ns1_apikey.it", "account_manage_ip_whitelist", "false"),
 				),
 			},
 			{
-				ResourceName:      "ns1_apikey.it",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "ns1_apikey.it",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"key"}, // importing existing key won't have the key
 			},
 		},
 	})
@@ -274,6 +284,24 @@ func testAccManualDeleteAPIKey(apiKey *account.APIKey) func() {
 		if err != nil {
 			log.Printf("failed to delete api key: %v", err)
 		}
+	}
+}
+
+func testAccCheckAPIKeyNotEmpty(k *account.APIKey) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		var key string
+
+		for _, rs := range s.RootModule().Resources {
+			if rs.Primary.ID == k.ID {
+				key = rs.Primary.Attributes["key"]
+			}
+		}
+
+		if key == "" {
+			return fmt.Errorf("key should not be empty string")
+		}
+
+		return nil
 	}
 }
 

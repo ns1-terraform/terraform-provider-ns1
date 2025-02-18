@@ -59,11 +59,17 @@ func apikeyResource() *schema.Resource {
 func apikeyToResourceData(d *schema.ResourceData, k *account.APIKey) error {
 	d.SetId(k.ID)
 	d.Set("name", k.Name)
-	d.Set("key", k.Key)
 	d.Set("teams", k.TeamIDs)
 	d.Set("ip_whitelist", k.IPWhitelist)
 	d.Set("ip_whitelist_strict", k.IPWhitelistStrict)
 	permissionsToResourceData(d, k.Permissions)
+
+	// keep the existing key in the state file when there's no key in the response
+	d.Set("key", d.Get("key"))
+	if k.Key != "" {
+		d.Set("key", k.Key)
+	}
+
 	return nil
 }
 
