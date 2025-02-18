@@ -1,3 +1,19 @@
+## 2.5.1 (February 5, 2025)
+ENHANCEMENTS
+* Allow underscore for non-HTTPS redirects
+
+## 2.5.0 (December 13, 2024)
+ENHANCEMENTS
+* Adds support for alert endpoints
+
+## 2.4.5 (October 17, 2024)
+BUGFIX
+* `ns1-go` client version bump to allow wiping out record regions
+
+## 2.4.4 (October 10, 2024)
+BUGFIX
+* Adds support for setting override_address_records for ALIAS records
+
 ## 2.4.3 (October 2, 2024)
 * Modified target regex for redirects to align with server
 

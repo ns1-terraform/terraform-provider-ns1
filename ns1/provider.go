@@ -74,6 +74,7 @@ func Provider() *schema.Provider {
 			"ns1_dataset":              datasetResource(),
 			"ns1_redirect":             redirectConfigResource(),
 			"ns1_redirect_certificate": redirectCertificateResource(),
+			"ns1_alert":                alertResource(),
 		},
 		ConfigureFunc: ns1Configure,
 	}

@@ -148,6 +148,31 @@ func TestAccRedirectConfig_https_to_http(t *testing.T) {
 	})
 }
 
+func TestAccRedirectConfig_with_underscore(t *testing.T) {
+	var redirect redirect.Configuration
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	domainName := fmt.Sprintf("terraform-test-%s.io", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t); testAccRedirectPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRedirectDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRedirectHTTPWithUnderscore(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRedirectConfigExists("ns1_redirect.it", &redirect),
+					testAccCheckRedirectConfigDomain(&redirect, "test_with_underscore."+domainName),
+					testAccCheckRedirectConfigFwType(&redirect, "permanent"),
+					testAccCheckRedirectConfigTags(&redirect, []string{}),
+					testAccCheckRedirectConfigHTTPS(&redirect, false),
+					testAccCheckRedirectConfigCertIdPresent(&redirect, false),
+				),
+			},
+		},
+	})
+}
+
 func TestAccRedirectConfig_remoteChanges(t *testing.T) {
 	var redirect redirect.Configuration
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
@@ -265,6 +290,24 @@ resource "ns1_redirect" "it" {
 
 resource "ns1_redirect_certificate" "example" {
   domain = "*.${ns1_zone.test.zone}"
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRedirectHTTPWithUnderscore(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_redirect" "it" {
+  domain           = "test_with_underscore.${ns1_zone.test.zone}"
+  path             = "/from/path/*"
+  target           = "https://url.com/target/path"
+  forwarding_mode  = "all"
+  forwarding_type  = "permanent"
+  https_forced     = false
+  tags             = [ ]
 }
 
 resource "ns1_zone" "test" {
