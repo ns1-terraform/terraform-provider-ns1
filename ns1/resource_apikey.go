@@ -65,7 +65,6 @@ func apikeyToResourceData(d *schema.ResourceData, k *account.APIKey) error {
 	permissionsToResourceData(d, k.Permissions)
 
 	// keep the existing key in the state file when there's no key in the response
-	d.Set("key", d.Get("key"))
 	if k.Key != "" {
 		d.Set("key", k.Key)
 	}
