@@ -1,4 +1,4 @@
-## 2.5.2 (February 18, 2025)
+## 2.5.2 (February 19, 2025)
 BUGFIX
 * Keep API key in state file
 
