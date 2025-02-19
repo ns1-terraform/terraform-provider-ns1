@@ -1,3 +1,7 @@
+## 2.5.2 (February 19, 2025)
+BUGFIX
+* Keep API key in state file
+
 ## 2.5.1 (February 5, 2025)
 ENHANCEMENTS
 * Allow underscore for non-HTTPS redirects

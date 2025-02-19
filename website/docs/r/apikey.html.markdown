@@ -87,6 +87,8 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
+-> Imported keys will not have their key stored in the state file.
+
 `terraform import ns1_apikey`
 
 So for the example above:
