@@ -13,9 +13,16 @@ Provides a NS1 Data Source resource. This can be used to create, modify, and del
 ## Example Usage
 
 ```hcl
-resource "ns1_datasource" "example" {
-  name       = "example"
+resource "ns1_api_datasource" "example" {
+  name       = "example-api"
   sourcetype = "nsone_v1"
+}
+```
+OR
+```hcl
+resource "ns1_monitoring_datasource" "example" {
+  name       = "example-monitoring"
+  sourcetype = "nsone_monitoring"
 }
 ```
 
