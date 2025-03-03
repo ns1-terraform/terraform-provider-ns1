@@ -249,7 +249,6 @@ func TestAccRecord_NewTypes(t *testing.T) {
 				testAccRecordCAA,
 				testAccRecordCAAWithSpace,
 			},
-			// Update these expected answers to include the double quotes
 			expectedAnswers: [][]string{
 				{"0", "issue", "\"letsencrypt.org\""},
 				{"0", "issuewild", "\";\""},
@@ -272,12 +271,11 @@ func TestAccRecord_NewTypes(t *testing.T) {
 		},
 		{
 			recType: "SPF",
-			// Only 1 config step
 			configFuncs: []func(string) string{
 				testAccRecordSPF,
 			},
 			expectedAnswers: [][]string{
-				// Just one answer from old test
+
 				{"v=DKIM1; k=rsa; p=XXXXXXXX"},
 			},
 			expectedDomains: []func(string) string{
@@ -374,6 +372,8 @@ func TestAccRecord_NewTypes(t *testing.T) {
 				tc.preCheck(t)
 			}
 
+			// CAA records can have multiple answers,
+			// so they require specialized handling and separate tests.
 			if tc.recType == "CAA" {
 				for i, configFunc := range tc.configFuncs {
 					var expectedDomain string
@@ -438,8 +438,10 @@ func TestAccRecord_NewTypes(t *testing.T) {
 						testAccCheckRecordUseClientSubnet(&record, true),
 					}
 
-					answerChecksSlice := createAnswerChecks(t, &record, tc.expectedAnswers)
-					allCheckFuncs := append(checks, answerChecksSlice...)
+					// Direct check for the answer - no need for createAnswerChecks
+					if len(tc.expectedAnswers) > 0 {
+						checks = append(checks, testAccCheckRecordAnswerRdata(t, &record, 0, tc.expectedAnswers[0]))
+					}
 
 					resource.Test(t, resource.TestCase{
 						PreCheck:     func() { testAccPreCheck(t) },
@@ -448,7 +450,7 @@ func TestAccRecord_NewTypes(t *testing.T) {
 						Steps: []resource.TestStep{
 							{
 								Config: configFunc(rString),
-								Check:  resource.ComposeTestCheckFunc(allCheckFuncs...),
+								Check:  resource.ComposeTestCheckFunc(checks...),
 							},
 							{
 								ResourceName:      fmt.Sprintf("ns1_record.%s", strings.ToLower(tc.recType)),
@@ -462,15 +464,6 @@ func TestAccRecord_NewTypes(t *testing.T) {
 			}
 		})
 	}
-}
-
-func createAnswerChecks(t *testing.T, record *dns.Record, answers [][]string) []resource.TestCheckFunc {
-
-	checks := make([]resource.TestCheckFunc, len(answers))
-	for i, answer := range answers {
-		checks[i] = testAccCheckRecordAnswerRdata(t, record, i, answer)
-	}
-	return checks
 }
 
 func TestAccRecord_WithTags(t *testing.T) {
