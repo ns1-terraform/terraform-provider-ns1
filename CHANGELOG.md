@@ -1,3 +1,7 @@
+## 2.5.3 (March 7, 2025)
+ENHANCEMENTS
+* Added support for OpenPGPKEY, SSHFP, APL, GPOS, IPSECKEY, URI records
+
 ## 2.5.2 (February 19, 2025)
 BUGFIX
 * Keep API key in state file
@@ -605,7 +609,7 @@ FEATURES:
 
 IMPROVEMENTS:
 
-* Migrate to Go Modules [#48](https://github.com/terraform-providers/terraform-provider-ns1/pull/48))
+* Migrate to Go Modules [#48](https://github.com/terraform-providers/terraform-provider-ns1/pull/48)
 * Refactor acceptance test fixtures to Terraform 0.12 syntax [#50](https://github.com/terraform-providers/terraform-provider-ns1/pull/50)
 * Update website and examples to Terraform 0.12 syntax [#51](https://github.com/terraform-providers/terraform-provider-ns1/pull/51)
 * Update ns1-go module latest version [#51](https://github.com/terraform-providers/terraform-provider-ns1/pull/51)

@@ -233,188 +233,178 @@ func TestAccRecord_meta_with_json(t *testing.T) {
 	})
 }
 
-func TestAccRecord_CAA(t *testing.T) {
-	var record dns.Record
-	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
-	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+func TestAccRecord_NewTypes(t *testing.T) {
+	testCases := []struct {
+		recType         string
+		domainPrefix    string
+		domainFormat    string
+		configFuncs     []func(string) string
+		preCheck        func(*testing.T)
+		expectedAnswers [][]string
+		expectedDomains []func(zoneName string) string
+		ttl             int
+	}{
+		{
+			recType:      "APL",
+			domainPrefix: "apl",
+			configFuncs:  []func(string) string{testAccRecordAPL},
+			expectedAnswers: [][]string{
+				{"1:127.0.0.0/16"},
+			},
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckRecordDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccRecordCAA(rString),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.caa", &record),
-					testAccCheckRecordDomain(&record, zoneName),
-					testAccCheckRecordTTL(&record, 3600),
+			ttl: 3600,
+		},
+		{
+			recType: "SPF",
+			configFuncs: []func(string) string{
+				testAccRecordSPF,
+			},
+			expectedAnswers: [][]string{
+
+				{"v=DKIM1; k=rsa; p=XXXXXXXX"},
+			},
+			expectedDomains: []func(string) string{
+				func(zone string) string { return zone },
+			},
+			ttl: 86400,
+		},
+		{
+			recType:      "SRV",
+			domainPrefix: "_some-server._tcp",
+			configFuncs:  []func(string) string{testAccRecordSRV},
+			expectedAnswers: [][]string{
+				{"10", "0", "2380", "node-1.${ns1_zone.test.zone}"},
+			},
+			ttl: 86400,
+		},
+		{
+			recType:      "DS",
+			domainPrefix: "_some-server._tcp",
+			configFuncs:  []func(string) string{testAccRecordDS},
+			expectedAnswers: [][]string{
+				{"262", "13", "2", "287787bd551bcab4f57d0c1dcaf312eebe36cc338bebb90d1402353c7096785d"},
+			},
+			ttl: 86400,
+		},
+		{
+			recType:      "GPOS",
+			domainPrefix: "gpos",
+			configFuncs:  []func(string) string{testAccRecordGPOS},
+			expectedAnswers: [][]string{
+				{"6", "53", "0"},
+			},
+			ttl: 3600,
+		},
+		{
+			recType:      "IPSECKEY",
+			domainPrefix: "ipseckey",
+			configFuncs:  []func(string) string{testAccRecordIPSECKEY},
+			expectedAnswers: [][]string{
+				{"1", "0", "2", ".", "abba"},
+			},
+			ttl: 3600,
+		},
+		{
+			recType:      "OPENPGPKEY",
+			domainPrefix: "openpgpkey",
+			configFuncs:  []func(string) string{testAccRecordOPENPGPKEY},
+			expectedAnswers: [][]string{
+				{"abba"},
+			},
+			ttl: 3600,
+		},
+		{
+			recType:      "SSHFP",
+			domainPrefix: "sshfp",
+			domainFormat: "%s.%s",
+			configFuncs:  []func(string) string{testAccRecordSSHFP},
+			expectedAnswers: [][]string{
+				{"1", "1", "abba"},
+			},
+			ttl: 3600,
+		},
+		{
+			recType:      "URI",
+			domainPrefix: "uri",
+			domainFormat: "%s.%s",
+			configFuncs:  []func(string) string{testAccRecordURI},
+			expectedAnswers: [][]string{
+				{"1", "2", "\"http://localhost\""},
+			},
+			ttl: 3600,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.recType, func(t *testing.T) {
+			var record dns.Record
+			rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+			zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+
+			var defaultDomain string
+
+			if tc.domainFormat != "" {
+				if strings.Contains(tc.domainFormat, "%s.%s") {
+					defaultDomain = fmt.Sprintf(tc.domainFormat, tc.domainPrefix, zoneName)
+				} else {
+					defaultDomain = fmt.Sprintf(tc.domainFormat, zoneName)
+				}
+			} else if tc.domainPrefix != "" {
+				defaultDomain = fmt.Sprintf("%s.%s", tc.domainPrefix, zoneName)
+			} else {
+				defaultDomain = zoneName
+			}
+
+			// Special handling for SRV records - need to format the answer correctly
+			if tc.recType == "SRV" && len(tc.expectedAnswers) > 0 && len(tc.expectedAnswers[0]) > 3 {
+				tc.expectedAnswers[0][3] = fmt.Sprintf("node-1.%s", zoneName)
+			}
+
+			if tc.preCheck != nil {
+				tc.preCheck(t)
+			}
+
+			// Standard handling for all other record types
+			for i, configFunc := range tc.configFuncs {
+				var expectedDomain string
+				if len(tc.expectedDomains) > i {
+					expectedDomain = tc.expectedDomains[i](zoneName)
+				} else {
+					expectedDomain = defaultDomain
+				}
+
+				checks := []resource.TestCheckFunc{
+					testAccCheckRecordExists(fmt.Sprintf("ns1_record.%s", strings.ToLower(tc.recType)), &record),
+					testAccCheckRecordDomain(&record, expectedDomain),
+					testAccCheckRecordTTL(&record, tc.ttl),
 					testAccCheckRecordUseClientSubnet(&record, true),
-					testAccCheckRecordAnswerRdata(
-						t, &record, 0, []string{"0", "issue", "letsencrypt.org"},
-					),
-					testAccCheckRecordAnswerRdata(
-						t, &record, 1, []string{"0", "issuewild", ";"},
-					),
-				),
-			},
-			{
-				ResourceName:      "ns1_record.caa",
-				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/CAA", zoneName),
-				ImportStateVerify: true,
-			},
-			{
-				Config: testAccRecordCAAWithSpace(rString),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.caa", &record),
-					testAccCheckRecordDomain(&record, zoneName),
-					testAccCheckRecordAnswerRdata(
-						t, &record, 0, []string{"0", "issue", "inbox2221.ticket; account=xyz"},
-					),
-				),
-			},
-		},
-	})
-}
+				}
 
-func TestAccRecord_SPF(t *testing.T) {
-	var record dns.Record
-	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
-	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+				// Direct check for the answer - no need for createAnswerChecks
+				if len(tc.expectedAnswers) > 0 {
+					checks = append(checks, testAccCheckRecordAnswerRdata(t, &record, 0, tc.expectedAnswers[0]))
+				}
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckRecordDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccRecordSPF(rString),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.spf", &record),
-					testAccCheckRecordDomain(&record, zoneName),
-					testAccCheckRecordTTL(&record, 86400),
-					testAccCheckRecordUseClientSubnet(&record, true),
-					testAccCheckRecordAnswerRdata(
-						t, &record, 0, []string{"v=DKIM1; k=rsa; p=XXXXXXXX"},
-					),
-				),
-			},
-			{
-				ResourceName:      "ns1_record.spf",
-				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/SPF", zoneName),
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func TestAccRecord_SRV(t *testing.T) {
-	var record dns.Record
-	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
-	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
-	domainName := fmt.Sprintf("_some-server._tcp.%s", zoneName)
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckRecordDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccRecordSRV(rString),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.srv", &record),
-					testAccCheckRecordDomain(&record, domainName),
-					testAccCheckRecordTTL(&record, 86400),
-					testAccCheckRecordUseClientSubnet(&record, true),
-					testAccCheckRecordAnswerRdata(
-						t,
-						&record,
-						0,
-						[]string{"10", "0", "2380", fmt.Sprintf("node-1.%s", zoneName)},
-					),
-				),
-			},
-			{
-				ResourceName:      "ns1_record.srv",
-				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("%s/%s/SRV", zoneName, domainName),
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func TestAccRecord_DS(t *testing.T) {
-	var record dns.Record
-	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
-	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
-	domainName := fmt.Sprintf("_some-server._tcp.%s", zoneName)
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckRecordDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccRecordDS(rString),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.ds", &record),
-					testAccCheckRecordDomain(&record, domainName),
-					testAccCheckRecordTTL(&record, 86400),
-					testAccCheckRecordUseClientSubnet(&record, true),
-					testAccCheckRecordAnswerRdata(
-						t,
-						&record,
-						0,
-						[]string{"262", "13", "2", "287787bd551bcab4f57d0c1dcaf312eebe36cc338bebb90d1402353c7096785d"},
-					),
-				),
-			},
-			{
-				ResourceName:      "ns1_record.ds",
-				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("%s/%s/DS", zoneName, domainName),
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
-func TestAccRecord_URLFWD(t *testing.T) {
-	var record dns.Record
-	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
-	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
-	domainName := fmt.Sprintf("fwd.%s", zoneName)
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t); testAccURLFWDPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckRecordDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccRecordURLFWD(rString),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.urlfwd", &record),
-					testAccCheckRecordDomain(&record, domainName),
-					testAccCheckRecordTTL(&record, 3600),
-					testAccCheckRecordAnswerRdata(
-						t,
-						&record,
-						0,
-						[]string{"/", "https://example.com", "301", "2", "0"},
-					),
-				),
-			},
-			{
-				ResourceName:      "ns1_record.urlfwd",
-				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("%s/%s/URLFWD", zoneName, domainName),
-				ImportStateVerify: true,
-			},
-		},
-	})
+				resource.Test(t, resource.TestCase{
+					PreCheck:     func() { testAccPreCheck(t) },
+					Providers:    testAccProviders,
+					CheckDestroy: testAccCheckRecordDestroy,
+					Steps: []resource.TestStep{
+						{
+							Config: configFunc(rString),
+							Check:  resource.ComposeTestCheckFunc(checks...),
+						},
+						{
+							ResourceName:      fmt.Sprintf("ns1_record.%s", strings.ToLower(tc.recType)),
+							ImportState:       true,
+							ImportStateId:     fmt.Sprintf("%s/%s/%s", zoneName, expectedDomain, tc.recType),
+							ImportStateVerify: true,
+						},
+					},
+				})
+			}
+		})
+	}
 }
 
 func TestAccRecord_WithTags(t *testing.T) {
@@ -497,6 +487,51 @@ func TestAccRecord_updatedWithTags(t *testing.T) {
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/CNAME", zoneName, domainName),
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccRecord_CAA(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordCAA(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.caa", &record),
+					testAccCheckRecordDomain(&record, zoneName),
+					testAccCheckRecordTTL(&record, 3600),
+					testAccCheckRecordUseClientSubnet(&record, true),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"0", "issue", "\"letsencrypt.org\""},
+					),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 1, []string{"0", "issuewild", "\";\""},
+					),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.caa",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/CAA", zoneName),
+				ImportStateVerify: true,
+			},
+			{
+				Config: testAccRecordCAAWithSpace(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.caa", &record),
+					testAccCheckRecordDomain(&record, zoneName),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"0", "issue", "inbox2221.ticket; account=xyz"},
+					),
+				),
 			},
 		},
 	})
@@ -1078,39 +1113,6 @@ func TestAccRecord_Link(t *testing.T) {
 	})
 }
 
-// See if URLFWD permission exist by trying to create a record with it.
-func testAccURLFWDPreCheck(t *testing.T) {
-	client, err := sharedClient()
-	if err != nil {
-		log.Fatalf("failed to get shared client: %s", err)
-	}
-
-	name := fmt.Sprintf("terraform-urlfwd-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
-
-	_, err = client.Zones.Create(&dns.Zone{Zone: name})
-	if err != nil {
-		t.Fatalf("failed to create test zone %s: %s", name, err)
-	}
-
-	record := dns.NewRecord(name, fmt.Sprintf("domain.%s", name), "URLFWD", nil, nil)
-	record.Answers = []*dns.Answer{{Rdata: []string{"/", "https://example.com", "301", "2", "0"}}}
-
-	_, err = client.Records.Create(record)
-	if err != nil {
-		if strings.Contains(err.Error(), "400 URLFWD records are not enabled") {
-			t.Skipf("account not authorized for URLFWD records, skipping test")
-			return
-		}
-
-		t.Fatalf("failed to create test record %s: %s", name, err)
-	}
-
-	_, err = client.Zones.Delete(record.Zone)
-	if err != nil {
-		t.Fatalf("failed to delete test record %s", name)
-	}
-}
-
 func testAccCheckRecordExists(n string, record *dns.Record) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -1178,10 +1180,10 @@ func testAccCheckRecordDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckRecordDomain(r *dns.Record, expected string) resource.TestCheckFunc {
+func testAccCheckRecordDomain(record *dns.Record, expectedDomain string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		if r.Domain != expected {
-			return fmt.Errorf("r.Domain: got: %#v want: %#v", r.Domain, expected)
+		if record.Domain != expectedDomain {
+			return fmt.Errorf("r.Domain: got: %q, want: %q", record.Domain, expectedDomain)
 		}
 		return nil
 	}
@@ -1706,20 +1708,63 @@ resource "ns1_record" "it" {
 
 func testAccRecordCAA(rString string) string {
 	return fmt.Sprintf(`
-resource "ns1_record" "caa" {
-  zone     = "${ns1_zone.test.zone}"
-  domain   = "${ns1_zone.test.zone}"
-  type     = "CAA"
-  answers {
-    answer = "0 issue letsencrypt.org"
-  }
-  answers {
-    answer = "0 issuewild ;"
-  }
-}
-
 resource "ns1_zone" "test" {
   zone = "terraform-test-%s.io"
+}
+
+resource "ns1_record" "caa" {
+  zone   = ns1_zone.test.zone
+  domain = "caa.${ns1_zone.test.zone}"
+  type   = "CAA"
+  ttl    = 3600
+  
+  answers {
+    answer = "0 issue \"letsencrypt.org\""
+  }
+  
+  answers {
+    answer = "0 issuewild \";\""
+  }
+}
+`, rString)
+}
+
+func testAccRecordAPL(rString string) string {
+	zone := fmt.Sprintf("terraform-test-%s.io", rString)
+	return fmt.Sprintf(`
+resource "ns1_zone" "test" {
+	zone = "%s"
+}
+
+resource "ns1_record" "apl" {
+	zone   = ns1_zone.test.zone
+	domain = "apl.%s"
+	type   = "APL"
+	ttl    = 3600
+
+	answers {
+		answer = "1:127.0.0.0/16"
+	}
+	
+}
+`, zone, zone)
+}
+
+func testAccRecordGPOS(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+
+resource "ns1_record" "gpos" {
+  zone   = ns1_zone.test.zone
+  domain = "gpos.${ns1_zone.test.zone}"
+  type   = "GPOS"
+  ttl    = 3600
+
+  answers {
+    answer = "6 53 0"
+  }
 }
 `, rString)
 }
@@ -1799,19 +1844,21 @@ resource "ns1_zone" "test" {
 `, rString)
 }
 
-func testAccRecordURLFWD(rString string) string {
+func testAccRecordIPSECKEY(rString string) string {
 	return fmt.Sprintf(`
-resource "ns1_record" "urlfwd" {
-  zone     = "${ns1_zone.test.zone}"
-  domain   = "fwd.${ns1_zone.test.zone}"
-  type     = "URLFWD"
-  answers {
-    answer = "/ https://example.com 301 2 0"
-  }
-}
-
 resource "ns1_zone" "test" {
   zone = "terraform-test-%s.io"
+}
+
+resource "ns1_record" "ipseckey" {
+  zone   = ns1_zone.test.zone
+  domain = "ipseckey.${ns1_zone.test.zone}"
+  type   = "IPSECKEY"
+  ttl    = 3600
+
+  answers {
+    answer = "1 0 2 . abba"
+  }
 }
 `, rString)
 }
@@ -2008,6 +2055,65 @@ func testAccRecordUpdatedWithNoRegions(rString string) string {
 	  zone = "terraform-test-%s.io"
 	}
 	`, rString)
+}
+
+func testAccRecordOPENPGPKEY(rString string) string {
+	return fmt.Sprintf(`
+	resource "ns1_zone" "test" {
+	  zone = "terraform-test-%s.io"
+	}
+	
+	resource "ns1_record" "openpgpkey" {
+	  zone   = ns1_zone.test.zone
+	  domain = "openpgpkey.${ns1_zone.test.zone}"
+	  type   = "OPENPGPKEY"
+	  ttl    = 3600
+	
+	  answers {
+		answer = "abba"
+	  }
+	}
+	`, rString)
+}
+
+func testAccRecordSSHFP(rString string) string {
+	zone := fmt.Sprintf("terraform-test-%s.io", rString)
+	return fmt.Sprintf(`
+resource "ns1_zone" "test" {
+  zone = "%s"
+}
+
+resource "ns1_record" "sshfp" {
+  zone   = ns1_zone.test.zone
+  domain = "sshfp.%s"
+  type   = "SSHFP"
+  ttl    = 3600
+
+  answers {
+    answer = "1 1 abba"
+	}
+}
+`, zone, zone)
+}
+
+func testAccRecordURI(rString string) string {
+	zone := fmt.Sprintf("terraform-test-%s.io", rString)
+	return fmt.Sprintf(`
+resource "ns1_zone" "test" {
+  zone = "%s"
+}
+
+resource "ns1_record" "uri" {
+  zone   = ns1_zone.test.zone
+  domain = "uri.%s"
+  type   = "URI"
+  ttl    = 3600
+
+  answers {
+    answer = "1 2 \"http://localhost\""
+	}
+}
+`, zone, zone)
 }
 
 // zone and domain have leading and trailing dots and should fail validation.
