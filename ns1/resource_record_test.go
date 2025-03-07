@@ -237,28 +237,13 @@ func TestAccRecord_NewTypes(t *testing.T) {
 	testCases := []struct {
 		recType         string
 		domainPrefix    string
+		domainFormat    string
 		configFuncs     []func(string) string
 		preCheck        func(*testing.T)
 		expectedAnswers [][]string
 		expectedDomains []func(zoneName string) string
 		ttl             int
 	}{
-		{
-			recType: "CAA",
-			configFuncs: []func(string) string{
-				testAccRecordCAA,
-				testAccRecordCAAWithSpace,
-			},
-			expectedAnswers: [][]string{
-				{"0", "issue", "\"letsencrypt.org\""},
-				{"0", "issuewild", "\";\""},
-			},
-			expectedDomains: []func(string) string{
-				func(zone string) string { return fmt.Sprintf("caa.%s", zone) },
-				func(zone string) string { return zone },
-			},
-			ttl: 3600,
-		},
 		{
 			recType:      "APL",
 			domainPrefix: "apl",
@@ -331,6 +316,7 @@ func TestAccRecord_NewTypes(t *testing.T) {
 		{
 			recType:      "SSHFP",
 			domainPrefix: "sshfp",
+			domainFormat: "%s.%s",
 			configFuncs:  []func(string) string{testAccRecordSSHFP},
 			expectedAnswers: [][]string{
 				{"1", "1", "abba"},
@@ -340,6 +326,7 @@ func TestAccRecord_NewTypes(t *testing.T) {
 		{
 			recType:      "URI",
 			domainPrefix: "uri",
+			domainFormat: "%s.%s",
 			configFuncs:  []func(string) string{testAccRecordURI},
 			expectedAnswers: [][]string{
 				{"1", "2", "\"http://localhost\""},
@@ -356,111 +343,65 @@ func TestAccRecord_NewTypes(t *testing.T) {
 
 			var defaultDomain string
 
-			if tc.recType == "SRV" {
-				defaultDomain = fmt.Sprintf("_some-server._tcp.%s", zoneName)
-				expectedAnswer := []string{"10", "0", "2380", fmt.Sprintf("node-1.%s", zoneName)}
-				tc.expectedAnswers = [][]string{expectedAnswer}
-			} else if tc.recType == "DS" {
-				defaultDomain = fmt.Sprintf("_some-server._tcp.%s", zoneName)
+			if tc.domainFormat != "" {
+				if strings.Contains(tc.domainFormat, "%s.%s") {
+					defaultDomain = fmt.Sprintf(tc.domainFormat, tc.domainPrefix, zoneName)
+				} else {
+					defaultDomain = fmt.Sprintf(tc.domainFormat, zoneName)
+				}
 			} else if tc.domainPrefix != "" {
 				defaultDomain = fmt.Sprintf("%s.%s", tc.domainPrefix, zoneName)
 			} else {
 				defaultDomain = zoneName
 			}
 
+			// Special handling for SRV records - need to format the answer correctly
+			if tc.recType == "SRV" && len(tc.expectedAnswers) > 0 && len(tc.expectedAnswers[0]) > 3 {
+				tc.expectedAnswers[0][3] = fmt.Sprintf("node-1.%s", zoneName)
+			}
+
 			if tc.preCheck != nil {
 				tc.preCheck(t)
 			}
 
-			// CAA records can have multiple answers,
-			// so they require specialized handling and separate tests.
-			if tc.recType == "CAA" {
-				for i, configFunc := range tc.configFuncs {
-					var expectedDomain string
-					if len(tc.expectedDomains) > i {
-						expectedDomain = tc.expectedDomains[i](zoneName)
-					} else {
-						expectedDomain = defaultDomain
-					}
-
-					var checkFuncs []resource.TestCheckFunc
-
-					checkFuncs = append(checkFuncs,
-						testAccCheckRecordExists(fmt.Sprintf("ns1_record.%s", strings.ToLower(tc.recType)), &record),
-						testAccCheckRecordDomain(&record, expectedDomain),
-						testAccCheckRecordTTL(&record, tc.ttl),
-						testAccCheckRecordUseClientSubnet(&record, true),
-					)
-
-					if i == 0 {
-						checkFuncs = append(checkFuncs,
-							testAccCheckRecordAnswerRdata(t, &record, 0, []string{"0", "issue", "\"letsencrypt.org\""}),
-							testAccCheckRecordAnswerRdata(t, &record, 1, []string{"0", "issuewild", "\";\""}),
-						)
-					} else if i == 1 {
-						checkFuncs = append(checkFuncs,
-							testAccCheckRecordAnswerRdata(t, &record, 0, []string{"0", "issue", "inbox2221.ticket; account=xyz"}),
-						)
-					}
-
-					resource.Test(t, resource.TestCase{
-						PreCheck:     func() { testAccPreCheck(t) },
-						Providers:    testAccProviders,
-						CheckDestroy: testAccCheckRecordDestroy,
-						Steps: []resource.TestStep{
-							{
-								Config: configFunc(rString),
-								Check:  resource.ComposeTestCheckFunc(checkFuncs...),
-							},
-							{
-								ResourceName:      fmt.Sprintf("ns1_record.%s", strings.ToLower(tc.recType)),
-								ImportState:       true,
-								ImportStateId:     fmt.Sprintf("%s/%s/%s", zoneName, expectedDomain, tc.recType),
-								ImportStateVerify: true,
-							},
-						},
-					})
+			// Standard handling for all other record types
+			for i, configFunc := range tc.configFuncs {
+				var expectedDomain string
+				if len(tc.expectedDomains) > i {
+					expectedDomain = tc.expectedDomains[i](zoneName)
+				} else {
+					expectedDomain = defaultDomain
 				}
-			} else {
-				// Standard handling for all other record types
-				for i, configFunc := range tc.configFuncs {
-					var expectedDomain string
-					if len(tc.expectedDomains) > i {
-						expectedDomain = tc.expectedDomains[i](zoneName)
-					} else {
-						expectedDomain = defaultDomain
-					}
 
-					checks := []resource.TestCheckFunc{
-						testAccCheckRecordExists(fmt.Sprintf("ns1_record.%s", strings.ToLower(tc.recType)), &record),
-						testAccCheckRecordDomain(&record, expectedDomain),
-						testAccCheckRecordTTL(&record, tc.ttl),
-						testAccCheckRecordUseClientSubnet(&record, true),
-					}
-
-					// Direct check for the answer - no need for createAnswerChecks
-					if len(tc.expectedAnswers) > 0 {
-						checks = append(checks, testAccCheckRecordAnswerRdata(t, &record, 0, tc.expectedAnswers[0]))
-					}
-
-					resource.Test(t, resource.TestCase{
-						PreCheck:     func() { testAccPreCheck(t) },
-						Providers:    testAccProviders,
-						CheckDestroy: testAccCheckRecordDestroy,
-						Steps: []resource.TestStep{
-							{
-								Config: configFunc(rString),
-								Check:  resource.ComposeTestCheckFunc(checks...),
-							},
-							{
-								ResourceName:      fmt.Sprintf("ns1_record.%s", strings.ToLower(tc.recType)),
-								ImportState:       true,
-								ImportStateId:     fmt.Sprintf("%s/%s/%s", zoneName, expectedDomain, tc.recType),
-								ImportStateVerify: true,
-							},
-						},
-					})
+				checks := []resource.TestCheckFunc{
+					testAccCheckRecordExists(fmt.Sprintf("ns1_record.%s", strings.ToLower(tc.recType)), &record),
+					testAccCheckRecordDomain(&record, expectedDomain),
+					testAccCheckRecordTTL(&record, tc.ttl),
+					testAccCheckRecordUseClientSubnet(&record, true),
 				}
+
+				// Direct check for the answer - no need for createAnswerChecks
+				if len(tc.expectedAnswers) > 0 {
+					checks = append(checks, testAccCheckRecordAnswerRdata(t, &record, 0, tc.expectedAnswers[0]))
+				}
+
+				resource.Test(t, resource.TestCase{
+					PreCheck:     func() { testAccPreCheck(t) },
+					Providers:    testAccProviders,
+					CheckDestroy: testAccCheckRecordDestroy,
+					Steps: []resource.TestStep{
+						{
+							Config: configFunc(rString),
+							Check:  resource.ComposeTestCheckFunc(checks...),
+						},
+						{
+							ResourceName:      fmt.Sprintf("ns1_record.%s", strings.ToLower(tc.recType)),
+							ImportState:       true,
+							ImportStateId:     fmt.Sprintf("%s/%s/%s", zoneName, expectedDomain, tc.recType),
+							ImportStateVerify: true,
+						},
+					},
+				})
 			}
 		})
 	}
@@ -546,6 +487,51 @@ func TestAccRecord_updatedWithTags(t *testing.T) {
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("%s/%s/CNAME", zoneName, domainName),
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccRecord_CAA(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccRecordCAA(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.caa", &record),
+					testAccCheckRecordDomain(&record, zoneName),
+					testAccCheckRecordTTL(&record, 3600),
+					testAccCheckRecordUseClientSubnet(&record, true),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"0", "issue", "\"letsencrypt.org\""},
+					),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 1, []string{"0", "issuewild", "\";\""},
+					),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.caa",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/CAA", zoneName),
+				ImportStateVerify: true,
+			},
+			{
+				Config: testAccRecordCAAWithSpace(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.caa", &record),
+					testAccCheckRecordDomain(&record, zoneName),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"0", "issue", "inbox2221.ticket; account=xyz"},
+					),
+				),
 			},
 		},
 	})
