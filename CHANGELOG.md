@@ -1,3 +1,7 @@
+## 2.6.0 (April 02, 2025)
+ENHANCEMENTS
+* Adds support for billing-usage endpoints
+
 ## 2.5.3 (March 7, 2025)
 ENHANCEMENTS
 * Added support for OpenPGPKEY, SSHFP, APL, GPOS, IPSECKEY, URI records

@@ -55,6 +55,7 @@ func Provider() *schema.Provider {
 			"ns1_record":             dataSourceRecord(),
 			"ns1_networks":           dataSourceNetworks(),
 			"ns1_monitoring_regions": dataSourceMonitoringRegions(),
+			"billing_usage":          billingUsageResource(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"ns1_zone":                 resourceZone(),
