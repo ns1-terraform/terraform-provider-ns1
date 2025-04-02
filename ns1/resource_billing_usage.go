@@ -2,8 +2,6 @@ package ns1
 
 import (
 	"fmt"
-	"time"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 )
@@ -27,13 +25,11 @@ func billingUsageResource() *schema.Resource {
 			},
 			"from": {
 				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  int(time.Now().AddDate(0, -1, 0).Unix()), // Default to 1 month ago
+				Required: true,
 			},
 			"to": {
 				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  int(time.Now().Unix()),
+				Required: true,
 			},
 			// Queries specific fields
 			"clean_queries": {
