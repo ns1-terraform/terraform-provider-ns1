@@ -2,18 +2,34 @@ package ns1
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 )
 
+const (
+	MetricTypeQueries      = "queries"
+	MetricTypeLimits       = "limits"
+	MetricTypeDecisions    = "decisions"
+	MetricTypeRecords      = "records"
+	MetricTypeFilterChains = "filter-chains"
+	MetricTypeMonitors     = "monitors"
+)
+
 var MetricTypeStringEnum = NewStringEnum([]string{
-	"queries",
-	"decisions",
-	"records",
-	"filter-chains",
-	"monitors",
-	"limits",
+	MetricTypeQueries,
+	MetricTypeDecisions,
+	MetricTypeRecords,
+	MetricTypeFilterChains,
+	MetricTypeMonitors,
+	MetricTypeLimits,
 })
+
+var timeFrameRequiredMetricTypes = []string{
+	MetricTypeQueries,
+	MetricTypeLimits,
+	MetricTypeDecisions,
+}
 
 func billingUsageResource() *schema.Resource {
 	return &schema.Resource{
@@ -25,11 +41,11 @@ func billingUsageResource() *schema.Resource {
 			},
 			"from": {
 				Type:     schema.TypeInt,
-				Required: true,
+				Optional: true,
 			},
 			"to": {
 				Type:     schema.TypeInt,
-				Required: true,
+				Optional: true,
 			},
 			// Queries specific fields
 			"clean_queries": {
@@ -143,27 +159,50 @@ func billingUsageResource() *schema.Resource {
 	}
 }
 
+// Helper function to check if a string is in a slice
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
+}
+
 // BillingUsageRead reads the billing usage data from NS1
 func billingUsageRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	metricType := d.Get("metric_type").(string)
-	from := int32(d.Get("from").(int))
-	to := int32(d.Get("to").(int))
+
+	// Validate that from and to are provided for metric types that require them
+	if contains(timeFrameRequiredMetricTypes, metricType) {
+		_, okFrom := d.GetOk("from")
+		_, okTo := d.GetOk("to")
+		if !okFrom || !okTo {
+			return fmt.Errorf("from and to parameters are required for metric_type: %s", metricType)
+		}
+	}
 
 	var err error
 
 	switch metricType {
-	case "queries":
+	case MetricTypeQueries:
+		from := int32(d.Get("from").(int))
+		to := int32(d.Get("to").(int))
 		err = readQueriesUsage(d, client, from, to)
-	case "limits":
+	case MetricTypeLimits:
+		from := int32(d.Get("from").(int))
+		to := int32(d.Get("to").(int))
 		err = readLimitsUsage(d, client, from, to)
-	case "decisions":
+	case MetricTypeDecisions:
+		from := int32(d.Get("from").(int))
+		to := int32(d.Get("to").(int))
 		err = readDecisionsUsage(d, client, from, to)
-	case "filter-chains":
+	case MetricTypeFilterChains:
 		err = readFilterChainsUsage(d, client)
-	case "monitors":
+	case MetricTypeMonitors:
 		err = readMonitorsUsage(d, client)
-	case "records":
+	case MetricTypeRecords:
 		err = readRecordsUsage(d, client)
 	default:
 		return fmt.Errorf("unsupported metric type: %s", metricType)
@@ -173,7 +212,15 @@ func billingUsageRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.SetId(fmt.Sprintf("%s-%d-%d", metricType, from, to))
+	// Set a unique ID for the data source
+	if contains(timeFrameRequiredMetricTypes, metricType) {
+		from := int32(d.Get("from").(int))
+		to := int32(d.Get("to").(int))
+		d.SetId(fmt.Sprintf("%s-%d-%d", metricType, from, to))
+	} else {
+		d.SetId(metricType)
+	}
+
 	return nil
 }
 
