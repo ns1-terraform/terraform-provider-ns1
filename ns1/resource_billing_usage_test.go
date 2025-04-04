@@ -25,10 +25,10 @@ func TestAccBillingUsage_queries(t *testing.T) {
 			{
 				Config: testAccBillingUsageQueries(from, to),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBillingUsageQueriesExists("ns1_billing_usage.test", &queries),
-					resource.TestCheckResourceAttr("ns1_billing_usage.test", "metric_type", "queries"),
-					resource.TestCheckResourceAttr("ns1_billing_usage.test", "from", fmt.Sprintf("%d", from)),
-					resource.TestCheckResourceAttr("ns1_billing_usage.test", "to", fmt.Sprintf("%d", to)),
+					testAccCheckBillingUsageQueriesExists("data.ns1_billing_usage.test", &queries),
+					resource.TestCheckResourceAttr("data.ns1_billing_usage.test", "metric_type", MetricTypeQueries),
+					resource.TestCheckResourceAttr("data.ns1_billing_usage.test", "from", fmt.Sprintf("%d", from)),
+					resource.TestCheckResourceAttr("data.ns1_billing_usage.test", "to", fmt.Sprintf("%d", to)),
 				),
 			},
 		},
@@ -48,10 +48,10 @@ func TestAccBillingUsage_limits(t *testing.T) {
 			{
 				Config: testAccBillingUsageLimits(from, to),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBillingUsageLimitsExists("ns1_billing_usage.test", &limits),
-					resource.TestCheckResourceAttr("ns1_billing_usage.test", "metric_type", "limits"),
-					resource.TestCheckResourceAttr("ns1_billing_usage.test", "from", fmt.Sprintf("%d", from)),
-					resource.TestCheckResourceAttr("ns1_billing_usage.test", "to", fmt.Sprintf("%d", to)),
+					testAccCheckBillingUsageLimitsExists("data.ns1_billing_usage.test", &limits),
+					resource.TestCheckResourceAttr("data.ns1_billing_usage.test", "metric_type", MetricTypeLimits),
+					resource.TestCheckResourceAttr("data.ns1_billing_usage.test", "from", fmt.Sprintf("%d", from)),
+					resource.TestCheckResourceAttr("data.ns1_billing_usage.test", "to", fmt.Sprintf("%d", to)),
 				),
 			},
 		},
@@ -71,10 +71,10 @@ func TestAccBillingUsage_decisions(t *testing.T) {
 			{
 				Config: testAccBillingUsageDecisions(from, to),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBillingUsageDecisionsExists("ns1_billing_usage.test", &usage),
-					resource.TestCheckResourceAttr("ns1_billing_usage.test", "metric_type", "decisions"),
-					resource.TestCheckResourceAttr("ns1_billing_usage.test", "from", fmt.Sprintf("%d", from)),
-					resource.TestCheckResourceAttr("ns1_billing_usage.test", "to", fmt.Sprintf("%d", to)),
+					testAccCheckBillingUsageDecisionsExists("data.ns1_billing_usage.test", &usage),
+					resource.TestCheckResourceAttr("data.ns1_billing_usage.test", "metric_type", MetricTypeDecisions),
+					resource.TestCheckResourceAttr("data.ns1_billing_usage.test", "from", fmt.Sprintf("%d", from)),
+					resource.TestCheckResourceAttr("data.ns1_billing_usage.test", "to", fmt.Sprintf("%d", to)),
 				),
 			},
 		},
@@ -92,8 +92,8 @@ func TestAccBillingUsage_filter_chains(t *testing.T) {
 			{
 				Config: testAccBillingUsageFilterChains(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBillingUsageFilterChainsExists("ns1_billing_usage.test", &usage),
-					resource.TestCheckResourceAttr("ns1_billing_usage.test", "metric_type", "filter-chains"),
+					testAccCheckBillingUsageFilterChainsExists("data.ns1_billing_usage.test", &usage),
+					resource.TestCheckResourceAttr("data.ns1_billing_usage.test", "metric_type", MetricTypeFilterChains),
 				),
 			},
 		},
@@ -111,8 +111,8 @@ func TestAccBillingUsage_monitors(t *testing.T) {
 			{
 				Config: testAccBillingUsageMonitors(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBillingUsageMonitorsExists("ns1_billing_usage.test", &usage),
-					resource.TestCheckResourceAttr("ns1_billing_usage.test", "metric_type", "monitors"),
+					testAccCheckBillingUsageMonitorsExists("data.ns1_billing_usage.test", &usage),
+					resource.TestCheckResourceAttr("data.ns1_billing_usage.test", "metric_type", MetricTypeMonitors),
 				),
 			},
 		},
@@ -130,8 +130,8 @@ func TestAccBillingUsage_records(t *testing.T) {
 			{
 				Config: testAccBillingUsageRecords(),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBillingUsageRecordsExists("ns1_billing_usage.test", &usage),
-					resource.TestCheckResourceAttr("ns1_billing_usage.test", "metric_type", "records"),
+					testAccCheckBillingUsageRecordsExists("data.ns1_billing_usage.test", &usage),
+					resource.TestCheckResourceAttr("data.ns1_billing_usage.test", "metric_type", MetricTypeRecords),
 				),
 			},
 		},
@@ -340,54 +340,54 @@ func testAccCheckBillingUsageDestroy(s *terraform.State) error {
 
 func testAccBillingUsageQueries(from, to int32) string {
 	return fmt.Sprintf(`
-resource "ns1_billing_usage" "test" {
-  metric_type = "queries"
+data "ns1_billing_usage" "test" {
+  metric_type = "%s"
   from = %d
   to = %d
 }
-`, from, to)
+`, MetricTypeQueries, from, to)
 }
 
 func testAccBillingUsageLimits(from, to int32) string {
 	return fmt.Sprintf(`
-resource "ns1_billing_usage" "test" {
-  metric_type = "limits"
+data "ns1_billing_usage" "test" {
+  metric_type = "%s"
   from = %d
   to = %d
 }
-`, from, to)
+`, MetricTypeLimits, from, to)
 }
 
 func testAccBillingUsageDecisions(from, to int32) string {
 	return fmt.Sprintf(`
-resource "ns1_billing_usage" "test" {
-  metric_type = "decisions"
+data "ns1_billing_usage" "test" {
+  metric_type = "%s"
   from = %d
   to = %d
 }
-`, from, to)
+`, MetricTypeDecisions, from, to)
 }
 
 func testAccBillingUsageFilterChains() string {
-	return `
-resource "ns1_billing_usage" "test" {
-  metric_type = "filter-chains"
+	return fmt.Sprintf(`
+data "ns1_billing_usage" "test" {
+  metric_type = "%s"
 }
-`
+`, MetricTypeFilterChains)
 }
 
 func testAccBillingUsageMonitors() string {
-	return `
-resource "ns1_billing_usage" "test" {
-  metric_type = "monitors"
+	return fmt.Sprintf(`
+data "ns1_billing_usage" "test" {
+  metric_type = "%s"
 }
-`
+`, MetricTypeMonitors)
 }
 
 func testAccBillingUsageRecords() string {
-	return `
-resource "ns1_billing_usage" "test" {
-  metric_type = "records"
+	return fmt.Sprintf(`
+data "ns1_billing_usage" "test" {
+  metric_type = "%s"
 }
-`
+`, MetricTypeRecords)
 }
