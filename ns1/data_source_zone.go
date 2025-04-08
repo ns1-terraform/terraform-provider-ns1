@@ -57,6 +57,10 @@ func dataSourceZone() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
+			"primary_network": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			"dns_servers": {
 				Type:     schema.TypeString,
 				Computed: true,
