@@ -1,4 +1,4 @@
-## 2.6.3 (April 03, 2025)
+## 2.6.3 (April 08, 2025)
 ENHANCEMENTS
 * Adds support for `primary_network` field on secondary zones
 
