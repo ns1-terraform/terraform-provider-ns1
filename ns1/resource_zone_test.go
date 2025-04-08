@@ -97,6 +97,53 @@ func TestAccZone_updated(t *testing.T) {
 	})
 }
 
+func TestAccZone_secondary(t *testing.T) {
+	var zone dns.Zone
+	defaultHostmaster := "hostmaster@nsone.net"
+	zoneName := fmt.Sprintf(
+		"terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccZoneSecondaryWithPrimaryNetwork(zoneName, 0), // primary_network explicitly set to 0
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneName(&zone, zoneName),
+					testAccCheckZoneTTL(&zone, 10800),
+					testAccCheckZoneRefresh(&zone, 43200),
+					testAccCheckZoneRetry(&zone, 7200),
+					testAccCheckZoneExpiry(&zone, 1209600),
+					testAccCheckZoneNxTTL(&zone, 3600),
+					testAccCheckZoneNotPrimary(&zone),
+					testAccCheckZoneDNSSEC(&zone, false),
+					testAccCheckNSRecord("ns1_zone.it", true),
+					testAccCheckZoneHostmaster(&zone, defaultHostmaster),
+					testAccCheckZoneSecondaryPrimaryNetwork(&zone, 0),
+				),
+			},
+			{
+				Config: testAccZoneSecondaryWithPrimaryNetwork(zoneName, 5), // primary_network explicitly set to 5
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneSecondaryPrimaryNetwork(&zone, 5),
+				),
+			},
+			{
+				Config: testAccZoneSecondary(zoneName), // primary_network defaults to 0
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneSecondaryPrimaryNetwork(&zone, 0),
+				),
+			},
+		},
+	})
+}
+
 func TestAccZone_primary_to_secondary_to_normal(t *testing.T) {
 	var zone dns.Zone
 	zoneName := fmt.Sprintf(
@@ -747,6 +794,16 @@ func testAccCheckZoneHostmaster(zone *dns.Zone, expected string) resource.TestCh
 	}
 }
 
+func testAccCheckZoneSecondaryPrimaryNetwork(z *dns.Zone, network int) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if z.Secondary != nil && z.Secondary.PrimaryNetwork != network {
+			return fmt.Errorf("z.Secondary.PrimaryNetwork: got: %d want: %d", z.Secondary.PrimaryNetwork, network)
+		}
+
+		return nil
+	}
+}
+
 // Simulate a manual deletion of a zone.
 func testAccManualDeleteZone(zone string) func() {
 	return func() {
@@ -814,8 +871,24 @@ func testAccZoneSecondary(zoneName string) string {
   primary_port = 54
   additional_primaries = ["2.2.2.2", "3.3.3.3"]
   additional_ports = [53, 5353]
+  networks = [0, 5]
 }
 `, zoneName)
+}
+
+func testAccZoneSecondaryWithPrimaryNetwork(zoneName string, network int) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+  zone    = "%s"
+  ttl     = 10800
+  primary = "1.1.1.1"
+  primary_port = 54
+  additional_primaries = ["2.2.2.2", "3.3.3.3"]
+  additional_ports = [53, 5353]
+  networks = [0, 5]
+
+  primary_network = %d
+}
+`, zoneName, network)
 }
 
 func testAccZoneSecondaryTSIG(zoneName, tsigName string) string {

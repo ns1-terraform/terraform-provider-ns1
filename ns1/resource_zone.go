@@ -74,6 +74,11 @@ func resourceZone() *schema.Resource {
 				Computed:      true,
 				ConflictsWith: []string{"secondaries"},
 			},
+			"primary_network": {
+				Type:          schema.TypeInt,
+				Optional:      true,
+				ConflictsWith: []string{"secondaries"},
+			},
 			"additional_primaries": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -196,6 +201,7 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	if z.Secondary != nil && z.Secondary.Enabled {
 		d.Set("primary", z.Secondary.PrimaryIP)
 		d.Set("primary_port", z.Secondary.PrimaryPort)
+		d.Set("primary_network", z.Secondary.PrimaryNetwork)
 		d.Set("additional_primaries", z.Secondary.OtherIPs)
 		d.Set("additional_ports", z.Secondary.OtherPorts)
 		if z.Secondary.TSIG != nil && z.Secondary.TSIG.Enabled {
@@ -272,6 +278,11 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 		if p, ok := d.GetOk("primary_port"); ok {
 			z.Secondary.PrimaryPort = p.(int)
 		}
+
+		if n, ok := d.GetOk("primary_network"); ok {
+			z.Secondary.PrimaryNetwork = n.(int)
+		}
+
 		if t, ok := d.GetOk("tsig"); ok {
 			z.Secondary.TSIG = setTSIG(t)
 		}
