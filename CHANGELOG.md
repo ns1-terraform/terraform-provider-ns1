@@ -1,3 +1,15 @@
+## 2.6.3 (April 03, 2025)
+ENHANCEMENTS
+* Adds support for `primary_network` field on secondary zones
+
+## 2.6.2 (April 03, 2025)
+BUGFIX
+* Moving billing usage from resource to data source
+
+## 2.6.1 (April 03, 2025)
+BUGFIX
+* Fixing billing-usage resource naming
+
 ## 2.6.0 (April 02, 2025)
 ENHANCEMENTS
 * Adds support for billing-usage endpoints
