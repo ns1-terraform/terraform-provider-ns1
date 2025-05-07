@@ -95,6 +95,22 @@ func resourceZone() *schema.Resource {
 				},
 				ConflictsWith: []string{"secondaries"},
 			},
+			"additional_networks": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
+				},
+				ConflictsWith: []string{"secondaries"},
+			},
+			"additional_notify_only": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeBool,
+				},
+				ConflictsWith: []string{"secondaries"},
+			},
 			"dns_servers": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -204,6 +220,8 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 		d.Set("primary_network", z.Secondary.PrimaryNetwork)
 		d.Set("additional_primaries", z.Secondary.OtherIPs)
 		d.Set("additional_ports", z.Secondary.OtherPorts)
+		d.Set("additional_networks", z.Secondary.OtherNetworks)
+		d.Set("additional_notify_only", z.Secondary.OtherNotifyOnly)
 		if z.Secondary.TSIG != nil && z.Secondary.TSIG.Enabled {
 			d.Set("tsig", tsigToMap(z.Secondary.TSIG))
 		}
@@ -239,6 +257,7 @@ func tsigToMap(t *dns.TSIG) map[string]interface{} {
 	m["name"] = t.Name
 	m["hash"] = t.Hash
 	m["key"] = t.Key
+	m["signed_notifies"] = strconv.FormatBool(t.SignedNotifies)
 
 	return m
 }
@@ -315,6 +334,20 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 			z.Secondary.OtherPorts[i] = otherPort.(int)
 		}
 	}
+	if v, ok := d.GetOk("additional_networks"); ok {
+		otherNetworksRaw := v.([]interface{})
+		z.Secondary.OtherNetworks = make([]int, len(otherNetworksRaw))
+		for i, otherNetwork := range otherNetworksRaw {
+			z.Secondary.OtherNetworks[i] = otherNetwork.(int)
+		}
+	}
+	if v, ok := d.GetOk("additional_notify_only"); ok {
+		otherNotifyOnlyRaw := v.([]interface{})
+		z.Secondary.OtherNotifyOnly = make([]bool, len(otherNotifyOnlyRaw))
+		for i, otherNotifyOnly := range otherNotifyOnlyRaw {
+			z.Secondary.OtherNotifyOnly[i] = otherNotifyOnly.(bool)
+		}
+	}
 
 	if v, ok := d.GetOk("tags"); ok {
 		tagsRaw := v.(map[string]interface{})
@@ -381,6 +414,9 @@ func setTSIG(raw interface{}) *dns.TSIG {
 
 		case "key":
 			tsig.Key = v.(string)
+
+		case "signed_notifies":
+			tsig.SignedNotifies, _ = strconv.ParseBool(v.(string))
 		}
 	}
 

@@ -1,3 +1,8 @@
+## 2.6.4 (May 07, 2025)
+ENHANCEMENTS
+* Adds support for `notify_only` field in secondary zones config
+* Adds support for `signed_notifes` field in tsig config
+
 ## 2.6.3 (April 08, 2025)
 ENHANCEMENTS
 * Adds support for `primary_network` field on secondary zones
