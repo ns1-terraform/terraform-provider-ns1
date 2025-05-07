@@ -140,6 +140,16 @@ func TestAccZone_secondary(t *testing.T) {
 					testAccCheckZoneSecondaryPrimaryNetwork(&zone, 0),
 				),
 			},
+			{
+				Config: testAccZoneSecondary(zoneName), // test for secondary and notify servers
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneSecondaryPrimaryNetwork(&zone, 0),
+					testAccCheckOtherPorts(&zone, []int{53, 5353}),
+					testAccCheckOtherNetworks(&zone, []int{0, 5}),
+					testAccCheckOtherNotifyOnly(&zone, []bool{false, true}),
+				),
+			},
 		},
 	})
 }
@@ -166,6 +176,8 @@ func TestAccZone_primary_to_secondary_to_normal(t *testing.T) {
 		},
 	}
 	expectedOtherPorts := []int{53, 5353}
+	expectedOtherNetworks := []int{0, 5}
+	expectedOtherNotifyOnly := []bool{false, true}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -205,6 +217,8 @@ func TestAccZone_primary_to_secondary_to_normal(t *testing.T) {
 						"ns1_zone.it", "additional_primaries.1", "3.3.3.3",
 					),
 					testAccCheckOtherPorts(&zone, expectedOtherPorts),
+					testAccCheckOtherNetworks(&zone, expectedOtherNetworks),
+					testAccCheckOtherNotifyOnly(&zone, expectedOtherNotifyOnly),
 					testAccCheckZoneNotPrimary(&zone),
 					testAccCheckZoneDNSSEC(&zone, false),
 				),
@@ -246,6 +260,8 @@ func TestAccZone_secondary_to_primary_to_normal(t *testing.T) {
 		},
 	}
 	expectedOtherPorts := []int{53, 5353}
+	expectedOtherNetworks := []int{0, 5}
+	expectedOtherNotifyOnly := []bool{false, true}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -262,6 +278,8 @@ func TestAccZone_secondary_to_primary_to_normal(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.0", "2.2.2.2"),
 					resource.TestCheckResourceAttr("ns1_zone.it", "additional_primaries.1", "3.3.3.3"),
 					testAccCheckOtherPorts(&zone, expectedOtherPorts),
+					testAccCheckOtherNetworks(&zone, expectedOtherNetworks),
+					testAccCheckOtherNotifyOnly(&zone, expectedOtherNotifyOnly),
 					testAccCheckZoneNotPrimary(&zone),
 					testAccCheckZoneDNSSEC(&zone, false),
 				),
@@ -388,10 +406,11 @@ func TestAccZone_TSIG(t *testing.T) {
 		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
 	)
 	tsig := &dns.TSIG{
-		Enabled: true,
-		Name:    fmt.Sprintf("terraform-test-%s.", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)),
-		Hash:    "hmac-sha256",
-		Key:     "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLA==",
+		Enabled:        true,
+		Name:           fmt.Sprintf("terraform-test-%s.", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)),
+		Hash:           "hmac-sha256",
+		Key:            "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLA==",
+		SignedNotifies: false,
 	}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -407,6 +426,7 @@ func TestAccZone_TSIG(t *testing.T) {
 					testAccCheckZoneTsigName(&zone, tsig.Name),
 					testAccCheckZoneTsigHash(&zone, tsig.Hash),
 					testAccCheckZoneTsigKey(&zone, tsig.Key),
+					testAccCheckZoneTsigSignedNotifies(&zone, tsig.SignedNotifies),
 					resource.TestCheckResourceAttr("ns1_zone.it", "primary_port", "53"),
 				),
 			},
@@ -670,7 +690,16 @@ func testAccCheckZoneTsigHash(zone *dns.Zone, expected string) resource.TestChec
 func testAccCheckZoneTsigKey(zone *dns.Zone, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if zone.Secondary.TSIG.Key != expected {
-			return fmt.Errorf("zone.Secondary.TSIG.Key: got: %s want: %s .", zone.Secondary.TSIG.Key, expected)
+			return fmt.Errorf("zone.Secondary.TSIG.Key: got: %s want: %s", zone.Secondary.TSIG.Key, expected)
+		}
+		return nil
+	}
+}
+
+func testAccCheckZoneTsigSignedNotifies(zone *dns.Zone, expected bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if zone.Secondary.TSIG.SignedNotifies != expected {
+			return fmt.Errorf("zone.Secondary.TSIG.SignedNotifies: got: %t want: %t", zone.Secondary.TSIG.SignedNotifies, expected)
 		}
 		return nil
 	}
@@ -734,6 +763,34 @@ func testAccCheckOtherPorts(zone *dns.Zone, expected []int) resource.TestCheckFu
 		for i, v := range zone.Secondary.OtherPorts {
 			if v != expected[i] {
 				return fmt.Errorf("other_ports[%d]: got: %d want %d", i, v, expected[i])
+			}
+		}
+		return nil
+	}
+}
+
+func testAccCheckOtherNetworks(zone *dns.Zone, expected []int) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if len(zone.Secondary.OtherNetworks) != len(expected) {
+			return fmt.Errorf("other_networks: got: %d want %d", len(zone.Secondary.OtherNetworks), len(expected))
+		}
+		for i, v := range zone.Secondary.OtherNetworks {
+			if v != expected[i] {
+				return fmt.Errorf("other_networks[%d]: got: %d want %d", i, v, expected[i])
+			}
+		}
+		return nil
+	}
+}
+
+func testAccCheckOtherNotifyOnly(zone *dns.Zone, expected []bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if len(zone.Secondary.OtherNotifyOnly) != len(expected) {
+			return fmt.Errorf("other_notify_only: got: %d want %d", len(zone.Secondary.OtherNotifyOnly), len(expected))
+		}
+		for i, v := range zone.Secondary.OtherNotifyOnly {
+			if v != expected[i] {
+				return fmt.Errorf("other_notify_only[%d]: got: %t want %t", i, v, expected[i])
 			}
 		}
 		return nil
@@ -869,9 +926,11 @@ func testAccZoneSecondary(zoneName string) string {
   ttl     = 10800
   primary = "1.1.1.1"
   primary_port = 54
+  networks = [0, 5]
   additional_primaries = ["2.2.2.2", "3.3.3.3"]
   additional_ports = [53, 5353]
-  networks = [0, 5]
+  additional_networks = [0, 5]
+  additional_notify_only = [false, true]
 }
 `, zoneName)
 }
@@ -901,6 +960,7 @@ func testAccZoneSecondaryTSIG(zoneName, tsigName string) string {
     name = "%s"
     hash = "hmac-sha256"
     key = "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLA=="
+	signed_notifies = false
   }
 }
 `, zoneName, tsigName)
