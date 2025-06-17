@@ -132,5 +132,11 @@ func addPermsSchemaV0(s map[string]*schema.Schema) map[string]*schema.Schema {
 		Default:          false,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
+	s["redirects_manage_redirects"] = &schema.Schema{
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
+	}
 	return s
 }

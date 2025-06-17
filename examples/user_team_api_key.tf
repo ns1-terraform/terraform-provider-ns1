@@ -129,3 +129,4 @@ resource "ns1_apikey" "example" {
 #monitoring_view_jobs - (Optional) Whether the user can view monitoring jobs.
 #security_manage_global_2fa - (Optional) Whether the user can manage global two factor authentication.
 #security_manage_active_directory - (Optional) Whether the user can manage global active directory. Only relevant for the DDI product.
+#redirects_manage_redirects - (Optional) Whether the user can manager redirects.
