@@ -185,6 +185,12 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 		Default:          true,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
+	s["redirects_manage_redirects"] = &schema.Schema{
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
+	}
 	return s
 }
 
@@ -246,6 +252,7 @@ func permissionsToResourceData(d *schema.ResourceData, permissions account.Permi
 	d.Set("monitoring_update_jobs", permissions.Monitoring.UpdateJobs)
 	d.Set("monitoring_delete_jobs", permissions.Monitoring.DeleteJobs)
 	d.Set("monitoring_view_jobs", permissions.Monitoring.ViewJobs)
+	d.Set("redirects_manage_redirects", permissions.Redirects.ManageRedirects)
 	if permissions.Security != nil {
 		d.Set("security_manage_global_2fa", permissions.Security.ManageGlobal2FA)
 		d.Set("security_manage_active_directory", permissions.Security.ManageActiveDirectory)
@@ -360,6 +367,9 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	}
 	if v, ok := d.GetOk("security_manage_active_directory"); ok {
 		p.Security.ManageActiveDirectory = v.(bool)
+	}
+	if v, ok := d.GetOk("redirects_manage_redirects"); ok {
+		p.Redirects.ManageRedirects = v.(bool)
 	}
 	return p
 }
