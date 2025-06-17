@@ -87,7 +87,7 @@ The following arguments are supported:
 * `monitoring_view_jobs` - (Optional) Whether the team can view monitoring jobs.
 * `security_manage_global_2fa` - (Optional) Whether the team can manage global two factor authentication.
 * `security_manage_active_directory` - (Optional) Whether the team can manage global active directory.
-* `redirects_manage_redirects` - (Optional) Whether the user can manager redirects.
+* `redirects_manage_redirects` - (Optional) Whether the user can manage redirects.
 Only relevant for the DDI product.
 
 ## Import
