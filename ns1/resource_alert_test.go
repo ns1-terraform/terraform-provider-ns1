@@ -45,6 +45,60 @@ func TestAccAlert_basic(t *testing.T) {
 	})
 }
 
+func TestAccAlert_Sso(t *testing.T) {
+	var (
+		alert     = alerting.Alert{}
+		alertName = fmt.Sprintf("terraform-test-alert-%s", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+	)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAlertDestroy,
+		Steps: []resource.TestStep{
+			{Config: testAccSSOAlertBasic(alertName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAlertExists("ns1_alert.it", &alert),
+					testAccCheckAlertName(&alert, alertName),
+					// testAccCheckAlertType(&alert, "account"),
+					testAccCheckAlertSubtype(&alert, "saml_certificate_expired"),
+				)},
+			{
+				ResourceName:      "ns1_alert.it",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccAlert_Redirect(t *testing.T) {
+	var (
+		alert     = alerting.Alert{}
+		alertName = fmt.Sprintf("terraform-test-alert-%s", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+	)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAlertDestroy,
+		Steps: []resource.TestStep{
+			{Config: testRedirectAlertBasic(alertName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAlertExists("ns1_alert.it", &alert),
+					testAccCheckAlertName(&alert, alertName),
+					// testAccCheckAlertType(&alert, "account"),
+					testAccCheckAlertSubtype(&alert, "certificate_renewal_failed"),
+				)},
+			{
+				ResourceName:      "ns1_alert.it",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccAlert_links(t *testing.T) {
 	var (
 		alert     = alerting.Alert{}
@@ -182,6 +236,24 @@ func TestAccAlert_ManualDelete(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testAccSSOAlertBasic(alertName string) string {
+	return fmt.Sprintf(`resource "ns1_alert" "it" {
+	name               = "%s"
+	type               = "account"
+	subtype            = "saml_certificate_expired"
+	notification_lists = []
+	}`, alertName)
+}
+
+func testRedirectAlertBasic(alertName string) string {
+	return fmt.Sprintf(`resource "ns1_alert" "it" {
+	name               = "%s"
+	type               = "redirects"
+	subtype            = "certificate_renewal_failed"
+	notification_lists = []
+	}`, alertName)
 }
 
 func testAccAlertBasic(alertName string) string {
