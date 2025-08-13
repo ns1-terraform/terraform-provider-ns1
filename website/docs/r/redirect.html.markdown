@@ -89,6 +89,13 @@ The following arguments are supported:
 All of the arguments listed above are exported as attributes, with no
 additions.
 
+## Import
+
+The resource can be imported via their `id`:
+
+`terraform import ns1_redirect_certificate.<name> <id>`
+`terraform import ns1_redirect.<name> <id>`
+
 ## NS1 Documentation
 
 [Redirect Api Doc](https://ns1.com/api#redirect)
