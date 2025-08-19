@@ -1,3 +1,7 @@
+## 2.7.0 (August 20, 2025)
+ENHANCEMENTS
+* Adds support for new Alerts
+
 ## 2.6.5 (June 07, 2025)
 ENHANCEMENTS
 * Adds support for `manage_redirects` permission field
