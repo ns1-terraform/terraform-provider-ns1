@@ -80,7 +80,7 @@ resource "ns1_record" "www" {
   # Example of setting pulsar and subdivision metadata on an answer. Note the use of
   # jsonencode (available in terraform 0.12+). This is preferable to the
   # "quoted JSON" style used for feeds above, both for readability, and
-  # because it handles ordering issues as well. 
+  # because it handles ordering issues as well.
   # Note: This is also true for the metadata on a record and on a region.
   answers {
     answer = "sub3.${ns1_zone.tld.zone}"
@@ -136,8 +136,9 @@ The following arguments are supported:
   dots - see the example above and `FQDN formatting` below.
 * `type` - (Required) The records' RR type.
 * `ttl` - (Optional) The records' time to live (in seconds).
-* `link` - (Optional) The target record to link to. This means this record is a
-  'linked' record, and it inherits all properties from its target.
+* `link` - (Optional) The fully qualified domain name (without a terminating dot)
+  of the target record. This means this record is a 'linked' record, and it
+  inherits all properties from its target.
 * `use_client_subnet` - (Optional) Whether to use EDNS client subnet data when
   available(in filter chain).
 * ` meta` - (Optional) meta is supported at the `record` level. [Meta](#meta-3)
@@ -178,7 +179,7 @@ The following arguments are supported:
 
         answer = "v=DKIM1; k=rsa; p=XXXXXXXX"
 
-   
+
 * `region` - (Optional) The region (Answer Group really) that this answer
   belongs to. This should be one of the names specified in `regions`. Only a
   single `region` per answer is currently supported. If you want an answer in
