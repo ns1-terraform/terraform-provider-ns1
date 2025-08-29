@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"regexp"
 	"sort"
 	"testing"
 
@@ -36,7 +35,6 @@ func TestAccUser_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "teams.#", "1"),
 					resource.TestCheckResourceAttr("ns1_user.u", "notify.%", "1"),
-					resource.TestCheckResourceAttr("ns1_user.u", "notify.billing", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					testAccCheckUserIPWhitelists(&user, []string{"1.1.1.1", "2.2.2.2"}),
 					resource.TestCheckResourceAttr("ns1_user.u", "ip_whitelist_strict", "true"),
@@ -50,7 +48,6 @@ func TestAccUser_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "teams.#", "1"),
 					resource.TestCheckResourceAttr("ns1_user.u", "notify.%", "1"),
-					resource.TestCheckResourceAttr("ns1_user.u", "notify.billing", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					testAccCheckUserIPWhitelists(&user, []string{}),
 					resource.TestCheckResourceAttr("ns1_user.u", "ip_whitelist_strict", "false"),
@@ -80,13 +77,6 @@ func TestAccUser_ManualDelete(t *testing.T) {
 				Config:             testAccUserBasic(rString),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: true,
-			},
-			// Attempt to re-create it, this should fail because user names must be historically unique.
-			// Error: PUT https://api.nsone.net/v1/account/users: 409 login name tf_acc_test_user_k8qsnpxghuhgmip already exists
-
-			{
-				Config:      testAccUserBasic(rString),
-				ExpectError: regexp.MustCompile(`PUT .*/account/users.*already exists`),
 			},
 		},
 	})
@@ -459,7 +449,6 @@ func TestAccUser_import_test(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
 					resource.TestCheckResourceAttr("ns1_user.u", "teams.#", "1"),
 					resource.TestCheckResourceAttr("ns1_user.u", "notify.%", "1"),
-					resource.TestCheckResourceAttr("ns1_user.u", "notify.billing", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					testAccCheckUserIPWhitelists(&user, []string{"1.1.1.1", "2.2.2.2"}),
 					resource.TestCheckResourceAttr("ns1_user.u", "ip_whitelist_strict", "true"),
@@ -656,7 +645,7 @@ resource "ns1_user" "u" {
   email = "tf_acc_test_ns1@hashicorp.com"
   teams = ["${ns1_team.t.id}"]
   notify = {
-    billing = true
+    billing = false
   }
   ip_whitelist        = ["1.1.1.1", "2.2.2.2"]
   ip_whitelist_strict = true

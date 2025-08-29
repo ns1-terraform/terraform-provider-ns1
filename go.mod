@@ -1,6 +1,6 @@
 module github.com/terraform-providers/terraform-provider-ns1
 
-go 1.23.0
+go 1.24
 
 require (
 	github.com/fatih/structs v1.1.0
