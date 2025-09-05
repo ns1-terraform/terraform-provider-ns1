@@ -3,7 +3,6 @@ package ns1
 import (
 	"encoding/json"
 	"log"
-	"maps"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -185,7 +184,9 @@ func resourceDataToAlert(d *schema.ResourceData) (*alerting.Alert, error) {
 		if data, ok := v.(*schema.Set); ok {
 			for _, p := range data.List() {
 				if setting, ok := p.(map[string]any); ok {
-					maps.Copy(params, setting)
+					for k, v := range setting {
+						params[k] = v
+					}
 				}
 			}
 		}
