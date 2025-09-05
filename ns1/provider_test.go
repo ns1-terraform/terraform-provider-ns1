@@ -1,8 +1,6 @@
 package ns1
 
 import (
-	// "log"
-
 	"os"
 	"testing"
 
