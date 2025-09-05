@@ -1,6 +1,7 @@
-## 2.7.0 (August 20, 2025)
+## 2.7.0 (September 5, 2025)
 ENHANCEMENTS
 * Adds support for new Alerts
+* Deprecating the `notify.billing` permission
 
 ## 2.6.5 (June 07, 2025)
 ENHANCEMENTS
