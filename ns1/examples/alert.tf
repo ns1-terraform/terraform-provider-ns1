@@ -6,7 +6,7 @@ resource "ns1_alert" "example1" {
 
   #optional
   notification_lists = []
-  zone_names = []
+  zone_names = ["a.b.c.com","myzone"]
   record_ids = []
 }
 
