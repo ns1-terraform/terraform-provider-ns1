@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -17,6 +18,7 @@ import (
 )
 
 // Creating basic DNS alert
+// NOTE: You would need the `manage_zones` permission to create this alert type. Otherwise this test will fail!
 func TestAccAlert_basic(t *testing.T) {
 	var (
 		alert     = alerting.Alert{}
@@ -36,6 +38,46 @@ func TestAccAlert_basic(t *testing.T) {
 					// testAccCheckAlertPreference(&alert, alertPreference),
 				),
 			},
+			{
+				ResourceName:      "ns1_alert.it",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccAlert_RecordUsage(t *testing.T) {
+	var (
+		alert     = alerting.Alert{}
+		alertName = fmt.Sprintf("terraform-test-alert-%s", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+	)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAlertDestroy,
+		Steps: []resource.TestStep{
+			{Config: testRecordUsageAlert(alertName, 10),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAlertExists("ns1_alert.it", &alert),
+					testAccCheckAlertName(&alert, alertName),
+					testAccCheckAlertType(&alert, "account"),
+					testAccCheckAlertSubtype(&alert, "record_usage"),
+					testAccCheckAlertData(&alert, `{"alert_at_percent":10}`),
+				)},
+			{Config: testRecordUsageAlert(alertName, 101),
+				ExpectError:        regexp.MustCompile("Please correct the following field: data.alert_at_percent"),
+				ExpectNonEmptyPlan: true,
+			},
+			{Config: testRecordUsageAlert(alertName, 50),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAlertExists("ns1_alert.it", &alert),
+					testAccCheckAlertName(&alert, alertName),
+					testAccCheckAlertType(&alert, "account"),
+					testAccCheckAlertSubtype(&alert, "record_usage"),
+					testAccCheckAlertData(&alert, `{"alert_at_percent":50}`),
+				)},
 			{
 				ResourceName:      "ns1_alert.it",
 				ImportState:       true,
@@ -184,6 +226,18 @@ func TestAccAlert_ManualDelete(t *testing.T) {
 	})
 }
 
+func testRecordUsageAlert(alertName string, threshold int) string {
+	return fmt.Sprintf(`resource "ns1_alert" "it" {
+	name               = "%s"
+	type               = "account"
+	subtype            = "record_usage"
+	notification_lists = []
+	data {
+		alert_at_percent = %d
+	}
+}`, alertName, threshold)
+}
+
 func testAccAlertBasic(alertName string) string {
 	return fmt.Sprintf(`resource "ns1_alert" "it" {
 	name               = "%s"
@@ -301,6 +355,16 @@ func testAccCheckAlertSubtype(alert *alerting.Alert, expected string) resource.T
 	return func(s *terraform.State) error {
 		if *alert.Subtype != expected {
 			return fmt.Errorf("alert.Subtype: got: %s want: %s", *alert.Subtype, expected)
+		}
+		return nil
+	}
+}
+
+func testAccCheckAlertData(alert *alerting.Alert, expected string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		data := string(alert.Data)
+		if data != expected {
+			return fmt.Errorf("alert.Data: got: %s want: %s", data, expected)
 		}
 		return nil
 	}
