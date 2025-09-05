@@ -13,9 +13,9 @@ Provides a NS1 Alert resource. This can be used to create, modify, and delete al
 ## Example Usage
 
 ```hcl
-resource "ns1_alert" "example1" {
+resource "ns1_alert" "example_zone_alert" {
   #required
-  name               = "Example Alert"
+  name               = "Example Zone Alert"
   type               = "zone"
   subtype            = "transfer_failed"
 
@@ -25,9 +25,9 @@ resource "ns1_alert" "example1" {
   record_ids = []
 }
 
-resource "ns1_alert" "example2" {
+resource "ns1_alert" "example_usage_alert" {
   #required
-  name               = "Example Alert"
+  name               = "Example Usage Alert"
   type               = "account"
   subtype            = "record_usage"
   data {

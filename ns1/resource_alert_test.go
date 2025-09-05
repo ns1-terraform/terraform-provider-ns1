@@ -17,7 +17,8 @@ import (
 	"gopkg.in/ns1/ns1-go.v2/rest/model/monitor"
 )
 
-// Creating basic DNS alert: note that this requires zone_view
+// Creating basic DNS alert
+// NOTE: You would need the `manage_zones` permission to create this alert type. Otherwise this test will fail!
 func TestAccAlert_basic(t *testing.T) {
 	var (
 		alert     = alerting.Alert{}
