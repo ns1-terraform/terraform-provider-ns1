@@ -30,9 +30,11 @@ func userResource() *schema.Resource {
 			Required: true,
 		},
 		"notify": {
-			Type:     schema.TypeMap,
-			Optional: true,
-			Elem:     schema.TypeBool,
+			Deprecated: "This field is deprecated and will be removed in a future release; create account usage alerts instead.",
+			Type:       schema.TypeMap,
+			Optional:   true,
+			Computed:   true,
+			Elem:       schema.TypeBool,
 		},
 		"teams": {
 			Type:     schema.TypeList,
@@ -76,9 +78,6 @@ func userToResourceData(d *schema.ResourceData, u *account.User) error {
 	d.Set("name", u.Name)
 	d.Set("email", u.Email)
 	d.Set("teams", u.TeamIDs)
-	notify := make(map[string]bool)
-	notify["billing"] = u.Notify.Billing
-	d.Set("notify", notify)
 	d.Set("ip_whitelist", u.IPWhitelist)
 	d.Set("ip_whitelist_strict", u.IPWhitelistStrict)
 	permissionsToResourceData(d, u.Permissions)
@@ -97,10 +96,6 @@ func resourceDataToUser(u *account.User, d *schema.ResourceData) error {
 		}
 	} else {
 		u.TeamIDs = make([]string, 0)
-	}
-	if v, ok := d.GetOk("notify"); ok {
-		notifyRaw := v.(map[string]interface{})
-		u.Notify.Billing = notifyRaw["billing"].(bool)
 	}
 
 	if v, ok := d.GetOk("ip_whitelist"); ok {
