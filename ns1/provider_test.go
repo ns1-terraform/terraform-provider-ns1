@@ -1,11 +1,15 @@
 package ns1
 
 import (
+	// "log"
+	"fmt"
 	"log"
 	"os"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"gopkg.in/ns1/ns1-go.v2/rest/model/alerting"
 )
 
 var testAccProviders map[string]*schema.Provider
@@ -39,17 +43,31 @@ func testAccPreCheckSso(t *testing.T) {
 
 	client, err := sharedClient()
 	if err != nil {
-		log.Fatalf("failed to get shared client: %s", err)
-	}
-	kl, _, err := client.APIKeys.List()
-	if err != nil {
-		t.Skipf("account not authorized for redirects, skipping test")
-	}
-	if len(kl) == 0 {
-		t.Skipf("no api keys found, skipping test")
-	}
-	if kl[0].Permissions.Account.ManageUsers == false {
-		t.Skipf("account not authorized to manage users, skipping test")
+		t.Fatalf("failed to get shared client: %s", err)
 	}
 
+	// Create a test alert with saml_certificate_expired subtype
+	var subtype string = "saml_certificate_expired"
+	var typeAlert string = "account"
+	testAlertName := fmt.Sprintf("terraform-precheck-sso-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
+	testAlert := &alerting.Alert{
+		Name:            &testAlertName,
+		Type:            &typeAlert,
+		Subtype:         &subtype,
+		NotifierListIds: []string{},
+	}
+
+	// Try to create the alert
+	resp, err := client.Alerts.Create(testAlert)
+	if err != nil {
+		t.Skipf("skipping SSO test; unable to create saml_certificate_expired alert: %s", err)
+	}
+
+	// If creation succeeded, clean up by deleting the test alert
+	if resp.StatusCode == 201 && testAlert.ID != nil {
+		_, deleteErr := client.Alerts.Delete(*testAlert.ID)
+		if deleteErr != nil {
+			log.Printf("warning: failed to clean up precheck alert: %v", deleteErr)
+		}
+	}
 }
