@@ -45,6 +45,7 @@ func TestAccAlert_basic(t *testing.T) {
 	})
 }
 
+// NOTE: You would need the `manage_users` permission to create this alert type. Otherwise this test will fail!
 func TestAccAlert_Sso(t *testing.T) {
 	var (
 		alert     = alerting.Alert{}
@@ -52,7 +53,7 @@ func TestAccAlert_Sso(t *testing.T) {
 	)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheckAccount(t, "account", "saml_certificate_expired") },
+		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAlertDestroy,
 		Steps: []resource.TestStep{
@@ -458,38 +459,6 @@ func testAccManualDeleteAlert(alert *alerting.Alert) func() {
 		// Not a big deal if this fails, it will get caught in the test conditions and fail the test.
 		if err != nil {
 			log.Printf("failed to delete DNS alert: %v", err)
-		}
-	}
-}
-
-func testAccPreCheckAccount(t *testing.T, alertType string, alertSubtype string) {
-	testAccPreCheck(t)
-
-	client, err := sharedClient()
-	if err != nil {
-		t.Fatalf("failed to get shared client: %s", err)
-	}
-
-	// Create a test alert
-	testAlertName := fmt.Sprintf("terraform-precheck-sso-%s", acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum))
-	testAlert := &alerting.Alert{
-		Name:            &testAlertName,
-		Type:            &alertType,
-		Subtype:         &alertSubtype,
-		NotifierListIds: []string{},
-	}
-
-	// Try to create the alert
-	resp, err := client.Alerts.Create(testAlert)
-	if err != nil {
-		t.Skipf("skipping SSO test; unable to create saml_certificate_expired alert: %s", err)
-	}
-
-	// If creation succeeded, clean up by deleting the test alert
-	if resp.StatusCode == 201 && testAlert.ID != nil {
-		_, deleteErr := client.Alerts.Delete(*testAlert.ID)
-		if deleteErr != nil {
-			log.Printf("warning: failed to clean up precheck alert: %v", deleteErr)
 		}
 	}
 }
