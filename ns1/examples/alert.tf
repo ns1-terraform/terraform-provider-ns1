@@ -10,6 +10,22 @@ resource "ns1_alert" "example_zone_alert" {
   record_ids = []
 }
 
+resource "ns1_alert_sso" "example_saml_alert" {
+  #required
+  name               = "Example Alert"
+  type               = "account"
+  subtype            = "saml_certificate_expired"
+  notification_lists = []
+} 
+
+resource "ns1_alert_redirect" "example_redirect_alert" {
+  #required
+  name               = "Example Alert"
+  type               = "redirects"
+  subtype            = "certificate_renewal_failed"
+  notification_lists = []
+} 
+
 resource "ns1_alert" "example_usage_alert" {
   #required
   name               = "Example Usage Alert"
