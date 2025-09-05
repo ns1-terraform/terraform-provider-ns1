@@ -1,7 +1,9 @@
 package ns1
 
 import (
+	"encoding/json"
 	"log"
+	"maps"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -73,6 +75,18 @@ func alertResource() *schema.Resource {
 				},
 				ConflictsWith: []string{"zone_names"},
 			},
+			"data": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"alert_at_percent": {
+							Type:     schema.TypeInt,
+							Optional: true,
+						},
+					},
+				},
+			},
 		},
 		Create:   AlertConfigCreate,
 		Read:     AlertConfigRead,
@@ -94,6 +108,14 @@ func alertToResourceData(d *schema.ResourceData, alert *alerting.Alert) error {
 	d.Set("notification_lists", alert.NotifierListIds)
 	d.Set("zone_names", alert.ZoneNames)
 	d.Set("record_ids", alert.RecordIds)
+	if alert.Data != nil {
+		params := map[string]any{}
+		err := json.Unmarshal(alert.Data, &params)
+		if err != nil {
+			return err
+		}
+		d.Set("data", []any{params})
+	}
 	return nil
 }
 
@@ -157,6 +179,23 @@ func resourceDataToAlert(d *schema.ResourceData) (*alerting.Alert, error) {
 		}
 	} else {
 		alert.RecordIds = []string{}
+	}
+	if v, ok := d.GetOk("data"); ok {
+		params := map[string]any{}
+		if data, ok := v.(*schema.Set); ok {
+			for _, p := range data.List() {
+				if setting, ok := p.(map[string]any); ok {
+					maps.Copy(params, setting)
+				}
+			}
+		}
+		jsonData, err := json.Marshal(params)
+		if err != nil {
+			return nil, err
+		}
+		alert.Data = jsonData
+	} else {
+		alert.Data = []byte("{}")
 	}
 	return &alert, nil
 }
