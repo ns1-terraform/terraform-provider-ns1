@@ -1,6 +1,7 @@
 package ns1
 
 import (
+	"log"
 	"os"
 	"testing"
 
@@ -31,4 +32,24 @@ func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("NS1_APIKEY"); v == "" {
 		t.Fatal("NS1_APIKEY must be set for acceptance tests")
 	}
+}
+
+func testAccPreCheckSso(t *testing.T) {
+	testAccPreCheck(t)
+
+	client, err := sharedClient()
+	if err != nil {
+		log.Fatalf("failed to get shared client: %s", err)
+	}
+	kl, _, err := client.APIKeys.List()
+	if err != nil {
+		t.Skipf("account not authorized for redirects, skipping test")
+	}
+	if len(kl) == 0 {
+		t.Skipf("no api keys found, skipping test")
+	}
+	if kl[0].Permissions.Account.ManageUsers == false {
+		t.Skipf("account not authorized to manage users, skipping test")
+	}
+
 }

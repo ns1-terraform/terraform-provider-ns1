@@ -52,7 +52,7 @@ func TestAccAlert_Sso(t *testing.T) {
 	)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccPreCheckSso(t) },
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckAlertDestroy,
 		Steps: []resource.TestStep{
