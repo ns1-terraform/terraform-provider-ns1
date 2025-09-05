@@ -13,9 +13,9 @@ resource "ns1_alert" "example1" {
 resource "ns1_alert" "example2" {
   #required
   name               = "Example Alert"
-	type               = "account"
-	subtype            = "record_usage"
-	data {
-		alert_at_percent = 80
-	}
+  type               = "account"
+  subtype            = "record_usage"
+  data {
+    alert_at_percent = 80
+  }
 }
