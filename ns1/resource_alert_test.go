@@ -390,6 +390,8 @@ resource "ns1_zone" "alert_zone_%d" {
   primary              = "192.0.2.1"
   additional_primaries = ["192.0.2.2"]
   additional_ports = [53]
+	additional_networks = [0]
+	additional_notify_only = [false]
 }`,
 			i, zoneNames[i])
 	}

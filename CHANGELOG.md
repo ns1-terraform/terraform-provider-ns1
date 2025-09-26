@@ -1,3 +1,7 @@
+## 2.7.1 (September 26, 2025)
+BUGFIX
+* Fix issue with alert data that had made it mandatory by mistake
+
 ## 2.7.0 (September 5, 2025)
 ENHANCEMENTS
 * Adds support for new Alerts
