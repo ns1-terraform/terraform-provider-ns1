@@ -107,7 +107,9 @@ func alertToResourceData(d *schema.ResourceData, alert *alerting.Alert) error {
 	d.Set("notification_lists", alert.NotifierListIds)
 	d.Set("zone_names", alert.ZoneNames)
 	d.Set("record_ids", alert.RecordIds)
-	if alert.Data != nil {
+	// a new resource can't be defined here apparently
+	// when trying to set data where it's not defined we get: set item just set doesn't exist
+	if _, ok := d.GetOk("data"); ok || string(alert.Data) != "{}" {
 		params := map[string]any{}
 		err := json.Unmarshal(alert.Data, &params)
 		if err != nil {
