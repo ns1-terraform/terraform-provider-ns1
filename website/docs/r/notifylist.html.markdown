@@ -19,6 +19,7 @@ resource "ns1_notifylist" "nl" {
     type = "webhook"
     config = {
       url = "http://www.mywebhook.com"
+      headers = "Content-Type: application/json"
     }
   }
 
@@ -40,8 +41,15 @@ The following arguments are supported:
 
 Notify List Notifiers (`notifications`) support the following:
 
-* `type` - (Required) The type of notifier. Available notifiers are indicated in /notifytypes endpoint. 
+* `type` - (Required) The type of notifier. Available notifiers are indicated in /notifytypes endpoint.
 * `config` - (Required) Configuration details for the given notifier type.
+  * `email` - Email to notify to; required for type = "email"
+  * `service_key` - Service key of the Pagerduty integration to notify to; required for type = "pagerduty"
+  * `sourceid` - Source id of the datafeedto notify to; required for type = "datafeed"
+  * `url` - URL to notify to; required for type = "webhook" and "slack"
+  * `username` - Username to notify as; required for type = "slack"
+  * `channel` - Channel to notify to; required for type = "slack"
+  * `headers` - Headers to add in the notification (optional for type = "webhook"): because they're encoded as a string, they have to be in alphabetical order and separated by carriage return, e.g. `"Accept: application/json\nContent-Type: application/json"`
 
 ## Attributes Reference
 
