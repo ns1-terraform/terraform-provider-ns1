@@ -1,3 +1,10 @@
+## 2.7.2 (October 21, 2025)
+BUGFIX
+* Headers were not added to webhook notifiers
+* Add total_usage to query billing_usage
+* Add examples for dynamic times in billing_usage resource
+* Fix datasource update that was mistakenly sending id in the body
+
 ## 2.7.1 (September 26, 2025)
 BUGFIX
 * Fix issue with alert data that had made it mandatory by mistake
