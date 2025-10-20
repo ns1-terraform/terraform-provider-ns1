@@ -2,6 +2,7 @@ package ns1
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
@@ -159,23 +160,13 @@ func billingUsageResource() *schema.Resource {
 	}
 }
 
-// Helper function to check if a string is in a slice
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}
-
 // BillingUsageRead reads the billing usage data from NS1
 func billingUsageRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	metricType := d.Get("metric_type").(string)
 
 	// Validate that from and to are provided for metric types that require them
-	if contains(timeFrameRequiredMetricTypes, metricType) {
+	if slices.Contains(timeFrameRequiredMetricTypes, metricType) {
 		_, okFrom := d.GetOk("from")
 		_, okTo := d.GetOk("to")
 		if !okFrom || !okTo {
@@ -213,7 +204,7 @@ func billingUsageRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	// Set a unique ID for the data source
-	if contains(timeFrameRequiredMetricTypes, metricType) {
+	if slices.Contains(timeFrameRequiredMetricTypes, metricType) {
 		from := int32(d.Get("from").(int))
 		to := int32(d.Get("to").(int))
 		d.SetId(fmt.Sprintf("%s-%d-%d", metricType, from, to))
@@ -234,6 +225,7 @@ func readQueriesUsage(d *schema.ResourceData, client *ns1.Client, from, to int32
 	d.Set("clean_queries", queries.CleanQueries)
 	d.Set("ddos_queries", queries.DdosQueries)
 	d.Set("nxd_responses", queries.NxdResponses)
+	d.Set("total_usage", queries.CleanQueries+queries.DdosQueries+queries.NxdResponses)
 
 	// Set by_network data
 	networks := make([]map[string]interface{}, len(queries.ByNetwork))
