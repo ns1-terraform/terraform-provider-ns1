@@ -506,7 +506,7 @@ func TestAccZone_ManualDelete(t *testing.T) {
 	})
 }
 
-func TestAccZone_EmptyNetworks(t *testing.T) {
+func TestAccZone_Networks(t *testing.T) {
 	var zone dns.Zone
 	zoneName := fmt.Sprintf("terraform-test-%s.io",
 		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
@@ -516,12 +516,52 @@ func TestAccZone_EmptyNetworks(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckZoneDestroy,
 		Steps: []resource.TestStep{
+			// Create with nil networks (field omitted) - should default to [0]
+			{
+				Config: testAccZoneDefaultNetworks(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneNetworks(&zone, []int{0}, "initial create with nil networks"),
+				),
+			},
+			// Update with nil networks (no change) - should remain [0]
+			{
+				Config: testAccZoneDefaultNetworks(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneNetworks(&zone, []int{0}, "update with nil networks"),
+				),
+			},
+			// Update with empty networks [] - should become []
 			{
 				Config: testAccZoneEmptyNetworks(zoneName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
-					testAccCheckZoneNetworks(&zone, []int{}, "networks=[]"),
+					testAccCheckZoneNetworks(&zone, []int{}, "update with networks=[]"),
 				),
+			},
+			// Update back to nil networks - should become [0]
+			{
+				Config: testAccZoneDefaultNetworks(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneNetworks(&zone, []int{0}, "update back to nil networks"),
+				),
+			},
+			// Update with specific networks [1, 2]
+			{
+				Config: testAccZoneSpecificNetworks(zoneName, []int{1, 2}),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneNetworks(&zone, []int{1, 2}, "update with networks=[1,2]"),
+				),
+			},
+			// Import verification
+			{
+				ResourceName:      "ns1_zone.it",
+				ImportState:       true,
+				ImportStateId:     zoneName,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -535,25 +575,21 @@ func testAccZoneEmptyNetworks(zoneName string) string {
 `, zoneName)
 }
 
-func TestAccZone_DefaultNetworks(t *testing.T) {
-	var zone dns.Zone
-	zoneName := fmt.Sprintf("terraform-test-%s.io",
-		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
-	)
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckZoneDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccZoneDefaultNetworks(zoneName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckZoneExists("ns1_zone.it", &zone),
-					testAccCheckZoneNetworks(&zone, []int{0}, "networks field omitted"),
-				),
-			},
-		},
-	})
+func testAccZoneSpecificNetworks(zoneName string, networks []int) string {
+	networksStr := "["
+	for i, n := range networks {
+		if i > 0 {
+			networksStr += ", "
+		}
+		networksStr += fmt.Sprintf("%d", n)
+	}
+	networksStr += "]"
+
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+    zone="%s"
+    networks=%s
+}
+`, zoneName, networksStr)
 }
 
 func testAccZoneDefaultNetworks(zoneName string) string {
@@ -879,14 +915,6 @@ func testAccCheckZoneNetworks(zone *dns.Zone, expected []int, context string) re
 		}
 		return nil
 	}
-}
-
-func testAccZoneNoNetworks(zoneName string) string {
-	return fmt.Sprintf(`resource "ns1_zone" "it" {
-	zone="%s"
-	networks=[]
-}
-`, zoneName)
 }
 
 func testAccCheckZoneNotSecondary(z *dns.Zone) resource.TestCheckFunc {
