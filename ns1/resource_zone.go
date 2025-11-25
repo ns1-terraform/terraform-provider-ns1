@@ -202,11 +202,6 @@ func resourceZone() *schema.Resource {
 }
 
 func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
-	// DEBUG: Log what we received from API
-	fmt.Printf("[DEBUG] ===== resourceZoneToResourceData =====")
-	fmt.Printf("[DEBUG] z.NetworkIDs: %v (type: %T, nil: %t, len: %d)",
-		z.NetworkIDs, z.NetworkIDs, z.NetworkIDs == nil, len(z.NetworkIDs))
-
 	d.SetId(z.ID)
 	d.Set("hostmaster", z.Hostmaster)
 	d.Set("ttl", z.TTL)
@@ -215,10 +210,6 @@ func resourceZoneToResourceData(d *schema.ResourceData, z *dns.Zone) error {
 	d.Set("retry", z.Retry)
 	d.Set("expiry", z.Expiry)
 	d.Set("networks", z.NetworkIDs)
-
-	// DEBUG: Log what we set in Terraform state
-	fmt.Printf("[DEBUG] Set networks in state: %v", d.Get("networks"))
-
 	if z.DNSSEC != nil {
 		d.Set("dnssec", *z.DNSSEC)
 	}
@@ -437,19 +428,9 @@ func zoneCreate(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*ns1.Client)
 	z := dns.NewZone(d.Get("zone").(string))
 	resourceDataToZone(z, d)
-	// DEBUG: Log what we're sending
-	fmt.Printf("[DEBUG] ===== BEFORE API CALL =====")
-	fmt.Printf("[DEBUG] Zone.NetworkIDs: %v (type: %T, nil: %t, len: %d)",
-		z.NetworkIDs, z.NetworkIDs, z.NetworkIDs == nil, len(z.NetworkIDs))
 	if resp, err := client.Zones.Create(z); err != nil {
 		return ConvertToNs1Error(resp, err)
 	}
-	// DEBUG: log what the API returned
-	fmt.Printf("[DEBUG] ===== AFTER API CALL =====")
-	fmt.Printf("[DEBUG] Zone.NetworkIDs: %v (type: %T, nil: %t, len: %d)",
-		z.NetworkIDs, z.NetworkIDs, z.NetworkIDs == nil, len(z.NetworkIDs))
-	fmt.Printf("[DEBUG] Zone struct: %+v", z)
-
 	if !d.Get("autogenerate_ns_record").(bool) {
 		// Do not try to delete records in a linked zone.
 		isLinked := false
