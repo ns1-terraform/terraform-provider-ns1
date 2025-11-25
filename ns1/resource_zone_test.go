@@ -950,8 +950,8 @@ func testAccCheckZoneNotPrimary(z *dns.Zone) resource.TestCheckFunc {
 func testAccCheckZoneNetworks(zone *dns.Zone, expected []int, context string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		var actual []int
-		if zone.Networks != nil {
-			actual = *zone.Networks
+		if zone.NetworkIDs != nil {
+			actual = zone.NetworkIDs
 		}
 
 		if !reflect.DeepEqual(actual, expected) {
