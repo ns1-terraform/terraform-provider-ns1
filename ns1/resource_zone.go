@@ -391,7 +391,7 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 	if v, ok := d.GetOk("link"); ok {
 		z.LinkTo(v.(string))
 	}
-	if v, ok := d.GetOk("networks"); ok {
+	if v, ok := d.GetOkExists("networks"); ok {
 		networkIDSet := v.(*schema.Set)
 		z.NetworkIDs = setToInts(networkIDSet)
 	}
