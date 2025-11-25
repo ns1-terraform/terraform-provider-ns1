@@ -56,6 +56,13 @@ func TestAccNotifyList_updated(t *testing.T) {
 					testAccCheckNotifyListName(&nl, "terraform test"),
 				),
 			},
+			{
+				Config: testAccNotifyListUpdatedMultipleHeaders,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckNotifyListExists("ns1_notifylist.test", &nl),
+					testAccCheckNotifyListName(&nl, "terraform test"),
+				),
+			},
 		},
 	})
 }
@@ -261,10 +268,25 @@ resource "ns1_notifylist" "test" {
     type = "webhook"
     config = {
       url = "http://localhost:9091"
+			headers = "Content-Type: application/json"
     }
   }
 }
 `
+
+const testAccNotifyListUpdatedMultipleHeaders = `
+resource "ns1_notifylist" "test" {
+  name = "terraform test"
+  notifications {
+    type = "webhook"
+    config = {
+      url = "http://localhost:9091"
+			headers = "Accept: application/json\nContent-Type: application/json"
+    }
+  }
+}
+`
+
 const testAccNotifyListSlack = `
 resource "ns1_notifylist" "test_slack" {
   name = "terraform test slack"
@@ -278,6 +300,7 @@ resource "ns1_notifylist" "test_slack" {
   }
 }
 `
+
 const testAccNotifyListPagerDuty = `
 resource "ns1_notifylist" "test_pagerduty" {
   name = "terraform test pagerduty"

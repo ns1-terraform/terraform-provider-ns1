@@ -3,6 +3,7 @@ package ns1
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -47,14 +48,34 @@ func notifyListToResourceData(d *schema.ResourceData, nl *monitor.NotifyList) er
 	d.Set("name", nl.Name)
 
 	if len(nl.Notifications) > 0 {
-		notifications := make([]map[string]interface{}, len(nl.Notifications))
+		notifications := make([]map[string]any, len(nl.Notifications))
 		for i, n := range nl.Notifications {
-			ni := make(map[string]interface{})
+			ni := make(map[string]any)
 			ni["type"] = n.Type
 			if n.Config != nil {
-				configWithoutHeaders := n.Config
-				delete(configWithoutHeaders, "headers")
-				ni["config"] = configWithoutHeaders
+				cfg := monitor.Config{}
+				for k, v := range n.Config {
+					switch k {
+					case "headers":
+						switch headers := v.(type) {
+						case map[string]any:
+							// map into a single string
+							headerLines := []string{}
+							for h, v := range headers {
+								headerLines = append(headerLines, fmt.Sprintf("%s: %s", h, v))
+							}
+							cfg["headers"] = strings.Join(headerLines, "\n")
+						case map[string]string:
+							// this happens when not set, so ignore
+							if len(headers) > 0 {
+								return fmt.Errorf("unexpected headers (should be empty)")
+							}
+						}
+					default:
+						cfg[k] = v
+					}
+				}
+				ni["config"] = cfg
 			}
 			notifications[i] = ni
 		}
@@ -91,7 +112,22 @@ func resourceDataToNotifyList(nl *monitor.NotifyList, d *schema.ResourceData) er
 				case "webhook":
 					url := config["url"]
 					if url != nil {
-						ns = append(ns, monitor.NewWebNotification(url.(string), nil))
+						// split the string into multiple headers
+						var headers map[string]string = nil
+						if h, ok := config["headers"].(string); ok {
+							for line := range strings.SplitSeq(h, "\n") {
+								hh := strings.SplitN(line, ": ", 2)
+								if headers == nil {
+									headers = make(map[string]string)
+								}
+								if len(hh) == 2 {
+									headers[hh[0]] = hh[1]
+								} else {
+									headers[hh[0]] = ""
+								}
+							}
+						}
+						ns = append(ns, monitor.NewWebNotification(url.(string), headers))
 					} else {
 						return fmt.Errorf("wrong config for webhook expected url field into config")
 					}
