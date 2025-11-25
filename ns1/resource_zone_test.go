@@ -506,6 +506,63 @@ func TestAccZone_ManualDelete(t *testing.T) {
 	})
 }
 
+func TestAccZone_EmptyNetworks(t *testing.T) {
+	var zone dns.Zone
+	zoneName := fmt.Sprintf("terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccZoneEmptyNetworks(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneNetworks(&zone, []int{}, "networks=[]"),
+				),
+			},
+		},
+	})
+}
+
+func testAccZoneEmptyNetworks(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+    zone="%s"
+    networks=[]
+}
+`, zoneName)
+}
+
+func TestAccZone_DefaultNetworks(t *testing.T) {
+	var zone dns.Zone
+	zoneName := fmt.Sprintf("terraform-test-%s.io",
+		acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum),
+	)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckZoneDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccZoneDefaultNetworks(zoneName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckZoneExists("ns1_zone.it", &zone),
+					testAccCheckZoneNetworks(&zone, []int{0}, "networks field omitted"),
+				),
+			},
+		},
+	})
+}
+
+func testAccZoneDefaultNetworks(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+    zone="%s"
+}
+`, zoneName)
+}
+
 // A Client instance we can use outside of a TestStep
 func sharedClient() (*ns1.Client, error) {
 	var ignoreSSL bool
@@ -807,6 +864,29 @@ func testAccCheckZoneNotPrimary(z *dns.Zone) resource.TestCheckFunc {
 		}
 		return nil
 	}
+}
+
+func testAccCheckZoneNetworks(zone *dns.Zone, expected []int, context string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		var actual []int
+		if zone.Networks != nil {
+			actual = *zone.Networks
+		}
+
+		if !reflect.DeepEqual(actual, expected) {
+			return fmt.Errorf("Networks check failed for %s: got: %v, want: %v",
+				context, actual, expected)
+		}
+		return nil
+	}
+}
+
+func testAccZoneNoNetworks(zoneName string) string {
+	return fmt.Sprintf(`resource "ns1_zone" "it" {
+	zone="%s"
+	networks=[]
+}
+`, zoneName)
 }
 
 func testAccCheckZoneNotSecondary(z *dns.Zone) resource.TestCheckFunc {
