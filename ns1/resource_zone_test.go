@@ -540,12 +540,12 @@ func TestAccZone_Networks(t *testing.T) {
 					testAccCheckZoneNetworks(&zone, []int{}, "update with networks=[]"),
 				),
 			},
-			// Update back to nil networks - should become [0]
+			// Update with nil networks (no change) - should remain []
 			{
 				Config: testAccZoneDefaultNetworks(zoneName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckZoneExists("ns1_zone.it", &zone),
-					testAccCheckZoneNetworks(&zone, []int{0}, "update back to nil networks"),
+					testAccCheckZoneNetworks(&zone, []int{}, "update back to nil networks"),
 				),
 			},
 			// Update with specific networks [1, 2]
