@@ -1,3 +1,7 @@
+## 2.7.4 (Unreleased)
+ENHANCEMENTS
+* Use § character to separate TXT answers; actual § characters in data should be escaped as `\\§`.
+
 ## 2.7.3 (November 25, 2025)
 BUGFIX
 * Fix zone create with empty networks field

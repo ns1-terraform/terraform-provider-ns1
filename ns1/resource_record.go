@@ -311,7 +311,7 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		ans := make([]map[string]interface{}, 0)
 		log.Printf("Got back from ns1 answers: %+v", r.Answers)
 		for _, answer := range r.Answers {
-			ans = append(ans, answerToMap(*answer))
+			ans = append(ans, answerToMap(*answer, r.Type))
 		}
 		log.Printf("Setting answers %+v", ans)
 		err := d.Set("answers", ans)
@@ -355,9 +355,41 @@ func recordMapValueToString(configMap map[string]interface{}) map[string]interfa
 	return config
 }
 
-func answerToMap(a dns.Answer) map[string]interface{} {
+// encodeTXTAnswers joins TXT answers using § delimiter, escaping actual § as \§
+func encodeTXTAnswers(rdata []string) string {
+	escaped := make([]string, len(rdata))
+	for i, s := range rdata {
+		escaped[i] = strings.ReplaceAll(s, "§", `\§`)
+	}
+	return strings.Join(escaped, "§")
+}
+
+// decodeTXTAnswers splits on § delimiter, unescaping \§ back to §
+func decodeTXTAnswers(encoded string) []string {
+	result := []string{}
+	current := -1
+
+	// splitting first ignores the escape backslash, so checking for it afterwards to fix in the result array
+	for part := range strings.SplitSeq(encoded, "§") {
+		// note that this algorithm doesn't support a non-final answer ending with backslash, even escaped
+		if current >= 0 && strings.HasSuffix(result[current], `\`) {
+			result[current] = result[current][:len(result[current])-1] + "§" + part
+		} else {
+			result = append(result, part)
+			current++
+		}
+	}
+
+	return result
+}
+
+func answerToMap(a dns.Answer, recordType string) map[string]interface{} {
 	m := make(map[string]interface{})
-	m["answer"] = strings.Join(a.Rdata, " ")
+	if recordType == "TXT" {
+		m["answer"] = encodeTXTAnswers(a.Rdata)
+	} else {
+		m["answer"] = strings.Join(a.Rdata, " ")
+	}
 	if a.RegionName != "" {
 		m["region"] = a.RegionName
 	}
@@ -378,8 +410,10 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			if answerRaw != nil {
 				answer := answerRaw.(string)
 				switch d.Get("type") {
-				case "TXT", "SPF":
-					r.AddAnswer(dns.NewTXTAnswer(answer))
+				case "TXT":
+					r.AddAnswer(dns.NewAnswer(decodeTXTAnswers(answer)))
+				case "SPF":
+					r.AddAnswer(dns.NewAnswer([]string{answer}))
 				case "CAA":
 					r.AddAnswer(dns.NewAnswer(strings.SplitN(answer, " ", 3)))
 				default:
@@ -396,8 +430,10 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 
 				v := answer["answer"].(string)
 				switch d.Get("type") {
-				case "TXT", "SPF":
-					a = dns.NewTXTAnswer(v)
+				case "TXT":
+					a = dns.NewAnswer(decodeTXTAnswers(v))
+				case "SPF":
+					a = dns.NewAnswer([]string{v})
 				case "CAA":
 					a = dns.NewAnswer(strings.SplitN(v, " ", 3))
 				default:
