@@ -314,7 +314,8 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 			z.Secondary = &dns.ZoneSecondary{Enabled: false}
 		}
 	}
-	if v, ok := d.GetOkExists("dnssec"); ok {
+	if raw := d.GetRawConfig().GetAttr("dnssec"); !raw.IsNull() {
+		v := d.Get("dnssec")
 		if v != nil {
 			dnssec := v.(bool)
 			z.DNSSEC = &dnssec
@@ -391,8 +392,8 @@ func resourceDataToZone(z *dns.Zone, d *schema.ResourceData) {
 	if v, ok := d.GetOk("link"); ok {
 		z.LinkTo(v.(string))
 	}
-	if v, ok := d.GetOkExists("networks"); ok {
-		networkIDSet := v.(*schema.Set)
+	if raw := d.GetRawConfig().GetAttr("networks"); !raw.IsNull() {
+		networkIDSet := d.Get("networks").(*schema.Set)
 		z.NetworkIDs = setToInts(networkIDSet)
 	}
 }
