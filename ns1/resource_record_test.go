@@ -506,7 +506,7 @@ func TestAccRecord_CAA(t *testing.T) {
 				Config: testAccRecordCAA(rString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.caa", &record),
-					testAccCheckRecordDomain(&record, zoneName),
+					testAccCheckRecordDomain(&record, "caa."+zoneName),
 					testAccCheckRecordTTL(&record, 3600),
 					testAccCheckRecordUseClientSubnet(&record, true),
 					testAccCheckRecordAnswerRdata(
@@ -520,7 +520,7 @@ func TestAccRecord_CAA(t *testing.T) {
 			{
 				ResourceName:      "ns1_record.caa",
 				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("%[1]s/%[1]s/CAA", zoneName),
+				ImportStateId:     fmt.Sprintf("%s/%s/CAA", zoneName, "caa."+zoneName),
 				ImportStateVerify: true,
 			},
 			{
@@ -642,8 +642,9 @@ func TestAccRecord_validationError(t *testing.T) {
 				ExpectError: regexp.MustCompile(`(?s)(Error: (zone|domain) has an invalid (leading|trailing) "\.", got: .*){4}`),
 			},
 			{
-				Config:      testAccRecordNoAnswers(rString),
-				ExpectError: regexp.MustCompile(`Invalid body`),
+				Config: testAccRecordNoAnswers(rString),
+				// seems to have changed, was: ExpectError: regexp.MustCompile(`Invalid body`),
+				ExpectError: regexp.MustCompile(`404 zone not found`),
 			},
 		},
 	})
@@ -1108,6 +1109,70 @@ func TestAccRecord_Link(t *testing.T) {
 						t, &record3, 0, []string{"16.19.20.19"},
 					),
 				),
+			},
+		},
+	})
+}
+
+func TestAccRecord_TXT(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("txt-test.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccRecordTXTWithBothFields(rString),
+				ExpectError: regexp.MustCompile("cannot specify both 'answer' and 'answer_parts'"),
+			},
+			{
+				Config: testAccRecordTXTWithAnswerParts(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.txt_test", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 300),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"foo", "bar", "qux"},
+					),
+				),
+			},
+			{
+				Config: testAccRecordTXTWithAnswer(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.txt_test", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 300),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"foo bar qux"},
+					),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.txt_test",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/TXT", zoneName, domainName),
+				ImportStateVerify: true,
+			},
+			{
+				Config: testAccRecordTXTWithAnswerPartsUpdated(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.txt_test", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 300),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"foo", "bar", "baz", "qux"},
+					),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.txt_test",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/TXT", zoneName, domainName),
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -1717,11 +1782,11 @@ resource "ns1_record" "caa" {
   domain = "caa.${ns1_zone.test.zone}"
   type   = "CAA"
   ttl    = 3600
-  
+
   answers {
     answer = "0 issue \"letsencrypt.org\""
   }
-  
+
   answers {
     answer = "0 issuewild \";\""
   }
@@ -1745,7 +1810,7 @@ resource "ns1_record" "apl" {
 	answers {
 		answer = "1:127.0.0.0/16"
 	}
-	
+
 }
 `, zone, zone)
 }
@@ -2062,13 +2127,13 @@ func testAccRecordOPENPGPKEY(rString string) string {
 	resource "ns1_zone" "test" {
 	  zone = "terraform-test-%s.io"
 	}
-	
+
 	resource "ns1_record" "openpgpkey" {
 	  zone   = ns1_zone.test.zone
 	  domain = "openpgpkey.${ns1_zone.test.zone}"
 	  type   = "OPENPGPKEY"
 	  ttl    = 3600
-	
+
 	  answers {
 		answer = "abba"
 	  }
@@ -2200,6 +2265,83 @@ resource "ns1_record" "newtarget" {
   answers {
              answer = "16.19.20.19"
           }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordTXTWithAnswerParts(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "txt_test" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "txt-test.${ns1_zone.test.zone}"
+  type              = "TXT"
+  ttl               = 300
+  use_client_subnet = "true"
+  answers {
+    answer_parts = ["foo", "bar", "qux"]
+  }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordTXTWithAnswer(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "txt_test" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "txt-test.${ns1_zone.test.zone}"
+  type              = "TXT"
+  ttl               = 300
+  use_client_subnet = "true"
+  answers {
+    answer = "foo bar qux"
+  }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordTXTWithAnswerPartsUpdated(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "txt_test" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "txt-test.${ns1_zone.test.zone}"
+  type              = "TXT"
+  ttl               = 300
+  use_client_subnet = "true"
+  answers {
+    answer_parts = ["foo", "bar", "baz", "qux"]
+  }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordTXTWithBothFields(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "txt_test" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "txt-test.${ns1_zone.test.zone}"
+  type              = "TXT"
+  ttl               = 300
+  use_client_subnet = "true"
+  answers {
+    answer = "foo bar qux"
+    answer_parts = ["foo", "bar", "qux"]
+  }
 }
 
 resource "ns1_zone" "test" {

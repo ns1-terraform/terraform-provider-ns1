@@ -179,6 +179,8 @@ The following arguments are supported:
 
         answer = "v=DKIM1; k=rsa; p=XXXXXXXX"
 
+  Optionally, the individual parts of the answer can be expressed as a list in the field `answer_parts`.
+  Only one of `answer` or `answer_parts` can be specified.
 
 * `region` - (Optional) The region (Answer Group really) that this answer
   belongs to. This should be one of the names specified in `regions`. Only a

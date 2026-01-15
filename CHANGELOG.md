@@ -1,3 +1,9 @@
+## 2.8.0 (Unreleased)
+ENHANCEMENTS
+* Add a new record answer field to specify multiple parts directly
+BUGFIX
+* Fix zones not specifying networks not being created as managed
+
 ## 2.7.3 (November 25, 2025)
 BUGFIX
 * Fix zone create with empty networks field
