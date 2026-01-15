@@ -122,8 +122,15 @@ It is suggested to migrate to a regular "answers" block. Using Terraform 0.12+, 
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"answer": {
-							Type:     schema.TypeString,
-							Optional: true,
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "A single RDATA. This field cannot be set together with `answer_parts`",
+						},
+						"answer_parts": {
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Description: "A list of individual RDATA fields. This field cannot be set together with `answer`",
 						},
 						"region": {
 							Type:     schema.TypeString,
@@ -310,8 +317,10 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 	if len(r.Answers) > 0 {
 		ans := make([]map[string]interface{}, 0)
 		log.Printf("Got back from ns1 answers: %+v", r.Answers)
-		for _, answer := range r.Answers {
-			ans = append(ans, answerToMap(*answer, r.Type))
+
+		stateAnswers := d.Get("answers").([]interface{})
+		for i, answer := range r.Answers {
+			ans = append(ans, answerToMap(*answer, i, stateAnswers, r.Type))
 		}
 		log.Printf("Setting answers %+v", ans)
 		err := d.Set("answers", ans)
@@ -355,41 +364,28 @@ func recordMapValueToString(configMap map[string]interface{}) map[string]interfa
 	return config
 }
 
-// encodeTXTAnswers joins TXT answers using § delimiter, escaping actual § as \§
-func encodeTXTAnswers(rdata []string) string {
-	escaped := make([]string, len(rdata))
-	for i, s := range rdata {
-		escaped[i] = strings.ReplaceAll(s, "§", `\§`)
-	}
-	return strings.Join(escaped, "§")
-}
-
-// decodeTXTAnswers splits on § delimiter, unescaping \§ back to §
-func decodeTXTAnswers(encoded string) []string {
-	result := []string{}
-	current := -1
-
-	// splitting first ignores the escape backslash, so checking for it afterwards to fix in the result array
-	for part := range strings.SplitSeq(encoded, "§") {
-		// note that this algorithm doesn't support a non-final answer ending with backslash, even escaped
-		if current >= 0 && strings.HasSuffix(result[current], `\`) {
-			result[current] = result[current][:len(result[current])-1] + "§" + part
-		} else {
-			result = append(result, part)
-			current++
-		}
-	}
-
-	return result
-}
-
-func answerToMap(a dns.Answer, recordType string) map[string]interface{} {
+// answerToMap converts an answer to a terraform state map
+func answerToMap(a dns.Answer, index int, stateAnswers []any, rType string) map[string]any {
 	m := make(map[string]interface{})
-	if recordType == "TXT" {
-		m["answer"] = encodeTXTAnswers(a.Rdata)
+
+	// decide whether to use "answer" or "answer_parts" based on the current state, preferring the first if not available
+	useAnswerParts := false
+	if index < len(stateAnswers) {
+		if existingAnswer, ok := stateAnswers[index].(map[string]any); ok {
+			if answerParts, ok := existingAnswer["answer_parts"].([]any); ok && len(answerParts) > 0 {
+				useAnswerParts = true
+			}
+		}
+	} else if rType == "TXT" && len(a.Rdata) > 1 {
+		useAnswerParts = true
+	}
+
+	if useAnswerParts {
+		m["answer_parts"] = a.Rdata
 	} else {
 		m["answer"] = strings.Join(a.Rdata, " ")
 	}
+
 	if a.RegionName != "" {
 		m["region"] = a.RegionName
 	}
@@ -410,10 +406,8 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 			if answerRaw != nil {
 				answer := answerRaw.(string)
 				switch d.Get("type") {
-				case "TXT":
-					r.AddAnswer(dns.NewAnswer(decodeTXTAnswers(answer)))
-				case "SPF":
-					r.AddAnswer(dns.NewAnswer([]string{answer}))
+				case "TXT", "SPF":
+					r.AddAnswer(dns.NewTXTAnswer(answer))
 				case "CAA":
 					r.AddAnswer(dns.NewAnswer(strings.SplitN(answer, " ", 3)))
 				default:
@@ -428,16 +422,37 @@ func resourceDataToRecord(r *dns.Record, d *schema.ResourceData) error {
 				answer := answerRaw.(map[string]interface{})
 				var a *dns.Answer
 
-				v := answer["answer"].(string)
-				switch d.Get("type") {
-				case "TXT":
-					a = dns.NewAnswer(decodeTXTAnswers(v))
-				case "SPF":
-					a = dns.NewAnswer([]string{v})
-				case "CAA":
-					a = dns.NewAnswer(strings.SplitN(v, " ", 3))
-				default:
-					a = dns.NewAnswer(strings.Split(v, " "))
+				// check for mutual exclusivity between answer and answer_parts
+				hasAnswer := false
+				hasAnswerParts := false
+				if v, ok := answer["answer"].(string); ok && v != "" {
+					hasAnswer = true
+				}
+				if answerParts, ok := answer["answer_parts"].([]interface{}); ok && len(answerParts) > 0 {
+					hasAnswerParts = true
+				}
+				if hasAnswer && hasAnswerParts {
+					return errors.New("cannot specify both 'answer' and 'answer_parts' in the same answers block")
+				}
+
+				if hasAnswerParts {
+					answerParts := answer["answer_parts"].([]interface{})
+					parts := make([]string, len(answerParts))
+					for i, part := range answerParts {
+						parts[i] = part.(string)
+					}
+					a = dns.NewAnswer(parts)
+
+				} else {
+					v := answer["answer"].(string)
+					switch d.Get("type") {
+					case "TXT", "SPF":
+						a = dns.NewTXTAnswer(v)
+					case "CAA":
+						a = dns.NewAnswer(strings.SplitN(v, " ", 3))
+					default:
+						a = dns.NewAnswer(strings.Split(v, " "))
+					}
 				}
 
 				if v, ok := answer["region"]; ok {

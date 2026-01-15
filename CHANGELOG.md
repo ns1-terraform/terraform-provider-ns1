@@ -1,6 +1,8 @@
-## 2.7.4 (Unreleased)
+## 2.8.0 (Unreleased)
 ENHANCEMENTS
-* Use § character to separate TXT answers; actual § characters in data should be escaped as `\\§`.
+* Add a new record answer field to specify multiple parts directly.
+BUGFIX
+* Fix issue with zones without networks not defaulting to managed.
 
 ## 2.7.3 (November 25, 2025)
 BUGFIX

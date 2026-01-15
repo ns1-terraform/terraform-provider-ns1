@@ -537,74 +537,6 @@ func TestAccRecord_CAA(t *testing.T) {
 	})
 }
 
-// TestAccRecord_TXT tests TXT records with multiple answers
-func TestAccRecord_TXT(t *testing.T) {
-	var record dns.Record
-	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
-	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
-	domainName := fmt.Sprintf("txt.%s", zoneName)
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckRecordDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: testAccRecordTXT(rString, "Line1§Line2§Line3"),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.txt", &record),
-					testAccCheckRecordDomain(&record, domainName),
-					testAccCheckTXTRecordAnswerCount(&record, 3),
-					testAccCheckRecordAnswerRdata(
-						t, &record, 0, []string{"Line1", "Line2", "Line3"},
-					),
-				),
-			},
-			{
-				Config: testAccRecordTXT(rString, `Line1§Paragraph\\§2`),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.txt", &record),
-					testAccCheckRecordDomain(&record, domainName),
-					testAccCheckTXTRecordAnswerCount(&record, 2),
-					testAccCheckRecordAnswerRdata(
-						t, &record, 0, []string{"Line1", `Paragraph§2`},
-					),
-				),
-			},
-			{
-				Config: testAccRecordTXT(rString, `Line1§Paragraph\\§2§`),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.txt", &record),
-					testAccCheckRecordDomain(&record, domainName),
-					testAccCheckTXTRecordAnswerCount(&record, 3),
-					testAccCheckRecordAnswerRdata(
-						t, &record, 0, []string{"Line1", `Paragraph§2`, ""},
-					),
-				),
-			},
-			{
-				Config: testAccRecordTXT(rString, `Line1§Paragraph\\\\§2`),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckRecordExists("ns1_record.txt", &record),
-					testAccCheckRecordDomain(&record, domainName),
-					testAccCheckTXTRecordAnswerCount(&record, 2),
-					testAccCheckRecordAnswerRdata(
-						// should probably have been
-						// t, &record, 0, []string{"Line1", `Paragraph\`, "2"},
-						t, &record, 0, []string{"Line1", `Paragraph\§2`},
-					),
-				),
-			},
-			{
-				ResourceName:      "ns1_record.txt",
-				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("%s/%s/TXT", zoneName, domainName),
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
 func TestAccRecord_updatedWithRegions(t *testing.T) {
 	var record dns.Record
 	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
@@ -1182,6 +1114,70 @@ func TestAccRecord_Link(t *testing.T) {
 	})
 }
 
+func TestAccRecord_TXT(t *testing.T) {
+	var record dns.Record
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	zoneName := fmt.Sprintf("terraform-test-%s.io", rString)
+	domainName := fmt.Sprintf("txt-test.%s", zoneName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckRecordDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccRecordTXTWithBothFields(rString),
+				ExpectError: regexp.MustCompile("cannot specify both 'answer' and 'answer_parts'"),
+			},
+			{
+				Config: testAccRecordTXTWithAnswerParts(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.txt_test", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 300),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"foo", "bar", "qux"},
+					),
+				),
+			},
+			{
+				Config: testAccRecordTXTWithAnswer(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.txt_test", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 300),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"foo bar qux"},
+					),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.txt_test",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/TXT", zoneName, domainName),
+				ImportStateVerify: true,
+			},
+			{
+				Config: testAccRecordTXTWithAnswerPartsUpdated(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckRecordExists("ns1_record.txt_test", &record),
+					testAccCheckRecordDomain(&record, domainName),
+					testAccCheckRecordTTL(&record, 300),
+					testAccCheckRecordAnswerRdata(
+						t, &record, 0, []string{"foo", "bar", "baz", "qux"},
+					),
+				),
+			},
+			{
+				ResourceName:      "ns1_record.txt_test",
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("%s/%s/TXT", zoneName, domainName),
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckRecordExists(n string, record *dns.Record) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -1429,29 +1425,6 @@ func testAccManualDeleteRecord(zone, domain, recordType string) func() {
 		if err != nil {
 			log.Printf("failed to delete record: %v", err)
 		}
-	}
-}
-
-// testAccCheckTXTRecordAnswerCount verifies the actual number of TXT record answers via API
-func testAccCheckTXTRecordAnswerCount(record *dns.Record, expectedCount int) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		client := testAccProvider.Meta().(*ns1.Client)
-
-		r, _, err := client.Records.Get(record.Zone, record.Domain, record.Type)
-		if err != nil {
-			return fmt.Errorf("error fetching record: %s", err)
-		}
-
-		if len(r.Answers) != 1 {
-			return fmt.Errorf("expected 1 answer block, got %d", len(r.Answers))
-		}
-
-		actualCount := len(r.Answers[0].Rdata)
-		if actualCount != expectedCount {
-			return fmt.Errorf("expected %d rdata values in TXT record, got %d: %v", expectedCount, actualCount, r.Answers[0].Rdata)
-		}
-
-		return nil
 	}
 }
 
@@ -2300,24 +2273,81 @@ resource "ns1_zone" "test" {
 `, rString)
 }
 
-// testAccRecordTXT returns a config for a TXT record with variable answers
-func testAccRecordTXT(rString string, answer string) string {
+func testAccRecordTXTWithAnswerParts(rString string) string {
 	return fmt.Sprintf(`
-resource "ns1_zone" "it" {
-  zone = "terraform-test-%s.io"
-}
-
-resource "ns1_record" "txt" {
-  zone   = ns1_zone.it.zone
-  domain = "txt.${ns1_zone.it.zone}"
-  type   = "TXT"
-  ttl    = 60
-
+resource "ns1_record" "txt_test" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "txt-test.${ns1_zone.test.zone}"
+  type              = "TXT"
+  ttl               = 300
+  use_client_subnet = "true"
   answers {
-    answer = "%s"
+    answer_parts = ["foo", "bar", "qux"]
   }
 }
-`, rString, answer)
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordTXTWithAnswer(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "txt_test" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "txt-test.${ns1_zone.test.zone}"
+  type              = "TXT"
+  ttl               = 300
+  use_client_subnet = "true"
+  answers {
+    answer = "foo bar qux"
+  }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordTXTWithAnswerPartsUpdated(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "txt_test" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "txt-test.${ns1_zone.test.zone}"
+  type              = "TXT"
+  ttl               = 300
+  use_client_subnet = "true"
+  answers {
+    answer_parts = ["foo", "bar", "baz", "qux"]
+  }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
+}
+
+func testAccRecordTXTWithBothFields(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_record" "txt_test" {
+  zone              = "${ns1_zone.test.zone}"
+  domain            = "txt-test.${ns1_zone.test.zone}"
+  type              = "TXT"
+  ttl               = 300
+  use_client_subnet = "true"
+  answers {
+    answer = "foo bar qux"
+    answer_parts = ["foo", "bar", "qux"]
+  }
+}
+
+resource "ns1_zone" "test" {
+  zone = "terraform-test-%s.io"
+}
+`, rString)
 }
 
 func TestRegionsMetaDiffSuppress(t *testing.T) {
@@ -2381,55 +2411,6 @@ func TestValidateFQDN(t *testing.T) {
 			outWarns, outErrs := validateFQDN(tt.in, "")
 			assert.Equal(t, tt.expErrs, len(outErrs))
 			assert.Equal(t, 0, len(outWarns))
-		})
-	}
-}
-
-// TestEncodeDecodeTXTAnswers tests the encoding of TXT record answers with § delimiter
-func TestEncodeDecodeTXTAnswers(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    []string
-		expected string
-	}{
-		{
-			name:     "one answer with escaped § character",
-			input:    []string{"text with § symbol"},
-			expected: `text with \§ symbol`,
-		},
-		{
-			name:     "multiple answers",
-			input:    []string{"answer1", "answer2", "answer3"},
-			expected: "answer1§answer2§answer3",
-		},
-		{
-			name:     "multiple answers with § characters",
-			input:    []string{"first§part", "second§part"},
-			expected: `first\§part§second\§part`,
-		},
-		{
-			name:     "answer with escaped §",
-			input:    []string{`text with \§ escaped`},
-			expected: `text with \\§ escaped`,
-		},
-		{
-			name:     "answer with escaped backslash before §",
-			input:    []string{`text with \\§ escaped`},
-			expected: `text with \\\§ escaped`,
-		},
-		{
-			name:     "empty answers",
-			input:    []string{"", "", ""},
-			expected: "§§",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			encoded := encodeTXTAnswers(tt.input)
-			assert.Equal(t, tt.expected, encoded)
-			decoded := decodeTXTAnswers(encoded)
-			assert.Equal(t, tt.input, decoded)
 		})
 	}
 }

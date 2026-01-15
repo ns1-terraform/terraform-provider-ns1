@@ -179,10 +179,6 @@ The following arguments are supported:
 
         answer = "v=DKIM1; k=rsa; p=XXXXXXXX"
 
-    TXT (the § char is used to separate answers so this represents `IN TXT "Line1" "Paragraph§2"`):
-
-        answer = "Line1§Paragraph\\§2"
-
 
 * `region` - (Optional) The region (Answer Group really) that this answer
   belongs to. This should be one of the names specified in `regions`. Only a
