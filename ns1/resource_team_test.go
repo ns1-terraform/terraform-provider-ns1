@@ -154,6 +154,39 @@ func TestAccTeam_import_test(t *testing.T) {
 	})
 }
 
+func TestAccTeam_emptyIPWhitelist(t *testing.T) {
+	var team account.Team
+	n := fmt.Sprintf("terraform test team %s", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckTeamDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccTeamEmptyIPWhitelist(n),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTeamExists("ns1_team.foobar", &team),
+					testAccCheckTeamName(&team, n),
+					resource.TestCheckResourceAttr("ns1_team.foobar", "ip_whitelist.#", "0"),
+					testAccCheckTeamIPWhitelists(&team, []account.IPWhitelist{}),
+				),
+			},
+		},
+	})
+}
+
+func testAccTeamEmptyIPWhitelist(name string) string {
+	return fmt.Sprintf(`
+resource "ns1_team" "foobar" {
+  name = "%s"
+  
+  dns_view_zones = true
+  data_manage_datasources = true
+}
+`, name)
+}
+
 func testAccCheckTeamExists(n string, team *account.Team) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

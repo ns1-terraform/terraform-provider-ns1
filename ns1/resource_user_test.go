@@ -466,6 +466,53 @@ func TestAccUser_import_test(t *testing.T) {
 	})
 }
 
+func TestAccUser_emptyIPWhitelist(t *testing.T) {
+	var user account.User
+	rString := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+	name := fmt.Sprintf("terraform acc test user %s", rString)
+	username := fmt.Sprintf("tf_acc_test_user_%s", rString)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckUserDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccUserEmptyIPWhitelist(rString),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckUserExists("ns1_user.u", &user),
+					resource.TestCheckResourceAttr("ns1_user.u", "name", name),
+					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
+					resource.TestCheckResourceAttr("ns1_user.u", "ip_whitelist.#", "0"),
+					resource.TestCheckResourceAttr("ns1_user.u", "ip_whitelist_strict", "false"),
+					testAccCheckUserIPWhitelists(&user, []string{}),
+				),
+			},
+		},
+	})
+}
+
+func testAccUserEmptyIPWhitelist(rString string) string {
+	return fmt.Sprintf(`
+resource "ns1_team" "test" {
+  name = "terraform test team %s"
+}
+
+resource "ns1_user" "u" {
+  name     = "terraform acc test user %s"
+  username = "tf_acc_test_user_%s"
+  email    = "tf_acc_test_ns1@hashicorp.com"
+  teams    = [ns1_team.test.id]
+  
+  ip_whitelist_strict = false
+  
+  notify = {
+    billing = false
+  }
+}
+`, rString, rString, rString)
+}
+
 // Case when a user is on a team and that team updates it's permissions.
 // This test is currently failing, as this is not implemented yet - this doesn't
 // actually cause any issues because it's just Terraforms state that doesn't have the
