@@ -505,8 +505,8 @@ resource "ns1_user" "u" {
   teams    = [ns1_team.test.id]
   
   ip_whitelist_strict = false
-  ip_whitelist=[]
-  
+  ip_whitelist = []
+
   notify = {
     billing = false
   }

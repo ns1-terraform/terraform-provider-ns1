@@ -57,7 +57,7 @@ The following arguments are supported:
 * `email` - (Required) The email address of the user.
 * `notify` - (Required) Whether or not to notify the user of specified events. Only `billing` is available currently.
 * `teams` - (Required) The teams that the user belongs to.
-* `ip_whitelist` - (Optional, default: `{}`) Array of IP addresses/networks to which to grant the user access. 
+* `ip_whitelist` - (Optional, default: `[]`) Array of IP addresses/networks to which to grant the user access. 
 * `ip_whitelist_strict` - (Optional, default: `false`) Set to true to restrict access to only those IP addresses and networks listed in the **ip_whitelist** field.
 * `dns_view_zones` - (Optional) Whether the user can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the user can modify the accounts zones.
