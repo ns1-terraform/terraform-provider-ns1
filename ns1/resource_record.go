@@ -173,6 +173,7 @@ It is suggested to migrate to a regular "answers" block. Using Terraform 0.12+, 
 						"disabled": {
 							Type:     schema.TypeBool,
 							Optional: true,
+							Default:  false,
 						},
 						"config": {
 							Type:     schema.TypeMap,

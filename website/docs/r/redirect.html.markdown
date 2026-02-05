@@ -45,7 +45,7 @@ The following arguments are supported:
   * __masking__   preserves the redirected domain in the browser's address bar (this lets users see the
                   address they entered, even though the displayed content comes from a different web page).
 * `https_enabled` - (Read Only) True if HTTPS is supported on the source domain by using Let's Encrypt certificates.
-* `https_forced` - (Optional, default: `true`) Forces redirect for users that try to visit HTTP domain to HTTPS instead.
+* `https_forced` - (Optional, default: `false`) Forces redirect for users that try to visit HTTP domain to HTTPS instead.
 * `query_forwarding` - (Optional, default: `false`) Enables the query string of a URL to be applied directly to the new target URL.
 * `tags` - (Optional - array) Tags associated with the configuration.
 * `last_updated` - (Read Only) The Unix timestamp representing when the redirect configuration was last updated.
