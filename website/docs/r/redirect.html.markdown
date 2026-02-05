@@ -31,11 +31,11 @@ The following arguments are supported:
 * `certificate_id` - (Optional) The certificate redirect id. If not specified the redirect will be created as HTTP,
                   but it may be turned to HTTPS if a certificate exists for the source domain on the server.
                   If the certificate is managed in terraform it's recommended to set explictly to "${ns1_redirect_certificate.name.id}".
-* `forwarding_mode` - (Optional - defaults to "all") How the target is interpreted:
+* `forwarding_mode` - (Optional, default: `"all"`) How the target is interpreted:
   * __all__       appends the entire incoming path to the target destination;
   * __capture__   appends only the part of the incoming path corresponding to the wildcard (*);
   * __none__      does not append any part of the incoming path.
-* `forwarding_type` - (Optional - defaults to "permanent") How the redirect is executed:
+* `forwarding_type` - (Optional, default: `"permanent"`) How the redirect is executed:
   * __permanent__ (HTTP 301) indicates to search engines that they should remove the old page from
                   their database and replace it with the new target page (this is recommended for SEO);
   * __temporary__ (HTTP 302) less common, indicates that search engines should keep the old domain or
@@ -45,8 +45,8 @@ The following arguments are supported:
   * __masking__   preserves the redirected domain in the browser's address bar (this lets users see the
                   address they entered, even though the displayed content comes from a different web page).
 * `https_enabled` - (Read Only) True if HTTPS is supported on the source domain by using Let's Encrypt certificates.
-* `https_forced` - (Optional - defaults to true) Forces redirect for users that try to visit HTTP domain to HTTPS instead.
-* `query_forwarding` - (Optional - defaults to false) Enables the query string of a URL to be applied directly to the new target URL.
+* `https_forced` - (Optional, default: `true`) Forces redirect for users that try to visit HTTP domain to HTTPS instead.
+* `query_forwarding` - (Optional, default: `false`) Enables the query string of a URL to be applied directly to the new target URL.
 * `tags` - (Optional - array) Tags associated with the configuration.
 * `last_updated` - (Read Only) The Unix timestamp representing when the redirect configuration was last updated.
 

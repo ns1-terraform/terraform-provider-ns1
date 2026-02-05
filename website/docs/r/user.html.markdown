@@ -57,34 +57,34 @@ The following arguments are supported:
 * `email` - (Required) The email address of the user.
 * `notify` - (Required) Whether or not to notify the user of specified events. Only `billing` is available currently.
 * `teams` - (Required) The teams that the user belongs to.
-* `ip_whitelist` - (Optional) Array of IP addresses/networks to which to grant the user access. 
-* `ip_whitelist_strict` - (Optional) Set to true to restrict access to only those IP addresses and networks listed in the **ip_whitelist** field.
-* `dns_view_zones` - (Optional) Whether the user can view the accounts zones.
-* `dns_manage_zones` - (Optional) Whether the user can modify the accounts zones.
-* `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.
+* `ip_whitelist` - (Optional) Array of IP addresses/networks to which to grant the user access.
+* `ip_whitelist_strict` - (Optional, default: `false`) Set to true to restrict access to only those IP addresses and networks listed in the **ip_whitelist** field.
+* `dns_view_zones` - (Optional, default: `false`) Whether the user can view the accounts zones.
+* `dns_manage_zones` - (Optional, default: `false`) Whether the user can modify the accounts zones.
+* `dns_zones_allow_by_default` - (Optional, default: `false`) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.
 * `dns_zones_allow` - (Optional) List of zones that the user may access.
 * `dns_zones_deny` - (Optional) List of zones that the user may not access.
-* `data_push_to_datafeeds` - (Optional) Whether the user can publish to data feeds.
-* `data_manage_datasources` - (Optional) Whether the user can modify data sources.
-* `data_manage_datafeeds` - (Optional) Whether the user can modify data feeds.
-* `account_manage_users` - (Optional) Whether the user can modify account users.
-* `account_manage_payment_methods` - (Optional) Whether the user can modify account payment methods.
+* `data_push_to_datafeeds` - (Optional, default: `false`) Whether the user can publish to data feeds.
+* `data_manage_datasources` - (Optional, default: `false`) Whether the user can modify data sources.
+* `data_manage_datafeeds` - (Optional, default: `false`) Whether the user can modify data feeds.
+* `account_manage_users` - (Optional, default: `false`) Whether the user can modify account users.
+* `account_manage_payment_methods` - (Optional, default: `false`) Whether the user can modify account payment methods.
 * `account_manage_plan` - (Deprecated) No longer in use.
-* `account_manage_teams` - (Optional) Whether the user can modify other teams in the account.
-* `account_manage_apikeys` - (Optional) Whether the user can modify account apikeys.
-* `account_manage_account_settings` - (Optional) Whether the user can modify account settings.
-* `account_view_activity_log` - (Optional) Whether the user can view activity logs.
-* `account_view_invoices` - (Optional) Whether the user can view invoices.
-* `account_manage_ip_whitelist` - (Optional) Whether the user can manage ip whitelist.
-* `monitoring_manage_lists` - (Optional) Whether the user can modify notification lists.
-* `monitoring_manage_jobs` - (Optional) Whether the user can create, update, and delete monitoring jobs.
-* `monitoring_create_jobs` - (Optional) Whether the user can create monitoring jobs when manage_jobs is not set to true.
-* `monitoring_update_jobs` - (Optional) Whether the user can update monitoring jobs when manage_jobs is not set to true.
-* `monitoring_delete_jobs` - (Optional) Whether the user can delete monitoring jobs when manage_jobs is not set to true.
-* `monitoring_view_jobs` - (Optional) Whether the user can view monitoring jobs.
-* `security_manage_global_2fa` - (Optional) Whether the user can manage global two factor authentication.
-* `security_manage_active_directory` - (Optional) Whether the user can manage global active directory.
-* `redirects_manage_redirects` - (Optional) Whether the user can manage redirects.
+* `account_manage_teams` - (Optional, default: `false`) Whether the user can modify other teams in the account.
+* `account_manage_apikeys` - (Optional, default: `false`) Whether the user can modify account apikeys.
+* `account_manage_account_settings` - (Optional, default: `false`) Whether the user can modify account settings.
+* `account_view_activity_log` - (Optional, default: `false`) Whether the user can view activity logs.
+* `account_view_invoices` - (Optional, default: `false`) Whether the user can view invoices.
+* `account_manage_ip_whitelist` - (Optional, default: `false`) Whether the user can manage ip whitelist.
+* `monitoring_manage_lists` - (Optional, default: `false`) Whether the user can modify notification lists.
+* `monitoring_manage_jobs` - (Optional, default: `false`) Whether the user can create, update, and delete monitoring jobs.
+* `monitoring_create_jobs` - (Optional, default: `false`) Whether the user can create monitoring jobs when manage_jobs is not set to true.
+* `monitoring_update_jobs` - (Optional, default: `false`) Whether the user can update monitoring jobs when manage_jobs is not set to true.
+* `monitoring_delete_jobs` - (Optional, default: `false`) Whether the user can delete monitoring jobs when manage_jobs is not set to true.
+* `monitoring_view_jobs` - (Optional, default: `false`) Whether the user can view monitoring jobs.
+* `security_manage_global_2fa` - (Optional, default: `true`) Whether the user can manage global two factor authentication.
+* `security_manage_active_directory` - (Optional, default: `true`) Whether the user can manage global active directory.
+* `redirects_manage_redirects` - (Optional, default: `false`) Whether the user can manage redirects.
 Only relevant for the DDI product.
 
 ## Import

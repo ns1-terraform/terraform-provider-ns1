@@ -139,7 +139,8 @@ The following arguments are supported:
 * `link` - (Optional) The fully qualified domain name (without a terminating dot)
   of the target record. This means this record is a 'linked' record, and it
   inherits all properties from its target.
-* `use_client_subnet` - (Optional) Whether to use EDNS client subnet data when
+* `override_ttl` - (Optional, default: `false`) Whether to override the TTL value.
+* `use_client_subnet` - (Optional, default: `true`) Whether to use EDNS client subnet data when
   available(in filter chain).
 * ` meta` - (Optional) meta is supported at the `record` level. [Meta](#meta-3)
   is documented below.
@@ -195,10 +196,8 @@ The following arguments are supported:
 `filters` support the following:
 
 * `filter` - (Required) The type of filter.
-* `disabled` - (Optional) Determines whether the filter is applied in the
-  filter chain.
-* `config` - (Optional) The filters' configuration. Simple key/value pairs
-  determined by the filter type.
+* `disabled` - (Optional, default: `false`) Determines whether the filter is applied in the filter chain.
+* `config` - (Optional, default: `{}`) The filters' configuration. Simple key/value pairs determined by the filter type.
 
 #### Regions
 
