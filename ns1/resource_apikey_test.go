@@ -228,7 +228,8 @@ resource "ns1_apikey" "it" {
   name = "%s"
   
   ip_whitelist_strict = false
-  
+  ip_whitelist = []
+
   dns_view_zones = false
   account_manage_users = false
 }
