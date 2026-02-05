@@ -38,8 +38,8 @@ The following arguments are supported:
 * `name` - (Required) Name of the Pulsar job. Typically, this is the name of the CDN or endpoint.
 * `app_id` - (Required) ID of the Pulsar app.
 * `type_id` - (Required) Specifies the type of Pulsar job - either latency or custom.
-* `active` - (Optional) The job's status, if it's active or not.
-* `shared` - (Optional) Enable to share data with other approved accounts.
+* `active` - (Optional, default: `true`) The job's status, if it's active or not.
+* `shared` - (Optional, default: `false`) Enable to share data with other approved accounts.
 * `Config` - (Optional) [Config](#config-1) is documented below. Note: **Required if type_id is "latency"** 
 
 
@@ -53,7 +53,7 @@ The following arguments are supported:
 * `http` - (Optional) Indicates whether or not to use HTTP in measurements.
 * `request_timeout_millis` - (Optional) The amount of time to allow a single job to perform N runs.
 * `job_timeout_millis` - (Optional) The amount of time to allow a single job to perform 1 run.
-* `use_xhr` - (Optional) Indicates wheter or not to use XmlHttpRequest (XHR) when taking measurements.
+* `use_xhr` - (Optional, default: `false`) Indicates wheter or not to use XmlHttpRequest (XHR) when taking measurements.
 * `static_values` - (Optional) Indicates wheter or not to skip aggregation for this job's measurements.
 
 ## Import

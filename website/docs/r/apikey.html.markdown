@@ -48,8 +48,8 @@ The following arguments are supported:
 
 * `name` - (Required) The free form name of the apikey.
 * `teams` - (Optional) The teams that the apikey belongs to.
-* `ip_whitelist` - (Optional) Array of IP addresses/networks to which to grant the API key access.
-* `ip_whitelist_strict` - (Optional) Set to true to restrict access to only those IP addresses and networks listed in the **ip_whitelist** field.
+* `ip_whitelist` - (Optional, default: `[]`) Array of IP addresses/networks to which to grant the API key access.
+* `ip_whitelist_strict` - (Optional, default: `false`) Set to true to restrict access to only those IP addresses and networks listed in the **ip_whitelist** field.
 * `dns_view_zones` - (Optional) Whether the apikey can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the apikey can modify the accounts zones.
 * `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.

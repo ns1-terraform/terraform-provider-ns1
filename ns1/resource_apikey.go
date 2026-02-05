@@ -33,6 +33,7 @@ func apikeyResource() *schema.Resource {
 		"ip_whitelist_strict": {
 			Type:     schema.TypeBool,
 			Optional: true,
+			Default:  false,
 		},
 	}
 

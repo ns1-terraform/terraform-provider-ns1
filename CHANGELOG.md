@@ -1,3 +1,7 @@
+## 2.8.1 (Unreleased)
+ENHANCEMENTS
+* Update documentation to contain the default values of the fields
+
 ## 2.8.0 (January 15 2026)
 ENHANCEMENTS
 * Add a new record answer field to specify multiple parts directly

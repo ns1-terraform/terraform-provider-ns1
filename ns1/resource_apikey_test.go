@@ -199,6 +199,43 @@ func TestAccAPIKey_permissions(t *testing.T) {
 	})
 }
 
+func TestAccAPIKey_emptyIPWhitelist(t *testing.T) {
+	var apiKey account.APIKey
+	name := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAPIKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAPIKeyEmptyIPWhitelist(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
+					testAccCheckAPIKeyName(&apiKey, name),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "ip_whitelist.#", "0"),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "ip_whitelist_strict", "false"),
+					testAccCheckAPIKeyIPWhitelists(&apiKey, []string{}),
+				),
+			},
+		},
+	})
+}
+
+func testAccAPIKeyEmptyIPWhitelist(name string) string {
+	return fmt.Sprintf(`
+resource "ns1_apikey" "it" {
+  name = "%s"
+  
+  ip_whitelist_strict = false
+  ip_whitelist = []
+
+  dns_view_zones = false
+  account_manage_users = false
+}
+`, name)
+}
+
 func testAccCheckAPIKeyExists(n string, apiKey *account.APIKey) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

@@ -81,7 +81,7 @@ func redirectConfigResource() *schema.Resource {
 			"https_forced": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Computed: true,
+				Default:  false,
 			},
 			"query_forwarding": {
 				Type:     schema.TypeBool,
