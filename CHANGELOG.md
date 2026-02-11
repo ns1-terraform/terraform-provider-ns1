@@ -1,5 +1,6 @@
-## 2.8.1 (Unreleased)
+## 2.8.1 (February 12 2026)
 ENHANCEMENTS
+* Fix datadog and webcheck datafeed params
 * Update documentation to contain the default values of the fields
 
 ## 2.8.0 (January 15 2026)

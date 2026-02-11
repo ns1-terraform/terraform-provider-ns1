@@ -134,19 +134,20 @@ func monitoringJobToResourceData(d *schema.ResourceData, r *monitor.Job) error {
 	d.Set("rapid_recheck", r.RapidRecheck)
 	config := make(map[string]string)
 	for k, v := range r.Config {
-		if k == "ssl" {
+		switch k {
+		case "ssl":
 			if v.(bool) {
 				config[k] = "1"
 			} else {
 				config[k] = "0"
 			}
-		} else if k == "follow_redirect" || k == "ipv6" || k == "tls_skip_verify" || k == "tls_add_verify" {
+		case "follow_redirect", "ipv6", "tls_skip_verify", "tls_add_verify":
 			if v.(bool) {
 				config[k] = "true"
 			} else {
 				config[k] = "false"
 			}
-		} else {
+		default:
 			switch t := v.(type) {
 			case string:
 				config[k] = t
@@ -194,7 +195,6 @@ func resourceDataToMonitoringJob(r *monitor.Job, d *schema.ResourceData) error {
 	}
 	r.Frequency = d.Get("frequency").(int)
 	r.RapidRecheck = d.Get("rapid_recheck").(bool)
-	var rawRules []interface{}
 	if rawRules := d.Get("rules"); rawRules != nil {
 		r.Rules = make([]*monitor.Rule, len(rawRules.([]interface{})))
 		for i, v := range rawRules.([]interface{}) {
@@ -207,19 +207,6 @@ func resourceDataToMonitoringJob(r *monitor.Job, d *schema.ResourceData) error {
 		}
 	} else {
 		r.Rules = make([]*monitor.Rule, 0)
-	}
-	for i, v := range rawRules {
-		rule := v.(map[string]interface{})
-		r.Rules[i] = &monitor.Rule{
-			Comparison: rule["comparison"].(string),
-			Key:        rule["key"].(string),
-		}
-		value := rule["value"].(string)
-		if i, err := strconv.Atoi(value); err == nil {
-			r.Rules[i].Value = i
-		} else {
-			r.Rules[i].Value = value
-		}
 	}
 	config := make(map[string]interface{})
 	if rawConfig := d.Get("config"); rawConfig != nil {
