@@ -48,13 +48,33 @@ func dataFeedToResourceData(d *schema.ResourceData, f *data.Feed) {
 func resourceDataToDataFeed(d *schema.ResourceData) (feed *data.Feed, e error) {
 	config := d.Get("config").(map[string]interface{})
 	if config != nil {
-		test_id := config["test_id"]
-		if test_id != nil {
-			test_id_int, err := strconv.Atoi(test_id.(string))
+		if testId := config["test_id"]; testId != nil {
+			intTestId, err := strconv.Atoi(testId.(string))
 			if err != nil {
-				return &data.Feed{}, fmt.Errorf("could not convert %v as int %w", test_id, err)
+				return &data.Feed{}, fmt.Errorf("could not convert test_id = %v as int: %w", testId, err)
 			}
-			config["test_id"] = test_id_int
+			config["test_id"] = intTestId
+		}
+		if checkId := config["check_id"]; checkId != nil {
+			intCheckId, err := strconv.Atoi(checkId.(string))
+			if err != nil {
+				return &data.Feed{}, fmt.Errorf("could not convert check_id = %v as int: %w", checkId, err)
+			}
+			config["check_id"] = intCheckId
+		}
+		if failOnWarning := config["fail_on_warning"]; failOnWarning != nil {
+			boolFailOnWarning, err := strconv.ParseBool(failOnWarning.(string))
+			if err != nil {
+				return &data.Feed{}, fmt.Errorf("could not convert fail_on_warning = %v as bool: %w", failOnWarning, err)
+			}
+			config["fail_on_warning"] = boolFailOnWarning
+		}
+		if failOnNoData := config["fail_on_no_data"]; failOnNoData != nil {
+			boolFailOnNoData, err := strconv.ParseBool(failOnNoData.(string))
+			if err != nil {
+				return &data.Feed{}, fmt.Errorf("could not convert fail_on_no_data = %v as bool: %w", failOnNoData, err)
+			}
+			config["fail_on_no_data"] = boolFailOnNoData
 		}
 	}
 
@@ -124,12 +144,23 @@ func DataFeedUpdate(d *schema.ResourceData, meta interface{}) error {
 func configAdapterOut(f *data.Feed) {
 	config := f.Config
 	if config != nil {
-		test_id := config["test_id"]
-		if test_id != nil {
-			test_id_str := strconv.Itoa(int(test_id.(float64)))
-			config["test_id"] = test_id_str
-			f.Config = config
+		if testId := config["test_id"]; testId != nil {
+			strTestId := strconv.Itoa(int(testId.(float64)))
+			config["test_id"] = strTestId
 		}
+		if checkId := config["check_id"]; checkId != nil {
+			strCheckId := strconv.Itoa(int(checkId.(float64)))
+			config["check_id"] = strCheckId
+		}
+		if failOnWarning := config["fail_on_warning"]; failOnWarning != nil {
+			strFailOnWarning := strconv.FormatBool(failOnWarning.(bool))
+			config["fail_on_warning"] = strFailOnWarning
+		}
+		if failOnNoData := config["fail_on_no_data"]; failOnNoData != nil {
+			strFailOnNoData := strconv.FormatBool(failOnNoData.(bool))
+			config["fail_on_no_data"] = strFailOnNoData
+		}
+		f.Config = config
 	}
 }
 

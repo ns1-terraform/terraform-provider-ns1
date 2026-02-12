@@ -147,27 +147,6 @@ func TestAccMonitoringJob_ManualDelete(t *testing.T) {
 	})
 }
 
-func testAccCheckMonitoringJobState(key, value string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources["ns1_monitoringjob.it"]
-		if !ok {
-			return fmt.Errorf("not found: %s", "ns1_monitoringjob.it")
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("no ID is set")
-		}
-
-		p := rs.Primary
-		if p.Attributes[key] != value {
-			return fmt.Errorf(
-				"%s != %s (actual: %s)", key, value, p.Attributes[key])
-		}
-
-		return nil
-	}
-}
-
 func testAccCheckMonitoringJobExists(n string, monitoringJob *monitor.Job) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

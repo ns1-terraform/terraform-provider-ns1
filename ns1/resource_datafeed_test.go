@@ -51,6 +51,44 @@ func TestThousandeyes_Basic(t *testing.T) {
 	})
 }
 
+func TestWebcheck_Basic(t *testing.T) {
+	var dataFeed data.Feed
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckDataFeedDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testWebcheckBasic,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDataFeedExists("ns1_datafeed.uswest_feed", "ns1_datasource.api", &dataFeed, t),
+					testAccCheckDataFeedName(&dataFeed, "uswest_feed"),
+					testThousandeyesConfig(&dataFeed, "check_id", 123),
+				),
+			},
+		},
+	})
+}
+
+func TestDatadog_Basic(t *testing.T) {
+	var dataFeed data.Feed
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckDataFeedDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testDatadogBasic,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDataFeedExists("ns1_datafeed.uswest_feed", "ns1_datasource.api", &dataFeed, t),
+					testAccCheckDataFeedName(&dataFeed, "uswest_feed"),
+					testDatadogConfig(&dataFeed, "DataDog Test", true, true),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDataFeed_updated(t *testing.T) {
 	var dataFeed data.Feed
 	resource.Test(t, resource.TestCase{
@@ -208,6 +246,25 @@ func testThousandeyesConfig(dataFeed *data.Feed, key string, expected float64) r
 	}
 }
 
+func testDatadogConfig(dataFeed *data.Feed, name string, failOnWarning, failOnNoData bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+
+		if dataFeed.Config["test_name"] != name {
+			return fmt.Errorf("dataFeed.Config[name]: got: %#v, want: %s", dataFeed.Config["test_name"], name)
+		}
+
+		if dataFeed.Config["fail_on_warning"] != failOnWarning {
+			return fmt.Errorf("dataFeed.Config[fail_on_warning]: got: %#v, want: %t", dataFeed.Config["fail_on_warning"], failOnWarning)
+		}
+
+		if dataFeed.Config["fail_on_no_data"] != failOnNoData {
+			return fmt.Errorf("dataFeed.Config[fail_on_no_data]: got: %#v, want: %t", dataFeed.Config["fail_on_no_data"], failOnNoData)
+		}
+
+		return nil
+	}
+}
+
 // Simulate a manual deletion of a data feed.
 func testAccManualDeleteDataFeed(dataFeed *data.Feed) func() {
 	return func() {
@@ -245,6 +302,36 @@ resource "ns1_datafeed" "uswest_feed" {
   source_id = "${ns1_datasource.api.id}"
   config = {
     test_id = "123"
+  }
+}`
+
+const testDatadogBasic = `
+resource "ns1_datasource" "api" {
+  name = "terraform test"
+  sourcetype = "datadog"
+}
+
+resource "ns1_datafeed" "uswest_feed" {
+  name = "uswest_feed"
+  source_id = "${ns1_datasource.api.id}"
+  config = {
+    fail_on_warning = true
+    fail_on_no_data = true
+    test_name = "DataDog Test"
+  }
+}`
+
+const testWebcheckBasic = `
+resource "ns1_datasource" "api" {
+  name = "terraform test"
+  sourcetype = "webcheck"
+}
+
+resource "ns1_datafeed" "uswest_feed" {
+  name = "uswest_feed"
+  source_id = "${ns1_datasource.api.id}"
+  config = {
+    check_id = "123"
   }
 }`
 
