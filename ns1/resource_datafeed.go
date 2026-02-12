@@ -51,28 +51,28 @@ func resourceDataToDataFeed(d *schema.ResourceData) (feed *data.Feed, e error) {
 		if testId := config["test_id"]; testId != nil {
 			intTestId, err := strconv.Atoi(testId.(string))
 			if err != nil {
-				return &data.Feed{}, fmt.Errorf("could not convert %v as int %w", testId, err)
+				return &data.Feed{}, fmt.Errorf("could not convert test_id = %v as int: %w", testId, err)
 			}
 			config["test_id"] = intTestId
 		}
 		if checkId := config["check_id"]; checkId != nil {
 			intCheckId, err := strconv.Atoi(checkId.(string))
 			if err != nil {
-				return &data.Feed{}, fmt.Errorf("could not convert %v as int %w", checkId, err)
+				return &data.Feed{}, fmt.Errorf("could not convert check_id = %v as int: %w", checkId, err)
 			}
 			config["check_id"] = intCheckId
 		}
 		if failOnWarning := config["fail_on_warning"]; failOnWarning != nil {
 			boolFailOnWarning, err := strconv.ParseBool(failOnWarning.(string))
 			if err != nil {
-				return &data.Feed{}, fmt.Errorf("could not convert %v as bool %w", failOnWarning, err)
+				return &data.Feed{}, fmt.Errorf("could not convert fail_on_warning = %v as bool: %w", failOnWarning, err)
 			}
 			config["fail_on_warning"] = boolFailOnWarning
 		}
 		if failOnNoData := config["fail_on_no_data"]; failOnNoData != nil {
 			boolFailOnNoData, err := strconv.ParseBool(failOnNoData.(string))
 			if err != nil {
-				return &data.Feed{}, fmt.Errorf("could not convert %v as bool %w", failOnNoData, err)
+				return &data.Feed{}, fmt.Errorf("could not convert fail_on_no_data = %v as bool: %w", failOnNoData, err)
 			}
 			config["fail_on_no_data"] = boolFailOnNoData
 		}
