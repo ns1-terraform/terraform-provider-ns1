@@ -330,18 +330,14 @@ func recordToResourceData(d *schema.ResourceData, r *dns.Record) error {
 		}
 	}
 	if len(r.Regions) > 0 {
-		regions := make([]map[string]interface{}, 0, len(r.Regions))
+		regions := schema.NewSet(regionHash, nil)
 		for name, region := range r.Regions {
 			newRegion := make(map[string]interface{})
 			newRegion["name"] = name
 			newRegion["meta"] = region.Meta.StringMap()
-			regions = append(regions, newRegion)
+			regions.Add(newRegion)
 		}
 		log.Printf("Setting regions %+v", regions)
-		err := d.Set("regions", regions)
-		if err != nil {
-			return fmt.Errorf("[DEBUG] Error setting regions for: %s, error: %#v", r.Domain, err)
-		}
 	}
 	return nil
 }
@@ -863,4 +859,15 @@ func subdivisionConverter(s string) (map[string]interface{}, error) {
 	}
 
 	return subdivisionsMap, nil
+}
+
+// regions are maps, but the names should be unique, so use the name as index
+func regionHash(i interface{}) int {
+	if m, ok := i.(map[string]interface{}); ok {
+		if n, ok := m["name"].(string); ok {
+			return schema.HashString(n)
+		}
+	}
+	// if the name is missing
+	return 0
 }

@@ -575,6 +575,12 @@ func TestAccRecord_updatedWithRegions(t *testing.T) {
 				),
 			},
 			{
+				// Plan again to detect "loop" conditions
+				Config:             testAccRecordUpdatedWithRegionWeight(rString),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+			{
 				Config: testAccRecordUpdatedWithRegions(rString),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckRecordExists("ns1_record.it", &record),
@@ -2019,7 +2025,9 @@ resource "ns1_record" "it" {
   regions {
     name = "cal"
     meta = {
-      weight = 100
+			country   = "RU,CA,MX,US"
+			georegion = "EUROPE,US-CENTRAL,US-WEST,AFRICA,US-EAST"
+      weight    = 100
     }
   }
 
