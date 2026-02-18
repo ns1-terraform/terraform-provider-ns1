@@ -102,6 +102,9 @@ func TestAccUser_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "false"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "redirects_manage_redirects", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "insights_view_insights", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "insights_manage_insights", "false"),
 				),
 			},
 			{
@@ -115,6 +118,9 @@ func TestAccUser_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "security_manage_global_2fa", "false"),
 					resource.TestCheckResourceAttr("ns1_user.u", "security_manage_active_directory", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "redirects_manage_redirects", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "insights_view_insights", "true"),
+					resource.TestCheckResourceAttr("ns1_user.u", "insights_manage_insights", "true"),
 				),
 			},
 			{
@@ -126,6 +132,9 @@ func TestAccUser_permissions(t *testing.T) {
 					resource.TestCheckResourceAttr("ns1_user.u", "username", username),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_account_settings", "true"),
 					resource.TestCheckResourceAttr("ns1_user.u", "account_manage_ip_whitelist", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "redirects_manage_redirects", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "insights_view_insights", "false"),
+					resource.TestCheckResourceAttr("ns1_user.u", "insights_manage_insights", "false"),
 				),
 			},
 			{
@@ -503,7 +512,7 @@ resource "ns1_user" "u" {
   username = "tf_acc_test_user_%s"
   email    = "tf_acc_test_ns1@hashicorp.com"
   teams    = [ns1_team.test.id]
-  
+
   ip_whitelist_strict = false
   ip_whitelist = []
 
@@ -778,6 +787,9 @@ resource "ns1_user" "u" {
 
   account_manage_ip_whitelist = true
   security_manage_global_2fa = false
+  redirects_manage_redirects = true
+  insights_view_insights = true
+  insights_manage_insights = true
 }
 `, rString, rString, rString)
 }

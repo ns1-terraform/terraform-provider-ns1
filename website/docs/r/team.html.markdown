@@ -18,7 +18,7 @@ teams. The credentials used must have the `manage_teams` permission set.
 resource "ns1_team" "example" {
   name = "Example team"
 
-    
+
   # Optional IP whitelists
   ip_whitelist {
     name = "whitelist-1"
@@ -42,7 +42,7 @@ resource "ns1_team" "example2" {
   dns_zones_allow_by_default = true
   dns_zones_allow = ["mytest.zone"]
   dns_zones_deny = ["myother.zone"]
-  
+
   dns_records_allow {
     domain = "terraform.example.io"
     include_subdomains = false
@@ -59,36 +59,37 @@ resource "ns1_team" "example2" {
 The following arguments are supported:
 
 * `name` - (Required) The free form name of the team.
-* `ip_whitelist` - (Optional) Array of IP addresses objects to chich to grant the team access. Each object includes a **name** (string), and **values** (array of strings) associated to each "allow" list.
-* `dns_view_zones` - (Optional) Whether the team can view the accounts zones.
-* `dns_manage_zones` - (Optional) Whether the team can modify the accounts zones.
-* `dns_zones_allow_by_default` - (Optional) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.
-* `dns_zones_allow` - (Optional) List of zones that the team may access.
-* `dns_zones_deny` - (Optional) List of zones that the team may not access.
-* `dns_records_allow` - (Optional) List of records that the team may access.
-* `dns_records_deny` - (Optional) List of records that the team may not access.
-* `data_push_to_datafeeds` - (Optional) Whether the team can publish to data feeds.
-* `data_manage_datasources` - (Optional) Whether the team can modify data sources.
-* `data_manage_datafeeds` - (Optional) Whether the team can modify data feeds.
-* `account_manage_users` - (Optional) Whether the team can modify account users.
-* `account_manage_payment_methods` - (Optional) Whether the team can modify account payment methods.
+* `ip_whitelist` - (Optional, default: `[]`) Array of IP addresses objects to chich to grant the team access. Each object includes a **name** (string), and **values** (array of strings) associated to each "allow" list.
+* `dns_view_zones` - (Optional, default: `false`) Whether the team can view the accounts zones.
+* `dns_manage_zones` - (Optional, default: `false`) Whether the team can modify the accounts zones.
+* `dns_zones_allow_by_default` - (Optional, default: `false`) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.
+* `dns_zones_allow` - (Optional, default: `[]`) List of zones that the team may access.
+* `dns_zones_deny` - (Optional, default: `[]`) List of zones that the team may not access.
+* `dns_records_allow` - (Optional, default: `[]`) List of records that the team may access.
+* `dns_records_deny` - (Optional, default: `[]`) List of records that the team may not access.
+* `data_push_to_datafeeds` - (Optional, default: `false`) Whether the team can publish to data feeds.
+* `data_manage_datasources` - (Optional, default: `false`) Whether the team can modify data sources.
+* `data_manage_datafeeds` - (Optional, default: `false`) Whether the team can modify data feeds.
+* `account_manage_users` - (Optional, default: `false`) Whether the team can modify account users.
+* `account_manage_payment_methods` - (Optional, default: `false`) Whether the team can modify account payment methods.
 * `account_manage_plan` - (Deprecated) No longer in use.
-* `account_manage_teams` - (Optional) Whether the team can modify other teams in the account.
-* `account_manage_apikeys` - (Optional) Whether the team can modify account apikeys.
-* `account_manage_account_settings` - (Optional) Whether the team can modify account settings.
-* `account_view_activity_log` - (Optional) Whether the team can view activity logs.
-* `account_view_invoices` - (Optional) Whether the team can view invoices.
-* `account_manage_ip_whitelist` - (Optional) Whether the team can manage ip whitelist.
-* `monitoring_manage_lists` - (Optional) Whether the team can modify notification lists.
-* `monitoring_manage_jobs` - (Optional) Whether the user can create, update, and delete monitoring jobs.
-* `monitoring_create_jobs` - (Optional) Whether the user can create monitoring jobs when manage_jobs is not set to true.
-* `monitoring_update_jobs` - (Optional) Whether the user can update monitoring jobs when manage_jobs is not set to true.
-* `monitoring_delete_jobs` - (Optional) Whether the user can delete monitoring jobs when manage_jobs is not set to true.
-* `monitoring_view_jobs` - (Optional) Whether the team can view monitoring jobs.
-* `security_manage_global_2fa` - (Optional) Whether the team can manage global two factor authentication.
-* `security_manage_active_directory` - (Optional) Whether the team can manage global active directory.
-* `redirects_manage_redirects` - (Optional) Whether the user can manage redirects.
-Only relevant for the DDI product.
+* `account_manage_teams` - (Optional, default: `false`) Whether the team can modify other teams in the account.
+* `account_manage_apikeys` - (Optional, default: `false`) Whether the team can modify account apikeys.
+* `account_manage_account_settings` - (Optional, default: `false`) Whether the team can modify account settings.
+* `account_view_activity_log` - (Optional, default: `false`) Whether the team can view activity logs.
+* `account_view_invoices` - (Optional, default: `false`) Whether the team can view invoices.
+* `account_manage_ip_whitelist` - (Optional, default: `false`) Whether the team can manage ip whitelist.
+* `monitoring_manage_lists` - (Optional, default: `false`) Whether the team can modify notification lists.
+* `monitoring_manage_jobs` - (Optional, default: `false`) Whether the team can create, update, and delete monitoring jobs.
+* `monitoring_create_jobs` - (Optional, default: `false`) Whether the team can create monitoring jobs when manage_jobs is not set to true.
+* `monitoring_update_jobs` - (Optional, default: `false`) Whether the team can update monitoring jobs when manage_jobs is not set to true.
+* `monitoring_delete_jobs` - (Optional, default: `false`) Whether the team can delete monitoring jobs when manage_jobs is not set to true.
+* `monitoring_view_jobs` - (Optional, default: `false`) Whether the team can view monitoring jobs.
+* `security_manage_global_2fa` - (Optional, default: `true`) Whether the team can manage global two factor authentication.
+* `security_manage_active_directory` - (Optional, default: `true`) Whether the team can manage global active directory. Only relevant for the DDI product.
+* `redirects_manage_redirects` - (Optional, default: `false`) Whether the team can manage redirects.
+* `insights_view_insights` - (Optional, default: `false`) Whether the team can view DNS insights.
+* `insights_manage_insights` - (Optional, default: `false`) Whether the team can manage DNS insights.
 
 ## Import
 

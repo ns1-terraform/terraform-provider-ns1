@@ -1,12 +1,12 @@
 ## Teams
 
 resource "ns1_team" "example_team" {
-  name = "Example Team"
-  dns_manage_zones = false
-  dns_view_zones = true
+  name                       = "Example Team"
+  dns_manage_zones           = false
+  dns_view_zones             = true
   dns_zones_allow_by_default = false
-  dns_zones_allow = ["example.com"]
-# ....... all permissions listed on G
+  dns_zones_allow            = ["example.com"]
+  # ....... all permissions listed on G
   account_manage_ip_whitelist = true
   monitoring_manage_lists     = true
   monitoring_manage_jobs      = true
@@ -19,10 +19,10 @@ resource "ns1_team" "example_team" {
 
 # Team User
 resource "ns1_user" "example_team_user" {
-  name      = "Example Team User from Terraform"
-  username  = "example-team-user"
-  email     = "testuser@example.com"
-  teams     = [ns1_team.example_team.id]
+  name     = "Example Team User from Terraform"
+  username = "example-team-user"
+  email    = "testuser@example.com"
+  teams    = [ns1_team.example_team.id]
   notify = {
     "billing" = false
   }
@@ -30,9 +30,9 @@ resource "ns1_user" "example_team_user" {
 
 # Admin User
 resource "ns1_user" "example_admin_user" {
-  name      = "Example Admin User from Terraform"
-  username  = "example-admin-user"
-  email     = "testuser@example.com"
+  name     = "Example Admin User from Terraform"
+  username = "example-admin-user"
+  email    = "testuser@example.com"
   notify = {
     "billing" = true
   }
@@ -58,13 +58,13 @@ resource "ns1_user" "example_admin_user" {
 
 # Read only user with IP whitelist
 resource "ns1_user" "example_whitelist_user" {
-  name      = "Example User with Whitelist from Terraform"
-  username  = "example-admin-user"
-  email     = "testuser@example.com"
+  name     = "Example User with Whitelist from Terraform"
+  username = "example-admin-user"
+  email    = "testuser@example.com"
   notify = {
     "billing" = true
   }
-  ip_whitelist                    = ["1.1.1.1","2.2.2.2"]
+  ip_whitelist                    = ["1.1.1.1", "2.2.2.2"]
   dns_view_zones                  = true
   dns_manage_zones                = false
   dns_zones_allow_by_default      = false
@@ -88,11 +88,11 @@ resource "ns1_user" "example_whitelist_user" {
 
 ## API keys
 resource "ns1_apikey" "example" {
-  name      = "Example API Key from Terraform"
-  monitoring_manage_lists         = true
-  monitoring_manage_jobs          = true
-  monitoring_view_jobs            = true
-  security_manage_global_2fa      = true
+  name                       = "Example API Key from Terraform"
+  monitoring_manage_lists    = true
+  monitoring_manage_jobs     = true
+  monitoring_view_jobs       = true
+  security_manage_global_2fa = true
 }
 
 
@@ -129,4 +129,6 @@ resource "ns1_apikey" "example" {
 #monitoring_view_jobs - (Optional) Whether the user can view monitoring jobs.
 #security_manage_global_2fa - (Optional) Whether the user can manage global two factor authentication.
 #security_manage_active_directory - (Optional) Whether the user can manage global active directory. Only relevant for the DDI product.
-#redirects_manage_redirects - (Optional) Whether the user can manager redirects.
+#redirects_manage_redirects - (Optional) Whether the user can manage redirects.
+#insights_view_insights - (Optional) Whether the user can view DNS insights
+#insights_manage_insights - (Optional) Whether the user can manage DNS insights

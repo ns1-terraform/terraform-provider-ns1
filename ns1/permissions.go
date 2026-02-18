@@ -191,6 +191,18 @@ func addPermsSchema(s map[string]*schema.Schema) map[string]*schema.Schema {
 		Default:          false,
 		DiffSuppressFunc: suppressPermissionDiff,
 	}
+	s["insights_view_insights"] = &schema.Schema{
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
+	}
+	s["insights_manage_insights"] = &schema.Schema{
+		Type:             schema.TypeBool,
+		Optional:         true,
+		Default:          false,
+		DiffSuppressFunc: suppressPermissionDiff,
+	}
 	return s
 }
 
@@ -253,6 +265,8 @@ func permissionsToResourceData(d *schema.ResourceData, permissions account.Permi
 	d.Set("monitoring_delete_jobs", permissions.Monitoring.DeleteJobs)
 	d.Set("monitoring_view_jobs", permissions.Monitoring.ViewJobs)
 	d.Set("redirects_manage_redirects", permissions.Redirects.ManageRedirects)
+	d.Set("insights_view_insights", permissions.Insights.ViewInsights)
+	d.Set("insights_manage_insights", permissions.Insights.ManageInsights)
 	if permissions.Security != nil {
 		d.Set("security_manage_global_2fa", permissions.Security.ManageGlobal2FA)
 		d.Set("security_manage_active_directory", permissions.Security.ManageActiveDirectory)
@@ -370,6 +384,12 @@ func resourceDataToPermissions(d *schema.ResourceData) account.PermissionsMap {
 	}
 	if v, ok := d.GetOk("redirects_manage_redirects"); ok {
 		p.Redirects.ManageRedirects = v.(bool)
+	}
+	if v, ok := d.GetOk("insights_view_insights"); ok {
+		p.Insights.ViewInsights = v.(bool)
+	}
+	if v, ok := d.GetOk("insights_manage_insights"); ok {
+		p.Insights.ManageInsights = v.(bool)
 	}
 	return p
 }
