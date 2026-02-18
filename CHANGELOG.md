@@ -1,4 +1,4 @@
-## 2.8.2 (February 17 2026)
+## 2.8.2 (February 18 2026)
 ENHANCEMENTS
 * Add insights permissions
 
