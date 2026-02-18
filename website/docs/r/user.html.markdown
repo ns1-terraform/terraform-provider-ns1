@@ -57,7 +57,7 @@ The following arguments are supported:
 * `email` - (Required) The email address of the user.
 * `notify` - (Required) Whether or not to notify the user of specified events. Only `billing` is available currently.
 * `teams` - (Required) The teams that the user belongs to.
-* `ip_whitelist` - (Optional, default: `[]`) Array of IP addresses/networks to which to grant the user access. 
+* `ip_whitelist` - (Optional, default: `[]`) Array of IP addresses/networks to which to grant the user access.
 * `ip_whitelist_strict` - (Optional, default: `false`) Set to true to restrict access to only those IP addresses and networks listed in the **ip_whitelist** field.
 * `dns_view_zones` - (Optional) Whether the user can view the accounts zones.
 * `dns_manage_zones` - (Optional) Whether the user can modify the accounts zones.
@@ -85,6 +85,8 @@ The following arguments are supported:
 * `security_manage_global_2fa` - (Optional) Whether the user can manage global two factor authentication.
 * `security_manage_active_directory` - (Optional) Whether the user can manage global active directory.
 * `redirects_manage_redirects` - (Optional) Whether the user can manage redirects.
+* `insights_view_insights` - (Optional) Whether the user can view DNS insights.
+* `insights_manage_insights` - (Optional) Whether the user can manage DNS insights.
 Only relevant for the DDI product.
 
 ## Import

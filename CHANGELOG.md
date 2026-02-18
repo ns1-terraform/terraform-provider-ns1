@@ -1,3 +1,7 @@
+## 2.8.2 (February 17 2026)
+ENHANCEMENTS
+* Add insights permissions
+
 ## 2.8.1 (February 12 2026)
 ENHANCEMENTS
 * Fix datadog and webcheck datafeed params

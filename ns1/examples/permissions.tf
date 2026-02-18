@@ -29,3 +29,5 @@
 #   monitoring_manage_jobs: boolean - allows the requestor to manage monitoring jobs
 #   monitoring_view_jobs: boolean - allows the requestor to view monitoring jobs
 #   redirects_manage_redirects: boolean - allows the requestor to manage redirects
+#   insights_view_insights: boolean - allows the requestor to view DNS insights
+#   insights_manage_insights: boolean - allows the requestor to manage DNS insights

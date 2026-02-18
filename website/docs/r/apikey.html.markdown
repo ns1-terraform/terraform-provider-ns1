@@ -24,7 +24,7 @@ resource "ns1_apikey" "example" {
   # Optional IP whitelist
   ip_whitelist = ["1.1.1.1","2.2.2.2"]
 
-  # Configure permissions 
+  # Configure permissions
   dns_view_zones       = false
   account_manage_users = false
 }
@@ -70,14 +70,16 @@ The following arguments are supported:
 * `account_view_invoices` - (Optional) Whether the apikey can view invoices.
 * `account_manage_ip_whitelist` - (Optional) Whether the apikey can manage ip whitelist.
 * `monitoring_manage_lists` - (Optional) Whether the apikey can modify notification lists.
-* `monitoring_manage_jobs` - (Optional) Whether the user can create, update, and delete monitoring jobs.
-* `monitoring_create_jobs` - (Optional) Whether the user can create monitoring jobs when manage_jobs is not set to true.
-* `monitoring_update_jobs` - (Optional) Whether the user can update monitoring jobs when manage_jobs is not set to true.
-* `monitoring_delete_jobs` - (Optional) Whether the user can delete monitoring jobs when manage_jobs is not set to true.
+* `monitoring_manage_jobs` - (Optional) Whether the apikey can create, update, and delete monitoring jobs.
+* `monitoring_create_jobs` - (Optional) Whether the apikey can create monitoring jobs when manage_jobs is not set to true.
+* `monitoring_update_jobs` - (Optional) Whether the apikey can update monitoring jobs when manage_jobs is not set to true.
+* `monitoring_delete_jobs` - (Optional) Whether the apikey can delete monitoring jobs when manage_jobs is not set to true.
 * `monitoring_view_jobs` - (Optional) Whether the apikey can view monitoring jobs.
 * `security_manage_global_2fa` - (Optional) Whether the apikey can manage global two factor authentication.
 * `security_manage_active_directory` - (Optional) Whether the apikey can manage global active directory.
-* `redirects_manage_redirects` - (Optional) Whether the user can manage redirects.
+* `redirects_manage_redirects` - (Optional) Whether the apikey can manage redirects.
+* `insights_view_insights` - (Optional) Whether the apikey can view DNS insights.
+* `insights_manage_insights` - (Optional) Whether the apikey can manage DNS insights.
 Only relevant for the DDI product.
 
 ## Attributes Reference

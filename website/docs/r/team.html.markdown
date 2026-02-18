@@ -18,7 +18,7 @@ teams. The credentials used must have the `manage_teams` permission set.
 resource "ns1_team" "example" {
   name = "Example team"
 
-    
+
   # Optional IP whitelists
   ip_whitelist {
     name = "whitelist-1"
@@ -42,7 +42,7 @@ resource "ns1_team" "example2" {
   dns_zones_allow_by_default = true
   dns_zones_allow = ["mytest.zone"]
   dns_zones_deny = ["myother.zone"]
-  
+
   dns_records_allow {
     domain = "terraform.example.io"
     include_subdomains = false
@@ -80,14 +80,16 @@ The following arguments are supported:
 * `account_view_invoices` - (Optional) Whether the team can view invoices.
 * `account_manage_ip_whitelist` - (Optional) Whether the team can manage ip whitelist.
 * `monitoring_manage_lists` - (Optional) Whether the team can modify notification lists.
-* `monitoring_manage_jobs` - (Optional) Whether the user can create, update, and delete monitoring jobs.
-* `monitoring_create_jobs` - (Optional) Whether the user can create monitoring jobs when manage_jobs is not set to true.
-* `monitoring_update_jobs` - (Optional) Whether the user can update monitoring jobs when manage_jobs is not set to true.
-* `monitoring_delete_jobs` - (Optional) Whether the user can delete monitoring jobs when manage_jobs is not set to true.
+* `monitoring_manage_jobs` - (Optional) Whether the team can create, update, and delete monitoring jobs.
+* `monitoring_create_jobs` - (Optional) Whether the team can create monitoring jobs when manage_jobs is not set to true.
+* `monitoring_update_jobs` - (Optional) Whether the team can update monitoring jobs when manage_jobs is not set to true.
+* `monitoring_delete_jobs` - (Optional) Whether the team can delete monitoring jobs when manage_jobs is not set to true.
 * `monitoring_view_jobs` - (Optional) Whether the team can view monitoring jobs.
 * `security_manage_global_2fa` - (Optional) Whether the team can manage global two factor authentication.
 * `security_manage_active_directory` - (Optional) Whether the team can manage global active directory.
-* `redirects_manage_redirects` - (Optional) Whether the user can manage redirects.
+* `redirects_manage_redirects` - (Optional) Whether the team can manage redirects.
+* `insights_view_insights` - (Optional) Whether the team can view DNS insights.
+* `insights_manage_insights` - (Optional) Whether the team can manage DNS insights.
 Only relevant for the DDI product.
 
 ## Import
