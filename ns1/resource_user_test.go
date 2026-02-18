@@ -787,9 +787,9 @@ resource "ns1_user" "u" {
 
   account_manage_ip_whitelist = true
   security_manage_global_2fa = false
-	redirects_manage_redirects = true
-	insights_view_insights = true
-	insights_manage_insights = true
+  redirects_manage_redirects = true
+  insights_view_insights = true
+  insights_manage_insights = true
 }
 `, rString, rString, rString)
 }
