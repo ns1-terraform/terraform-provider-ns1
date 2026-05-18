@@ -375,6 +375,109 @@ resource "ns1_apikey" "it" {
 `, rString, rString)
 }
 
+func TestAccAPIKey_withExpiryDuration(t *testing.T) {
+	var apiKey account.APIKey
+	name := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAPIKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAPIKeyWithExpiryDuration(name, "30d"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
+					testAccCheckAPIKeyName(&apiKey, name),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "expiry_duration", "30d"),
+					testAccCheckAPIKeyHasSecrets(&apiKey),
+				),
+			},
+			{
+				ResourceName:            "ns1_apikey.it",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"key", "secrets"}, // importing existing key won't have the key or secret values
+			},
+		},
+	})
+}
+
+func TestAccAPIKey_updateExpiryDuration(t *testing.T) {
+	var apiKey account.APIKey
+	var apiKeyRecreated account.APIKey
+	name := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAPIKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAPIKeyBasic(name),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
+					testAccCheckAPIKeyName(&apiKey, name),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "expiry_duration", ""),
+				),
+			},
+			{
+				Config: testAccAPIKeyWithExpiryDuration(name, "30d"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKeyRecreated),
+					testAccCheckAPIKeyName(&apiKeyRecreated, name),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "expiry_duration", "30d"),
+					testAccCheckAPIKeyHasSecrets(&apiKeyRecreated),
+					// Verify the API key was recreated (different ID)
+					testAccCheckAPIKeyRecreated(&apiKey, &apiKeyRecreated),
+				),
+			},
+		},
+	})
+}
+
+func testAccCheckAPIKeyHasSecrets(k *account.APIKey) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if len(k.Secrets) == 0 {
+			return fmt.Errorf("API key should have at least one secret when expiry_duration is set")
+		}
+
+		// Verify the first secret has required fields
+		secret := k.Secrets[0]
+		if secret.ID == "" {
+			return fmt.Errorf("secret should have an ID")
+		}
+		if secret.ExpiresAt == "" {
+			return fmt.Errorf("secret should have an expiration date")
+		}
+		if secret.Enabled == nil {
+			return fmt.Errorf("secret should have an enabled status")
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckAPIKeyRecreated(old, new *account.APIKey) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if old.ID == new.ID {
+			return fmt.Errorf("expected API key to be recreated with new ID, but got same ID: %s", old.ID)
+		}
+		return nil
+	}
+}
+
+func testAccAPIKeyWithExpiryDuration(apiKeyName, expiryDuration string) string {
+	return fmt.Sprintf(`resource "ns1_apikey" "it" {
+  name = "%s"
+  expiry_duration = "%s"
+
+  dns_view_zones = false
+  account_manage_users = false
+}
+`, apiKeyName, expiryDuration)
+}
+
 func testAccAPIKeyPermissionsNoTeam(rString string) string {
 	return fmt.Sprintf(`resource "ns1_team" "t" {
   name = "terraform acc test team %s"
