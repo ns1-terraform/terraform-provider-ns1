@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"regexp"
 	"sort"
 	"testing"
 
@@ -476,6 +477,57 @@ func testAccAPIKeyWithExpiryDuration(apiKeyName, expiryDuration string) string {
   account_manage_users = false
 }
 `, apiKeyName, expiryDuration)
+}
+func TestAccAPIKey_invalidExpiryDuration(t *testing.T) {
+	name := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAPIKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      testAccAPIKeyWithExpiryDuration(name, "invalid"),
+				ExpectError: regexp.MustCompile(`must be one of.*10d.*30d.*90d`),
+			},
+			{
+				Config:      testAccAPIKeyWithExpiryDuration(name, "7d"),
+				ExpectError: regexp.MustCompile(`must be one of.*10d.*30d.*90d`),
+			},
+			{
+				Config:      testAccAPIKeyWithExpiryDuration(name, "100d"),
+				ExpectError: regexp.MustCompile(`must be one of.*10d.*30d.*90d`),
+			},
+		},
+	})
+}
+
+func TestAccAPIKey_allExpiryDurations(t *testing.T) {
+	durations := []string{"10d", "30d", "90d"}
+
+	for _, duration := range durations {
+		t.Run(duration, func(t *testing.T) {
+			var apiKey account.APIKey
+			name := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+			resource.Test(t, resource.TestCase{
+				PreCheck:     func() { testAccPreCheck(t) },
+				Providers:    testAccProviders,
+				CheckDestroy: testAccCheckAPIKeyDestroy,
+				Steps: []resource.TestStep{
+					{
+						Config: testAccAPIKeyWithExpiryDuration(name, duration),
+						Check: resource.ComposeTestCheckFunc(
+							testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
+							testAccCheckAPIKeyName(&apiKey, name),
+							resource.TestCheckResourceAttr("ns1_apikey.it", "expiry_duration", duration),
+							testAccCheckAPIKeyHasSecrets(&apiKey),
+						),
+					},
+				},
+			})
+		})
+	}
 }
 
 func testAccAPIKeyPermissionsNoTeam(rString string) string {

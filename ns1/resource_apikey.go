@@ -115,7 +115,9 @@ func apikeyToResourceData(d *schema.ResourceData, k *account.APIKey) error {
 
 	// Set expiry_duration if present
 	if k.ExpiryDuration != "" {
-		d.Set("expiry_duration", k.ExpiryDuration)
+		if err := d.Set("expiry_duration", k.ExpiryDuration); err != nil {
+			return fmt.Errorf("error setting expiry_duration: %w", err)
+		}
 	}
 
 	// Set secrets if present
@@ -134,7 +136,9 @@ func apikeyToResourceData(d *schema.ResourceData, k *account.APIKey) error {
 			}
 			secrets[i] = secretMap
 		}
-		d.Set("secrets", secrets)
+		if err := d.Set("secrets", secrets); err != nil {
+			return fmt.Errorf("error setting secrets: %w", err)
+		}
 	}
 
 	return nil

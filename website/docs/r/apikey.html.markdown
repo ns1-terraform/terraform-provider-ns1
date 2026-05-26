@@ -12,23 +12,21 @@ Provides a NS1 Api Key resource. This can be used to create, modify, and delete 
 
 ## Example Usage
 
-### Basic API Key
+### Legacy API Key (Static Secret)
 
 ```hcl
-resource "ns1_team" "example" {
-  name = "Example team"
-}
-
-resource "ns1_apikey" "example" {
-  name  = "Example key"
-  teams = [ns1_team.example.id]
-
-  # Optional IP whitelist
-  ip_whitelist = ["1.1.1.1","2.2.2.2"]
+resource "ns1_apikey" "static_key" {
+  name = "Static API Key"
 
   # Configure permissions
-  dns_view_zones       = false
-  account_manage_users = false
+  dns_view_zones = true
+  dns_manage_zones = true
+}
+
+# The static secret is available in the key attribute
+output "api_key_secret" {
+  value     = ns1_apikey.static_key.key
+  sensitive = true
 }
 ```
 
