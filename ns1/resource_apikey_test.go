@@ -530,6 +530,28 @@ func TestAccAPIKey_allExpiryDurations(t *testing.T) {
 	}
 }
 
+func TestAccAPIKey_customExpiryDuration(t *testing.T) {
+	var apiKey account.APIKey
+	name := acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckAPIKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAPIKeyWithExpiryDuration(name, "45d"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckAPIKeyExists("ns1_apikey.it", &apiKey),
+					testAccCheckAPIKeyName(&apiKey, name),
+					resource.TestCheckResourceAttr("ns1_apikey.it", "expiry_duration", "45d"),
+					testAccCheckAPIKeyHasSecrets(&apiKey),
+				),
+			},
+		},
+	})
+}
+
 func testAccAPIKeyPermissionsNoTeam(rString string) string {
 	return fmt.Sprintf(`resource "ns1_team" "t" {
   name = "terraform acc test team %s"
