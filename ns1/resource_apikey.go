@@ -3,8 +3,10 @@ package ns1
 import (
 	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/account"
@@ -40,14 +42,11 @@ func apikeyResource() *schema.Resource {
 			Type:     schema.TypeString,
 			Optional: true,
 			ForceNew: true,
-			ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
-				v := val.(string)
-				if v != "" && v != "10d" && v != "30d" && v != "90d" {
-					errs = append(errs, fmt.Errorf("%q must be one of: '10d', '30d', '90d', got: %s", key, v))
-				}
-				return
-			},
-			Description: "Duration for automatic secret rotation. Valid values: '10d', '30d', '90d'. When set, API key secrets will automatically rotate. Changing this value will force recreation of the API key.",
+			ValidateFunc: validation.StringMatch(
+				regexp.MustCompile(`^\d+d$`),
+				"must be a duration in format '<number>d' (e.g., '10d', '30d', '90d')",
+			),
+			Description: "Duration for automatic secret expiration (e.g., '10d', '30d', '90d'). Accepts any duration in '<number>d' format. When set, API key secrets will automatically expire after the specified period. Changing this value will force recreation of the API key.",
 		},
 		"secrets": {
 			Type:        schema.TypeList,
