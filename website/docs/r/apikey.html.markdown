@@ -30,15 +30,15 @@ output "api_key_secret" {
 }
 ```
 
-### API Key with Automatic Secret Rotation
+### API Key with Secret Expiration
 
 ```hcl
-resource "ns1_apikey" "rotating" {
-  name = "Rotating API Key"
+resource "ns1_apikey" "expiring" {
+  name = "Expiring API Key"
 
-  # Enable automatic secret rotation
-  # Secrets will expire and rotate every 30 days
-  # Valid values: "10d", "30d", "90d"
+  # Set secret expiration period to 30 days
+  # Secrets will expire after this period and must be manually rotated
+  # Accepts any duration in '<number>d' format (e.g., "10d", "30d", "90d")
   expiry_duration = "30d"
 
   # Configure permissions
@@ -46,12 +46,16 @@ resource "ns1_apikey" "rotating" {
   dns_manage_zones = true
 }
 
-# Access secret information (metadata only, not the actual secret key)
+# Access secret metadata (not the actual secret key values)
 output "secret_info" {
-  value = ns1_apikey.rotating.secrets
+  value = ns1_apikey.expiring.secrets
   sensitive = true
 }
 ```
+
+## Important Notes
+
+~> **Changing expiry_duration forces recreation.** When you modify the `expiry_duration` field of an existing API key, Terraform will destroy the old key and create a new one. This means the API key ID and all secrets will change. Any external references to the old key will break. Plan your migrations carefully and update dependent systems before changing this value.
 
 ## Permissions
 An API key will inherit permissions from the teams it is assigned to.
@@ -73,7 +77,7 @@ The following arguments are supported:
 * `teams` - (Optional) The teams that the apikey belongs to.
 * `ip_whitelist` - (Optional, default: `[]`) Array of IP addresses/networks to which to grant the API key access.
 * `ip_whitelist_strict` - (Optional, default: `false`) Set to true to restrict access to only those IP addresses and networks listed in the **ip_whitelist** field.
-* `expiry_duration` - (Optional) Duration for automatic secret rotation. Valid values are `"10d"`, `"30d"`, or `"90d"`. When set, the API key will use rotating secrets that expire after the specified duration. The API key can have up to 2 active secrets at a time to allow for graceful rotation. If not set, a legacy API key with a permanent secret (stored in the `key` attribute) is created.
+* `expiry_duration` - (Optional) Duration for secret expiration in `<number>d` format (e.g., `"10d"`, `"30d"`, `"90d"`). When set, API key secrets will expire after the specified period and must be manually rotated using the NS1 API or Portal. The API key can have up to 2 active secrets at a time to allow for graceful rotation without service interruption. If not set, a legacy API key with a permanent secret (stored in the `key` attribute) is created. Changing this value will force recreation of the API key.
 * `dns_view_zones` - (Optional, default: `false`) Whether the apikey can view the accounts zones.
 * `dns_manage_zones` - (Optional, default: `false`) Whether the apikey can modify the accounts zones.
 * `dns_zones_allow_by_default` - (Optional, default: `false`) If true, enable the `dns_zones_allow` list, otherwise enable the `dns_zones_deny` list.
@@ -109,14 +113,14 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-* `key` - (Computed) The API key authentication token. Only populated for legacy API keys (when `expiry_duration` is not set). For rotating API keys, use the secret keys from the `secrets` attribute instead.
-* `secrets` - (Computed) List of rotating secrets for this API key. Only populated when `expiry_duration` is set. Each secret contains:
+* `key` - (Computed) The API key authentication token. Only populated for legacy API keys (when `expiry_duration` is not set). For API keys with expiration, use the secret keys from the `secrets` attribute instead.
+* `secrets` - (Computed) List of secrets for this API key. Only populated when `expiry_duration` is set. Each secret contains:
   * `id` - The unique identifier for the secret.
   * `expires_at` - The expiration date/time of the secret in ISO 8601 format.
   * `last_access` - The last time this secret was used for authentication.
   * `enabled` - Whether this secret is currently enabled for authentication.
 
-**Note:** The actual secret key values (starting with `nss_`) are only returned when a secret is first created and are not stored in Terraform state for security reasons. You must save these values when they are first created, as they cannot be retrieved later.
+**Note:** The actual secret key values (starting with `nss_`) are only returned when a secret is first created and are not stored in Terraform state for security reasons. You must save these values when they are first created, as they cannot be retrieved later. To rotate secrets (generate new ones), use the NS1 API or Portal - Terraform does not manage secret rotation.
 
 ## Import
 
