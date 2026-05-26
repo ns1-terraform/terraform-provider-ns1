@@ -8,12 +8,13 @@ resource "ns1_apikey" "apikey" {
   #permissions are available at the top level
 }
 
-# Example: API key with automatic secret rotation
-resource "ns1_apikey" "rotating_key" {
-  name = "rotating-api-key"
+# Example: API key with secret expiration
+resource "ns1_apikey" "expiring_key" {
+  name = "expiring-api-key"
   
-  # Enable automatic secret rotation every 30 days
-  # Valid values: "10d", "30d", "90d"
+  # Set secret expiration period to 30 days
+  # Secrets will expire after this period and must be manually renewed
+  # Accepts any duration in '<number>d' format (e.g., "10d", "30d", "90d")
   expiry_duration = "30d"
 
   # Configure permissions
@@ -21,8 +22,8 @@ resource "ns1_apikey" "rotating_key" {
   dns_manage_zones = true
 }
 
-# The secrets are automatically managed and can be viewed in the state
-output "rotating_key_secrets" {
-  value = ns1_apikey.rotating_key.secrets
+# The secrets metadata can be viewed in the state
+output "expiring_key_secrets" {
+  value = ns1_apikey.expiring_key.secrets
   sensitive = true
 }
