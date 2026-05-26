@@ -1,7 +1,7 @@
 ## 2.9.0 (TBD)
 ENHANCEMENTS
-* Add support for API key expiry and automatic secret rotation via `expiry_duration` attribute
-* Add computed `secrets` attribute to view secret metadata for rotating API keys
+* Add support for API key secret expiration via `expiry_duration` attribute
+* Add computed `secrets` attribute to view secret metadata for API keys with expiration
 * Update ns1-go SDK to v2.18.0
 
 ## 2.8.2 (February 18 2026)
