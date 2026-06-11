@@ -488,15 +488,15 @@ func TestAccAPIKey_invalidExpiryDuration(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      testAccAPIKeyWithExpiryDuration(name, "invalid"),
-				ExpectError: regexp.MustCompile(`must be one of.*10d.*30d.*90d`),
+				ExpectError: regexp.MustCompile(`must be a duration in format '<number>d'`),
 			},
 			{
-				Config:      testAccAPIKeyWithExpiryDuration(name, "7d"),
-				ExpectError: regexp.MustCompile(`must be one of.*10d.*30d.*90d`),
+				Config:      testAccAPIKeyWithExpiryDuration(name, "30"),
+				ExpectError: regexp.MustCompile(`must be a duration in format '<number>d'`),
 			},
 			{
-				Config:      testAccAPIKeyWithExpiryDuration(name, "100d"),
-				ExpectError: regexp.MustCompile(`must be one of.*10d.*30d.*90d`),
+				Config:      testAccAPIKeyWithExpiryDuration(name, "d30"),
+				ExpectError: regexp.MustCompile(`must be a duration in format '<number>d'`),
 			},
 		},
 	})
