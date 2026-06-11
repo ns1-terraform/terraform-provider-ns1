@@ -1,4 +1,4 @@
-## 2.9.0 (TBD)
+## 2.9.0 (June 11, 2026)
 ENHANCEMENTS
 * Add support for API key secret expiration via `expiry_duration` attribute
 * Add computed `secrets` attribute to view secret metadata for API keys with expiration
