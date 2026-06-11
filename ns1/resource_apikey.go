@@ -1,9 +1,12 @@
 package ns1
 
 import (
+	"fmt"
 	"log"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	ns1 "gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/account"
@@ -34,6 +37,45 @@ func apikeyResource() *schema.Resource {
 			Type:     schema.TypeBool,
 			Optional: true,
 			Default:  false,
+		},
+		"expiry_duration": {
+			Type:     schema.TypeString,
+			Optional: true,
+			ForceNew: true,
+			ValidateFunc: validation.StringMatch(
+				regexp.MustCompile(`^\d+d$`),
+				"must be a duration in format '<number>d' (e.g., '10d', '30d', '90d')",
+			),
+			Description: "Duration for automatic secret expiration (e.g., '10d', '30d', '90d'). Accepts any duration in '<number>d' format. When set, API key secrets will automatically expire after the specified period. Changing this value will force recreation of the API key.",
+		},
+		"secrets": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "List of secrets associated with this API key when expiry_duration is set.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The unique identifier for this secret.",
+					},
+					"expires_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The expiration date/time of this secret in ISO 8601 format.",
+					},
+					"last_access": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The last time this secret was used for authentication.",
+					},
+					"enabled": {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Description: "Whether this secret is currently enabled for authentication.",
+					},
+				},
+			},
 		},
 	}
 
@@ -70,6 +112,34 @@ func apikeyToResourceData(d *schema.ResourceData, k *account.APIKey) error {
 		d.Set("key", k.Key)
 	}
 
+	// Set expiry_duration if present
+	if k.ExpiryDuration != "" {
+		if err := d.Set("expiry_duration", k.ExpiryDuration); err != nil {
+			return fmt.Errorf("error setting expiry_duration: %w", err)
+		}
+	}
+
+	// Set secrets if present
+	if len(k.Secrets) > 0 {
+		secrets := make([]map[string]interface{}, len(k.Secrets))
+		for i, secret := range k.Secrets {
+			secretMap := map[string]interface{}{
+				"id":         secret.ID,
+				"expires_at": secret.ExpiresAt,
+			}
+			if secret.LastAccess != "" {
+				secretMap["last_access"] = secret.LastAccess
+			}
+			if secret.Enabled != nil {
+				secretMap["enabled"] = *secret.Enabled
+			}
+			secrets[i] = secretMap
+		}
+		if err := d.Set("secrets", secrets); err != nil {
+			return fmt.Errorf("error setting secrets: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -101,6 +171,11 @@ func resourceDataToApikey(k *account.APIKey, d *schema.ResourceData) error {
 	}
 
 	k.IPWhitelistStrict = d.Get("ip_whitelist_strict").(bool)
+
+	// Set expiry_duration if provided
+	if v, ok := d.GetOk("expiry_duration"); ok {
+		k.ExpiryDuration = v.(string)
+	}
 
 	return nil
 }
