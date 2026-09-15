@@ -165,4 +165,4 @@ So for the example above:
 
 ## NS1 Documentation
 
-[Zone Api Docs](https://ns1.com/api#zones)
+[Zone Api Docs](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createZone)

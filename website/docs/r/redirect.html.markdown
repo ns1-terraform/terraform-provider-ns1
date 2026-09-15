@@ -57,7 +57,7 @@ additions.
 
 ## NS1 Documentation
 
-[Redirect Api Doc](https://ns1.com/api#redirect)
+[Redirect Api Doc](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createRedirectConfiguration)
 
 
 # ns1\_redirect\_certificate
@@ -98,4 +98,4 @@ The resource can be imported via their `id`:
 
 ## NS1 Documentation
 
-[Redirect Api Doc](https://ns1.com/api#redirect)
+[Redirect Api Doc](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#requestRedirectCertificate)

@@ -36,4 +36,4 @@ The following arguments are supported:
 
 ## NS1 Documentation
 
-[Global IP Whitelist Doc](https://ns1.com/api?docId=2282)
+[Global IP Whitelist Doc](https://www.ibm.com/docs/en/ns1-connect?topic=security-managing-ip-allow-lists)

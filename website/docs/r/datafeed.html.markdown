@@ -72,4 +72,4 @@ additions.
 
 ## NS1 Documentation
 
-[Datafeed Api Doc](https://ns1.com/api#data-feeds)
+[Datafeed Api Doc](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createFeed)

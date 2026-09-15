@@ -102,4 +102,4 @@ additions.
 
 ## NS1 Documentation
 
-[Team Api Docs](https://ns1.com/api#team)
+[Team Api Docs](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createTeams)

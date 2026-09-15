@@ -62,4 +62,4 @@ additions.
 
 ## NS1 Documentation
 
-[NotifyList Api Doc](https://ns1.com/api#notification-lists)
+[NotifyList Api Doc](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createNotification)

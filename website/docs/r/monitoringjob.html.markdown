@@ -43,7 +43,7 @@ resource "ns1_monitoringjob" "uswest_monitor" {
 The following arguments are supported:
 
 * `name` - (Required) The free-form display name for the monitoring job.
-* `job_type` - (Required) The type of monitoring job to be run. Refer to the NS1 API documentation (https://ns1.com/api#monitoring-jobs) for supported values which include ping, tcp, dns, http.
+* `job_type` - (Required) The type of monitoring job to be run. Refer to the NS1 API documentation (https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createMonitoringJobs) for supported values which include ping, tcp, dns, http.
 * `active` - (Optional, default: `true`) Indicates if the job is active or temporarily disabled.
 * `regions` - (Required) The list of region codes in which to run the monitoring
   job. See NS1 API docs for supported values.
@@ -72,4 +72,4 @@ additions.
 
 ## NS1 Documentation
 
-[MonitoringJob Api Doc](https://ns1.com/api#monitoring-jobs)
+[MonitoringJob Api Doc](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createMonitoringJobs)

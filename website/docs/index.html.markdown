@@ -3,7 +3,7 @@ layout: "ns1"
 page_title: "Provider: NS1"
 sidebar_current: "docs-ns1-index"
 description: |-
-  The [NS1](https://ns1.com/) provider is used to interact with the resources supported by NS1.
+  The [NS1](https://www.ibm.com/products/ns1-connect) provider is used to interact with the resources supported by NS1.
 ---
 
 # NS1 Provider
@@ -53,7 +53,7 @@ The following arguments are supported:
 * `enable_ddi` - (Deprecated) Enable the DDI-compatible permissions schema. No longer in use.
 * `user_agent` - (Optional, introduced in v1.13.4) Sets the User-Agent header in the NS1 API.
 * `rate_limit_parallelism` - (Optional) Integer for alternative rate limit and parallelism strategy.
-    NS1 uses a token-based method for rate limiting API requests. Full details can be found at https://help.ns1.com/hc/en-us/articles/360020250573-About-API-rate-limiting.
+    NS1 uses a token-based method for rate limiting API requests. Full details can be found at https://www.ibm.com/docs/en/ns1-connect?topic=introduction-using-api.
     
     By default, the NS1 provider uses the "sleep" strategy of the underlying [NS1 Go SDK](https://github.com/ns1/ns1-go) for handling the NS1 API rate limit:
     an operation waits after every API request for a time equal to the rate limit period of that request type divided by the corresponding tokens remaining.

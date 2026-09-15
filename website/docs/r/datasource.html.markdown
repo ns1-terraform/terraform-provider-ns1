@@ -39,4 +39,4 @@ additions.
 
 ## NS1 Documentation
 
-[Datasource Api Doc](https://ns1.com/api#data-sources)
+[Datasource Api Doc](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createSource)

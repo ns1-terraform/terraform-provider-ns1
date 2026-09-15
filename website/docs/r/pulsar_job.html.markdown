@@ -62,4 +62,4 @@ The following arguments are supported:
 
 ## NS1 Documentation
 
-[Pulsar Job Api Docs](https://ns1.com/api#jobs)
+[Pulsar Job Api Docs](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createJobAppId)

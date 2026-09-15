@@ -46,7 +46,7 @@ When a user is removed from all teams completely, they will inherit whatever per
 If a user is removed from all their teams, it will probably be necessary to run `terraform apply` a second time
 to update the users permissions from their old team permissions to new user-specific permissions.
 
-See [this NS1 Help Center article](https://help.ns1.com/hc/en-us/articles/360024409034-Managing-user-permissions) for an overview of user permission settings.
+See [this NS1 Help Center article](https://www.ibm.com/docs/en/ns1-connect?topic=management-account-permissions) for an overview of user permission settings.
 
 ## Argument Reference
 
@@ -101,7 +101,7 @@ additions.
 
 ## NS1 Documentation
 
-[User Api Docs](https://ns1.com/api#user)
+[User Api Docs](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createUser)
 
-[Managing user permissions](https://help.ns1.com/hc/en-us/articles/360024409034-Managing-user-permissions)
+[Managing user permissions](https://www.ibm.com/docs/en/ns1-connect?topic=management-account-permissions)
 

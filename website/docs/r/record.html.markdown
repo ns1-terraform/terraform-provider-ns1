@@ -241,7 +241,7 @@ up some `meta` fields via the web portal or API, and use the results from
 import to check your syntax and ensure that everything is properly escaped and
 evaluated.
 
-See [NS1 API](https://ns1.com/api#get-available-metadata-fields) for the most
+See [NS1 API](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#listAvailableMetadata) for the most
 up-to-date list of available `meta` fields.
 
 #### FQDN Formatting
@@ -268,4 +268,4 @@ So for the example above:
 
 ## NS1 Documentation
 
-[Record Api Doc](https://ns1.com/api#records)
+[Record Api Doc](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createRecord)

@@ -67,7 +67,7 @@ When a key is removed from all teams completely, it will inherit whatever permis
 If a key is removed from all it's teams, it will probably be necessary to run `terraform apply` a second time
 to update the keys permissions from it's old team permissions to new key-specific permissions.
 
-See [the NS1 API docs](https://ns1.com/api#getget-all-account-users) for an overview of permission semantics or for [more details](https://help.ns1.com/hc/en-us/articles/360024409034-Managing-user-permissions) about the individual permission flags.
+See [the NS1 API docs](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#listUsers) for an overview of permission semantics or for [more details](https://www.ibm.com/docs/en/ns1-connect?topic=management-account-permissions) about the individual permission flags.
 
 ## Argument Reference
 
@@ -135,4 +135,4 @@ So for the example above:
 
 ## NS1 Documentation
 
-[ApiKeys Api Doc](https://ns1.com/api#api-key)
+[ApiKeys Api Doc](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createApikey)

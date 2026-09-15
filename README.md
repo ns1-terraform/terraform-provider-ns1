@@ -3,7 +3,7 @@ NS1 Terraform Provider
 
 > This project is in [active development](https://github.com/ns1/community/blob/master/project_status/ACTIVE_DEVELOPMENT.md).
 
-- NS1 Website: https://www.ns1.com
+- NS1 Website: https://www.ibm.com/products/ns1-connect
 - Terraform Website: https://www.terraform.io
 - Terraform NS1 Provider Documentation: https://registry.terraform.io/providers/ns1-terraform/ns1/latest/docs
 - Community: [HashiCorp Discuss](https://discuss.hashicorp.com/c/terraform-core/27)

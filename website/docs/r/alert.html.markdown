@@ -64,4 +64,4 @@ In addition to all arguments above, the following attributes are exported:
 
 ## NS1 Documentation
 
-[Alerts Api Doc](https://ns1.com/api#alerts)
+[Alerts Api Doc](https://developer.ibm.com/apis/catalog/ns1--ibm-ns1-connect-api/api/API--ns1--ibm-ns1-connect-api#createAlert)
