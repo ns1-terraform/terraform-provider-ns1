@@ -6,10 +6,7 @@ NS1 Terraform Provider
 - NS1 Website: https://www.ns1.com
 - Terraform Website: https://www.terraform.io
 - Terraform NS1 Provider Documentation: https://registry.terraform.io/providers/ns1-terraform/ns1/latest/docs
-- [![Gitter chat](https://badges.gitter.im/hashicorp-terraform/Lobby.png)](https://gitter.im/hashicorp-terraform/Lobby)
-- Mailing list: [Google Groups](http://groups.google.com/group/terraform-tool)
-
-<img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
+- Community: [HashiCorp Discuss](https://discuss.hashicorp.com/c/terraform-core/27)
 
 Contents
 ------
@@ -47,7 +44,7 @@ Requirements
 ------------
 
 -	[Terraform](https://www.terraform.io/downloads.html) 0.13+
--	[Go](https://golang.org/doc/install) 1.12+ (to build the provider plugin)
+-	[Go](https://golang.org/doc/install) 1.25+ (to build the provider plugin)
 
 Building The Provider
 ---------------------
@@ -80,8 +77,8 @@ as part of the release process.
 Developing The Provider
 ---------------------------
 
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine 
-(version 1.12+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH),
+If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine
+(version 1.25+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH),
 as well as adding `$GOPATH/bin` to your `$PATH`.
 
 To compile the provider, run `make build`. This will build the provider and put the provider binary in 
@@ -131,3 +128,10 @@ Known Issues/Roadmap
 * Currently, some resources do not return attributes for optional features that
   are unused. We are working on making the resource schemas fixed, with proper
   defaults returned for optional/unused features.
+* Currently, some resource attributes are returned by the API in a different
+  order than specified in config — record answers are sorted by UI order, and
+  `country`/`georegion` values within `region` blocks are sorted alphabetically.
+  This can cause all subsequent list items to appear changed in `plan` output
+  and result in persistent dirty plans across plan/apply cycles even when no
+  real change has been made. The `apply` still converges correctly. Keeping
+  ordered values alphabetically in your configuration is a known workaround.
