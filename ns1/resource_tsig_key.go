@@ -13,27 +13,31 @@ import (
 func tsigKeyResource() *schema.Resource {
 	s := map[string]*schema.Schema{
 		"name": {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:       schema.TypeString,
+			Required:   true,
+			Deprecated: "ns1_tsigkey is deprecated and will be removed in a future release. The underlying API endpoint has been removed.",
 		},
 		"algorithm": {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:       schema.TypeString,
+			Required:   true,
+			Deprecated: "ns1_tsigkey is deprecated and will be removed in a future release. The underlying API endpoint has been removed.",
 		},
 		"secret": {
-			Type:     schema.TypeString,
-			Required: true,
+			Type:       schema.TypeString,
+			Required:   true,
+			Deprecated: "ns1_tsigkey is deprecated and will be removed in a future release. The underlying API endpoint has been removed.",
 		},
 	}
 
 	return &schema.Resource{
-		Schema:        s,
-		Create:        tsigKeyCreate,
-		Read:          tsigKeyRead,
-		Update:        tsigKeyUpdate,
-		Delete:        tsigKeyDelete,
-		Importer:      &schema.ResourceImporter{State: tsigKeyImportStateFunc},
-		SchemaVersion: 1,
+		Schema:             s,
+		Create:             tsigKeyCreate,
+		Read:               tsigKeyRead,
+		Update:             tsigKeyUpdate,
+		Delete:             tsigKeyDelete,
+		Importer:           &schema.ResourceImporter{State: tsigKeyImportStateFunc},
+		SchemaVersion:      1,
+		DeprecationMessage: "ns1_tsigkey is deprecated and will be removed in a future release. The underlying API endpoint has been removed.",
 	}
 }
 
