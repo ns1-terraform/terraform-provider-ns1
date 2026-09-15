@@ -3,34 +3,9 @@ layout: "ns1"
 page_title: "NS1: ns1_tsigkey"
 sidebar_current: "docs-ns1-resource-tsigket"
 description: |-
-  Provides a NS1 TSIG Key resource.
+  Deprecated: ns1_tsigkey is no longer supported.
 ---
 
 # ns1\_tsigkey
 
-Provides a NS1 TSIG Key resource. This can be used to create, modify, and delete TSIG keys.
-
-## Example Usage
-
-```hcl
-resource "ns1_tsigkey" "example" {
-  name = "ExampleTsigKey"
-  algorithm = "hmac-sha256"
-  secret = "Ok1qR5IW1ajVka5cHPEJQIXfLyx5V3PSkFBROAzOn21JumDq6nIpoj6H8rfj5Uo+Ok55ZWQ0Wgrf302fDscHLA=="
-}
-```
-## Argument Reference
-
-The following arguments are supported:
-
-* `name` - (Required) The free form name of the tsigkey.
-* `algorithm` - (Required) The algorithm used to hash the TSIG key's secret.
-* `secret` - (Required) The key's secret to be hashed.
-
-## Import
-
-`terraform import ns1_tsigkey.importTest <name>`
-
-## NS1 Documentation
-
-[TSIG Keys Api Doc](https://ns1.com/api/#tsig)
+~> **Deprecated** This resource is deprecated and will be removed in a future release. The underlying NS1 API endpoint has been removed. Do not use this resource for new configurations.
