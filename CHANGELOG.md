@@ -1,3 +1,7 @@
+## Unreleased
+DEPRECATIONS
+* `ns1_tsigkey` and `ns1_dnsview` are deprecated and will be removed in a future release
+
 ## 2.9.0 (June 11, 2026)
 ENHANCEMENTS
 * Add support for API key secret expiration via `expiry_duration` attribute

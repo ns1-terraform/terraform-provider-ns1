@@ -15,6 +15,7 @@ import (
 
 // Creating basic DNS view
 func TestAccDNSView_basic(t *testing.T) {
+	t.Skip("ns1_dnsview is deprecated: the underlying API endpoint has been removed")
 	var (
 		view           = dns.View{}
 		viewName       = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
@@ -44,6 +45,7 @@ func TestAccDNSView_basic(t *testing.T) {
 
 // Update DNS view
 func TestAccDNSView_update(t *testing.T) {
+	t.Skip("ns1_dnsview is deprecated: the underlying API endpoint has been removed")
 	var (
 		view           = dns.View{}
 		viewName       = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
@@ -87,6 +89,7 @@ func TestAccDNSView_update(t *testing.T) {
 
 // Manually deleting DNS View
 func TestAccDNSView_ManualDelete(t *testing.T) {
+	t.Skip("ns1_dnsview is deprecated: the underlying API endpoint has been removed")
 	var (
 		view           = dns.View{}
 		viewName       = fmt.Sprintf("terraform-test-%s.io", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))

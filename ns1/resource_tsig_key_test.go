@@ -15,6 +15,7 @@ import (
 
 // Creating TSIG Key
 func TestAccTsigKey_basic(t *testing.T) {
+	t.Skip("ns1_tsigkey is deprecated: the underlying API endpoint has been removed")
 	var (
 		key          = dns.TSIGKey{}
 		keyName      = fmt.Sprintf("terraform-test-%s.", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
@@ -47,6 +48,7 @@ func TestAccTsigKey_basic(t *testing.T) {
 
 // Updating TSIG Keys
 func TestAccTsigKey_updated(t *testing.T) {
+	t.Skip("ns1_tsigkey is deprecated: the underlying API endpoint has been removed")
 	var (
 		key          = dns.TSIGKey{}
 		keyName      = fmt.Sprintf("terraform-test-%s.", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
@@ -96,6 +98,7 @@ func TestAccTsigKey_updated(t *testing.T) {
 
 // Manually deleting TSIG Key
 func TestAccTsigKey_ManualDelete(t *testing.T) {
+	t.Skip("ns1_tsigkey is deprecated: the underlying API endpoint has been removed")
 	var (
 		key          = dns.TSIGKey{}
 		keyName      = fmt.Sprintf("terraform-test-%s.", acctest.RandStringFromCharSet(15, acctest.CharSetAlphaNum))
